@@ -28,7 +28,7 @@ class Config {
 		if ( !file_exists($file) ) throw new Exception('Unable to load config file: ' . $file);
 
         $ini = parse_ini_file($file);
-        Output::log('Loaded .ini file '. $file, Output::INFO);
+        Output::log('Loaded .ini file '. $file, Output::DEBUG);
         foreach(self::$default as $setting => $config) {
             if ( array_key_exists($setting, $ini) ) { 
                 $value = $ini[$setting]; 
