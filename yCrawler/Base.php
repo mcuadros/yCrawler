@@ -16,7 +16,7 @@ abstract class Base {
 
     public function &getData() { return $this->_data; }
     
-    protected function data($function, $name, $value = null) {
+    public function data($function, $name, $value = null) {
         if ( !$this->_data ) $this->_data = new Data();
         $callback = Array($this->_data, $function); 
 

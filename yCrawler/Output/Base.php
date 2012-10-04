@@ -9,7 +9,7 @@ class Output_Base {
         throw new Exception('Output driver without log funciton.');
     }
 
-    public function getLogLevel($level) { return $this->_logLevel;  }
+    public function getLogLevel() { return $this->_logLevel;  }
     public function setLogLevel($level) {
         return $this->_logLevel = $level;
     }

@@ -24,6 +24,7 @@ class Request extends Base {
     private $_timeout;
     private $_interface;
     private $_utf8;
+    private $_headers;
 
     private $_responseCode;
     private $_response;
@@ -40,6 +41,8 @@ class Request extends Base {
         $this->_userAgent = Config::get('user_agent');
         $this->_cookie = Config::get('cookie');
         $this->_cache = Config::get('request_cache');
+        $this->_headers = Config::get('headers');
+        
 
         $this->_timeout = Config::get('max_execution_time');
         $this->_connectionTimeout = Config::get('connection_timeout');
@@ -71,7 +74,7 @@ class Request extends Base {
 
     public function setPost($post) {
         $this->_post = http_build_query($post);
-        Output::log('setPost: "' . $this->_post . '"', Output::DEBUG);
+        Output::log('setPost: ' . strlen($this->_post) .' byte(s)', Output::DEBUG);
         return $this->_post;
     }
 
@@ -94,6 +97,12 @@ class Request extends Base {
         }
 
         return $response;
+    }
+
+    public function setHeaders($headers) {
+        Output::log('setHeaders: ' . strlen($headers) .' byte(s)', Output::DEBUG);
+        if ( !$headers ) $this->_headers = false;
+        return $this->_headers = $headers;
     }
 
     public function setResponseCode($code) {
@@ -123,6 +132,7 @@ class Request extends Base {
     public function getResponseCode() { return $this->_responseCode; }
     public function getStatus() { return $this->_status; }
     public function getCache() { return $this->_cache; }
+    public function getHeaders() { return $this->_headers; }
     public function &getResponse() { return $this->_response; }
 
     public function newRetry() {
@@ -146,12 +156,18 @@ class Request extends Base {
         $this->_curl = curl_init();
         curl_setopt($this->_curl, CURLOPT_USERAGENT, $this->_userAgent);
         curl_setopt($this->_curl, CURLOPT_URL, $this->_cleanUrl);
-        curl_setopt($this->_curl, CURLOPT_FAILONERROR, true);
         curl_setopt($this->_curl, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($this->_curl, CURLOPT_AUTOREFERER, true);
         curl_setopt($this->_curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->_curl, CURLOPT_CONNECTTIMEOUT, $this->_connectionTimeout);
         curl_setopt($this->_curl, CURLOPT_TIMEOUT, $this->_timeout);
+        
+        if ( $this->_headers ) {
+            curl_setopt($this->_curl, CURLOPT_HEADER, true);
+            curl_setopt($this->_curl, CURLOPT_FAILONERROR, false);
+        } else {
+            curl_setopt($this->_curl, CURLOPT_FAILONERROR, true);
+        }
 
         if  ( $this->_cookie ) {
             curl_setopt($this->_curl, CURLOPT_COOKIEJAR, $this->_cookie );
@@ -164,7 +180,6 @@ class Request extends Base {
 
         if ( $this->_sslCertificate ) {
             curl_setopt($this->_curl, CURLOPT_CAINFO, $this->_sslCertificate);
-            
         }
         
         if ( $this->_post ) { 
@@ -172,17 +187,27 @@ class Request extends Base {
             curl_setopt ($this->_curl, CURLOPT_POST, 1);
         }
 
-        $this->setResponse(curl_exec($this->_curl));
+        $response = curl_exec($this->_curl); 
+        if ( $this->_headers ) {
+            $headerSize = curl_getinfo($this->_curl, CURLINFO_HEADER_SIZE);
+            $this->setHeaders(substr($response, 0, $headerSize));
+            $this->setResponse(substr($response, $headerSize));
+        } else {
+            $this->setResponse($response);  
+        }
 
         $elapsed = microtime(true) - $start;
         $this->data('set', 'elapsed', $elapsed);
 
-        if( !$errorNo = curl_errno($this->_curl) ) {
+        $errorNo = curl_errno($this->_curl);
+        $httpCode = curl_getinfo($this->_curl, CURLINFO_HTTP_CODE);
+
+        if( !$errorNo && $httpCode == 200 ) {
             $this->setResponseCode(curl_getinfo($this->_curl, CURLINFO_HTTP_CODE));
             Output::log('Request in ' . $elapsed . ' second(s)', Output::DEBUG);
             return true;
         } else {
-            if ( $httpCode = curl_getinfo($this->_curl, CURLINFO_HTTP_CODE) ) {
+            if ( $httpCode ) {
                 $this->setResponseCode($httpCode);
                 Output::log('HTTP error: "' . $this->_responseCode . ' "' . $this->_url . '"', Output::DEBUG);
                 return false;

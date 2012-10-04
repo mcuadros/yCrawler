@@ -266,6 +266,7 @@ abstract class Misc_CLI {
     }
 
     private function formatArray($array, $style) {
+        $print = Array();
         switch($style) {
             case false: return $array;
             case 1:

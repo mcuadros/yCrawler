@@ -20,6 +20,7 @@ class Config {
         'request_cache' => Array('int', 3600),
         'connection_timeout' => Array('int', 10),
         'interface' => Array('string', false),
+        'headers' => Array('boolean', true),
     );
 
     static $config = Array();

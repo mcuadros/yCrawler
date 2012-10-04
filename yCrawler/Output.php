@@ -45,10 +45,11 @@ class Output {
     }
 
     public static function __callStatic($method, $args) {
+        $result = null;
         foreach(self::$drivers as &$driver) {
-            if ( method_exists($driver, $method) ) call_user_func_array(Array($driver, $method), $args);
+            if ( method_exists($driver, $method) ) $result = call_user_func_array(Array($driver, $method), $args);
         }
 
-        return true;
+        return $result;
     }
 }
