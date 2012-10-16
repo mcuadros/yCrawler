@@ -71,7 +71,7 @@ class Document extends Request {
 
     public function addValue($name, $data, $override = false) {
         $this->data('add', 'values');
-        if ( $override === false ) $this->_values[$name] = Array();
+        if ( $override ) $this->_values[$name] = Array();
         if ( is_array($data) )  return $this->_values[$name][] = $data['value'];
         return $this->_values[$name][] = $data;
     }
