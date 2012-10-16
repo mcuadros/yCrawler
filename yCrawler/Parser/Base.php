@@ -315,7 +315,7 @@ abstract class Parser_Base extends Base {
             $tmp = Array();
             foreach($this->_startup as $url) {
                 $domain = parse_url($url, PHP_URL_HOST);
-                $tmp[] = '/' . str_replace('.', '\.', $domain) . '/';
+                $tmp[] = '~^https?://' . str_replace('.', '\.', $domain) . '~';
             }
             $this->_urlPatterns = array_unique($tmp);
         }
