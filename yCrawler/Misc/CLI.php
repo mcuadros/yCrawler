@@ -273,14 +273,22 @@ abstract class Misc_CLI {
                 foreach($array as $key => $value) {
                     if ( is_bool($value) ) if ( $value === true ) { $value = 'true'; } else { $value='false'; }
                     $print[] = Array('field' => $key, 'value' => $value);
-                    $value = str_replace(Array("\n", "\r", "\t"), '', $value);
+                    //depurando cadena
+                    $value = preg_replace('~[\n\r\t]~', ' ', $value);
+                    $value = preg_replace('~\s{2,}~', ' ', $value);
+                    $value = trim($value);
+                    //$value = str_replace(Array("\n", "\r", "\t"), '', $value);
                 }
                 return $print;
             case 2:
                 foreach($array as $key => $values) {
                     foreach($values as $value) {
                         if ( is_bool($value) ) if ( $value === true ) { $value = 'true'; } else { $value='false'; }
-                        $value = str_replace(Array("\n", "\r", "\t"), '', $value);
+                        //depurando cadena
+                        $value = preg_replace('~[\n\r\t]~', ' ', $value);
+                        $value = preg_replace('~\s{2,}~', ' ', $value);
+                        $value = trim($value);
+                        //$value = str_replace(Array("\n", "\r", "\t"), '', $value);
                         $print[] = Array('field' => $key, 'value' => $value);
                     }
                 }
