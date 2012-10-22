@@ -25,7 +25,15 @@ class Misc_URL {
 
         if ( strlen($url) == 0 ) return false;
 
-        if ( substr($url,0,4) != 'http' && substr($url,0,2) != '//' ) { 
+        if ( substr($url,0,4) == 'http' ) {
+        //si es 'HTTP' ...
+            return $url;
+        } else if(substr($url,0,2) == '//' ) {
+        //si es '//'...
+            return parse_url($origin, PHP_URL_SCHEME) . ':' . $url;
+        } else { 
+        //si se necesita resolver la ruta...
+
             //TODO: Controlar todo tipo de eventos
             if (stripos($url, ' ') !== false || 
                 stripos($url, '@') !== false || 
@@ -55,16 +63,14 @@ class Misc_URL {
             } else {
                 return parse_url($origin, PHP_URL_SCHEME) .'://' . parse_url($origin, PHP_URL_HOST) . '/' . $url; 
             }
-        } else {
-            return $url;
         }
-
-
     }
+    
     public static function validate($url) {
         //TODO: code for 'validate($url)'
         return true;
     }
+    
     public static function fix($url) {
         if ( !$parts = parse_url($url) ) return false;
 
