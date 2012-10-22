@@ -56,8 +56,12 @@ class Document extends Request {
     }
 
     public function getLinks() { return $this->_links; }
-    public function addLink($url) {
-        $this->_links[] = $url;
+    public function addLink($url,$override=false) {
+        if($override){
+            $this->_links=(Array)$url;
+        } else {
+            $this->_links[] = $url;
+        }
         $this->_links = array_values(array_unique($this->_links));
         $this->data('set', 'links', count($this->_links));
         return $url;
