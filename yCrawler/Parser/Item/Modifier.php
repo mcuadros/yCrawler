@@ -119,11 +119,14 @@ class Parser_Item_Modifier {
      * Convierte a timestamp UNIX, los valores del Resultado que recibe por referencia, tomándolos como si fueran los segundos a sumar al momento actual
      * @param Array $value (por referencia) Resultado
      * @param Document $document (por referencia) Documento
+     * @param Document $miliseconds true, si se pasa el tiempo en milisegundos
      * @return Boolean True si se recibió algo, False si no
      */
-    public static function timePlusNow(Array &$value = null, Document &$document) {
-        if ( !$value ) return false;
-        foreach($value as &$data) $data['value'] = $data['value']+time();
+    public static function timePlusNow(Array &$value = null, Document &$document, $miliseconds=false) {
+        foreach($value as &$data) {
+            $s=(int)$data['value'];
+            $data['value'] = (!$miliseconds?$s:floor($s/1000))+time();
+        }
         return true;
     }
 
@@ -151,23 +154,18 @@ class Parser_Item_Modifier {
                 }
             }
            
-            //TODO: Paths relativos!!!
+            //Resuelve rutas relativas y absolutas...
+            $img=Misc_URL::URL($img,$document->getUrl());
             
-//            if ( !Misc_URL::Image($img) ) { 
-//              $output[] = Array('value' => $img);
-//            } 
-            
-            
+            //Si, definitivamente, es una imágen, la almacena en la salida ($output)
             if ( Misc_URL::Image($img) ) {
                 $output[]=$img;
-            } 
-            
+            }       
             
         }
 
         $value = $output;
         return true;
-        
     }
 
     /**
