@@ -112,6 +112,8 @@ class Parser_Item {
      * 
      * @param Args $modifier String nombre_modificador [, Mixed params]*
      * @return \yCrawler\Parser_Item
+     * 
+     * @see \yCrawler\Parser_Item_Modifier
      */
     public function setModifier($modifier) {
         //TODO: if(is_callable($modifier))
