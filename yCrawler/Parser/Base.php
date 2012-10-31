@@ -187,9 +187,14 @@ abstract class Parser_Base extends Base {
      * @param string $expression Expresión xPath o RegExp que capturará los enlaces
      * @return Parser_Item Devuelve una referencia al mismo Parser_Item creado
      */
-    public function createLinksItem($expression = false) { 
+    public function createLinksItem($expression = false,$override=false) { 
         $item = new Parser_Item();
         if ( $expression ) $item->setPattern($expression);
+        
+        if($override){
+            $this->_items['links']=Array();
+        }
+        
         $this->_items['links'][] = &$item;
         return $item;
     }
