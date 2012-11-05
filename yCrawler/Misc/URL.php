@@ -13,8 +13,8 @@ class Misc_URL {
         if ( !$filename ) { return false; }
         
         $extensions=implode('|',self::$imageExtensions);
-        //casa con imágenes seguidas de "?" o "#"
-        return preg_match('~\.(?:'.$extensions.')(?:$|\?|\#)~i',$filename)==1;  
+        //casa con imágenes seguidas de "?" o "#" o "&"
+        return preg_match('~\.(?:'.$extensions.')(?:$|\?|&|\#)~i',$filename)==1;  
     }
 
     public static function URL($url, $origin) {
