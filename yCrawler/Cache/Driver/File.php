@@ -65,9 +65,8 @@ class Cache_Driver_File implements Cache_Interface {
 		}
 
 		if ( $result['ttl'] > 0 && time() > $result['time'] + $result['ttl'] ) {
-            //TODO: ¿No debería descomentarse para que se "caduquen"
-            //$this->delete($key);
-            //return false;
+            $this->delete($key);
+            return false;
 		}
 
 		if ( !is_array($result) ) return false;
@@ -80,6 +79,7 @@ class Cache_Driver_File implements Cache_Interface {
      * @return Boolean Resultado del borrado
      */
 	public function delete($key) {
+        Output::log('outdated cache', Output::DEBUG);
 		return $this->deleteFile($key);
 	}
 
