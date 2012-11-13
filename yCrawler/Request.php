@@ -84,9 +84,13 @@ class Request extends Base {
         return $this->_cookie;
     }
 
-    public function setResponse($response) {
+    public function setResponse($response,$renewCache=true) {
         Output::log('setResponse: ' . strlen($response) .' byte(s)', Output::DEBUG);
-        Cache::driver('File')->set($this->getId(), $response, $this->_cache);
+        
+        //Sólo se guarda en caché, si se desea
+        if($renewCache){
+            Cache::driver('File')->set($this->getId(), $response, $this->_cache);
+        }
 
         if ( !$response ) $this->_response = false;
         
@@ -144,7 +148,7 @@ class Request extends Base {
     public function call() {
         if ( $this->_cache != 0 && $cache = Cache::driver('File')->get($this->getId()) ) {
             $this->setResponseCode(200);
-            $this->setResponse($cache);
+            $this->setResponse($cache,FALSE); //Una respuesta cacheada, no debe ser "cacheada de nuevo"
             $this->setStatus(self::STATUS_CACHED);
 
             Output::log('Request recovered from cache.', Output::DEBUG);
