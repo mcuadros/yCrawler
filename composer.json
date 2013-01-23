@@ -1,6 +1,6 @@
 {
-    "name": "yunait/yCrawler",
-    "homepage": "http://github.com/yunait/yCrawler",
+    "name": "yunait/ycrawler",
+    "homepage": "http://github.com/yunait/ycrawler",
     "type": "library",
     "minimum-stability": "dev",
     "require": {
