@@ -1,12 +1,7 @@
 <?php 
-namespace yCrawler;
+namespace yCrawler\Misc;
 
-/**
- * Misc_URL es una clase que define métodos (estáticos) útiles para procesar URIs
- * 
- * @todo: ¿tiene sentido que la clase sea instanciada? ¿podría ser abstracta?
- */
-class Misc_URL { 
+class URL { 
     static $imageExtensions = Array('jpg','jpeg','png','gif');
 
     public static function Image($filename) {

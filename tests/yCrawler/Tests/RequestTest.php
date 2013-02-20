@@ -1,0 +1,66 @@
+<?php
+namespace yCrawler\Tests;
+use yCrawler\Request;
+use yCrawler\Crawler;
+
+class RequestTest extends  \PHPUnit_Framework_TestCase { 
+    private function createRequest() {
+        return new Request(new Crawler());
+    }
+
+    public function testSetURL() {
+        $request = $this->createRequest();
+        $request->setURL('http://www.yunait.com/');
+
+        $this->assertEquals('http://www.yunait.com/', $request->getUrl());
+        $this->assertEquals('199a0e28a47733f59d54938386c0c41d', $request->getId());
+        $this->assertEquals('http', $request->getScheme());
+        $this->assertEquals('www.yunait.com', $request->getHost());
+    }
+
+    public function testSetPost() {
+        $test = Array('test' => 'element');
+        $request = $this->createRequest();
+        $request->setURL('http://httpbin.org/post');
+        $request->setPost($test);
+        $request->call();
+        
+        $response = json_decode($request->getResponse(), true);
+        $this->assertEquals($test, $response['form']);
+    }
+
+    public function testSetUserAgent() {
+        $request = $this->createRequest();
+        $request->setURL('http://httpbin.org/user-agent');
+        $request->call();
+        
+        $response = json_decode($request->getResponse(), true);
+        $this->assertEquals('yCrawler/Alpha', $response['user-agent']);
+    }
+
+    public function testSetCookie() {
+        $test = sys_get_temp_dir() . '/' . 'cookie' . uniqid();
+        $request = $this->createRequest();
+        $request->setURL('http://httpbin.org/cookies/set?supercali=fristicoespialidoso');
+        $request->setCookie($test);
+        $request->call();
+
+        //Se hace unset para que se escriba la cookie al sistema.
+        unset($request);
+
+        $cookieContent = file_get_contents($test);
+        $this->assertTrue(strpos($cookieContent, 'supercali') > 1);
+        $this->assertTrue(strpos($cookieContent, 'fristicoespialidoso') > 1);
+    }
+
+    public function testGetResponseCode() {
+        $request = $this->createRequest();
+        $request->setURL('http://httpbin.org/status/418');
+        $request->call();
+
+        $this->assertEquals(418, $request->getResponseCode());
+    }
+
+
+}
+
