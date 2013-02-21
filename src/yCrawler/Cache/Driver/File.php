@@ -52,11 +52,12 @@ class File extends Base implements Driver {
     }
 
     public function clear() {
-        return $this->rmDir($this->path);
+        $this->rmDir($this->path);
+        $this->dir($this->path);
     }
 
     private function getPath($key, $justDir = false) {
-        $base = $this->path . '/';
+        $base = $this->path;
         for($i=0;$i<$this->depth;$i++) $base .= substr($key, $i, 1) . '/';
 
         if ( $justDir ) return $base;
@@ -73,7 +74,6 @@ class File extends Base implements Driver {
         
         return unserialize(file_get_contents($filename));
     }
-
 
     private function writeFile($key, $content) {
         $this->dir($this->getPath($key, true));

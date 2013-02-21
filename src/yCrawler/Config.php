@@ -8,7 +8,7 @@ class Config {
         'max_threads_by_parser' => Array('int', 10),
         'max_execution_time' => Array('int', 20),
 
-        'cache_path' => Array('path', '/tmp/'),
+        'cache_path' => Array('path', '/tmp/yCrawler/'),
         'cache_folder_depth' => Array('int', 2),
 
         'utf8_dom_hack' =>  Array('boolean', true),
