@@ -5,20 +5,20 @@ namespace yCrawler;
  * Document es  
  */
 class Document extends Request {
-    protected $_parser;
-    protected $_dom;
-    protected $_xpath;
+    protected $parser;
+    protected $dom;
+    protected $xpath;
 
-    protected $_values = Array();
-    protected $_links = Array();
+    protected $values = Array();
+    protected $links = Array();
 
-    protected $_verified;
-    protected $_indexable;
-    protected $_parsed;
+    protected $verified;
+    protected $indexable;
+    protected $parsed;
 
-    public function __construct($url, Parser_Base &$parser) {
+    public function __construct($url, Parser $parser) {
         parent::__construct($url);
-        return $this->_parser = &$parser;
+        return $this->parser = $parser;
     }
 
     protected function makeRequest() {
@@ -36,48 +36,46 @@ class Document extends Request {
         libxml_use_internal_errors(true); 
         libxml_clear_errors();
 
-        $this->_dom = new \DOMDocument(); 
+        $this->dom = new \DOMDocument(); 
         
         if ( Config::get('utf8_dom_hack') ) {
-            return $this->_dom->loadHtml('<?xml encoding="UTF-8">' . str_ireplace('utf-8','', $this->getResponse()));
+            return $this->dom->loadHtml('<?xml encoding="UTF-8">' . str_ireplace('utf-8','', $this->getResponse()));
         }
 
-        return $this->_dom->loadHtml($this->getResponse());
+        return $this->dom->loadHtml($this->getResponse());
     }
 
     protected function createXPath() {
-        $this->_xpath = new \DOMXPath($this->_dom); 
-        if ( $this->_xpath ) { return true; } else { return false; }
+        $this->xpath = new \DOMXPath($this->dom); 
+        if ( $this->xpath ) { return true; } else { return false; }
     }
 
-    public function &getParser() { return $this->_parser; }
-    public function setParser(Parser_Base &$parser) { 
-        return $this->_parser = &$parser;
+    public function getParser() { return $this->parser; }
+    public function setParser(Parser $parser) { 
+        return $this->parser = $parser;
     }
 
-    public function getLinks() { return $this->_links; }
-    public function addLink($url,$override=false) {
-        if($override){
-            $this->_links=(Array)$url;
-        } else {
-            $this->_links[] = $url;
-        }
-        $this->_links = array_values(array_unique($this->_links));
-        $this->data('set', 'links', count($this->_links));
+    public function getLinks() { return $this->links; }
+    public function addLink($url, $override = false) {
+        if( $override ) $this->links = array($url);
+        else $this->links[] = $url;
+    
+        $this->links = array_values(array_unique($this->links));
+        $this->data('set', 'links', count($this->links));
         return $url;
     }
 
-    public function getValues() { return $this->_values; }
+    public function getValues() { return $this->values; }
     public function getValue($name) { 
-        if ( !array_key_exists($name, $this->_values) ) return false; 
-        return $this->_values[$name]; 
+        if ( !array_key_exists($name, $this->values) ) return false; 
+        return $this->values[$name]; 
     }
 
     public function addValue($name, $data, $override = false) {
         $this->data('add', 'values');
-        if ( $override ) $this->_values[$name] = Array();
-        if ( is_array($data) )  return $this->_values[$name][] = $data['value'];
-        return $this->_values[$name][] = $data;
+        if ( $override ) $this->values[$name] = Array();
+        if ( is_array($data) )  return $this->values[$name][] = $data['value'];
+        return $this->values[$name][] = $data;
     }
     
     /**
@@ -85,27 +83,27 @@ class Document extends Request {
      * @return boolean
      */
     public function isVerified() {
-        if ( $this->_verified === null ) {
-            $this->_verified = $this->verify();
-            $this->data('set', 'verified', $this->_verified);
+        if ( $this->verified === null ) {
+            $this->verified = $this->verify();
+            $this->data('set', 'verified', $this->verified);
         }
     
-        return $this->_verified;
+        return $this->verified;
     }
     
     public function isIndexable() {
-        if ( $this->_indexable === null ) {
-            $this->_indexable = $this->follow();
-            $this->data('set', 'indexable', $this->_indexable);
+        if ( $this->indexable === null ) {
+            $this->indexable = $this->follow();
+            $this->data('set', 'indexable', $this->indexable);
     }
 
-        return $this->_indexable;
+        return $this->indexable;
     }
     
     protected function verify() {
 
         if ( !$this->makeRequest() ) return false; 
-        if ( !$verifyItems = $this->_parser->getVerifyItems() ) return false;
+        if ( !$verifyItems = $this->parser->getVerifyItems() ) return false;
 
         foreach($verifyItems as &$item) {
             $item[0]->setModifier('boolean', $item[1]);
@@ -123,7 +121,7 @@ class Document extends Request {
      */
     protected function follow() {
         if ( !$this->makeRequest() ) return false;
-        if ( !$followItems = $this->_parser->getFollowItems() ) return true;
+        if ( !$followItems = $this->parser->getFollowItems() ) return true;
 
         foreach($followItems as &$item) {
             $item[0]->setModifier('boolean', $item[1]);
@@ -144,7 +142,7 @@ class Document extends Request {
     public function evaluate() {
         if ( !$this->isVerified() ) return false;
 
-        $valueItems = (Array)$this->_parser->getValueItems();
+        $valueItems = (Array)$this->parser->getValueItems();
         foreach($valueItems  as $name => &$item) { 
             foreach((Array)$item->evaluate($this) as $data) $this->addValue($name, $data);
         }
@@ -162,15 +160,15 @@ class Document extends Request {
         if ( !$this->isIndexable() ) return false;
 
 
-        if ( !$this->_parser->getLinksItems() ) {
-            $this->_parser->createLinksItem('//a')->setAttribute('href');
+        if ( !$this->parser->getLinksItems() ) {
+            $this->parser->createLinksItem('//a')->setAttribute('href');
         }
 
-        $linksItems = (Array)$this->_parser->getLinksItems();
+        $linksItems = (Array)$this->parser->getLinksItems();
         foreach($linksItems as &$item) { 
             foreach((Array)$item->evaluate($this) as $data) {
                 $url = Misc_URL::URL($data['value'], $this->getUrl());
-                if ( $url && $this->_parser->matchURL($url) ) $this->addLink($url);
+                if ( $url && $this->parser->matchURL($url) ) $this->addLink($url);
             }
         }
 
@@ -182,13 +180,13 @@ class Document extends Request {
      * @return Document
      */
     public function &parse() {
-        if ( $this->_parsed ) return $this;
-        if ( $this->_parser->configure() ) {
+        if ( $this->parsed ) return $this;
+        if ( $this->parser->configure() ) {
             $this->links();
             $this->evaluate();
 
-            $this->_parsed = true;
-            $this->_parser->parseCallback($this);
+            $this->parsed = true;
+            $this->parser->parseCallback($this);
         }    
 
         return $this;
@@ -198,7 +196,7 @@ class Document extends Request {
         if ( !$this->makeRequest() ) return false; 
 
         $output = Array();
-        $result = $this->_xpath->evaluate($expression);
+        $result = $this->xpath->evaluate($expression);
         
         if ( !$result ) return null;
         if ( $result->length == 0 )  return null;
@@ -208,7 +206,7 @@ class Document extends Request {
                 $output[] = Array(
                     'value' => $node->nodeValue,
                     'node' => $node,
-                    'dom' => &$this->_dom   
+                    'dom' => &$this->dom   
                 );
             } else {
                 $output[] = Array(

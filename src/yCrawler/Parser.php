@@ -19,7 +19,7 @@ namespace yCrawler;
  * </code>
  *
  */
-abstract class Parser_Base extends Base {
+abstract class Parser extends Base {
     
     /**
      * Array de RegExp definidas que determinan si una URL puede ser parseada por este Parser
