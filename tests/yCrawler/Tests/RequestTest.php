@@ -5,7 +5,7 @@ use yCrawler\Crawler;
 
 class RequestTest extends  \PHPUnit_Framework_TestCase { 
     private function createRequest() {
-        return new Request(new Crawler());
+        return new Request();
     }
 
     public function testSetURL() {
