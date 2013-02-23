@@ -1,6 +1,7 @@
 <?php
 namespace yCrawler;
-class Queue extends \SplPriorityQueue {
+
+class Queue {
     const PRTY_NONE = 10;
     const PRTY_LOW = 20;
     const PRTY_NORMAL = 30;
@@ -8,21 +9,33 @@ class Queue extends \SplPriorityQueue {
     const PRTY_URGENT = 50;
     const PRTY_INMEDIATE = 60;
 
+    private $queue;
     private $history = array();
 
-    public function insert($url, $priority = self::PRTY_NORMAL) {
-        if ( $this->inHistory($url) ) return false;
-        parent::insert($url, $priority);
-        $this->addHistory($url);
+    public function __construct() {
+        $this->queue = new \SplPriorityQueue();
+    }
 
+    public function add(Document $document, $priority = self::PRTY_NORMAL) {
+        $url = $document->getUrl();
+        if ( $this->inHistory($url) ) return false;
+
+        $this->queue->insert($document, $priority);
+        $this->addHistory($url);
         return true;
     }
 
-    public function extract() {
-        $url = parent::extract();
-        $this->removeHistory($url);
-        
-        return $url;
+    public function retry(Document $document, $priority = self::PRTY_NORMAL) {
+        $url = $document->getUrl();
+        if ( !$this->inHistory($url) ) return false;
+
+        $this->queue->insert($document, $priority);
+        return true;
+    }
+
+    public function get() {
+        if ( !$this->queue->valid() ) return false;
+        return $this->queue->extract();
     }
 
     private function inHistory($url) {
@@ -31,9 +44,5 @@ class Queue extends \SplPriorityQueue {
 
     private function addHistory($url) {
         $this->history[$url] = true;
-    }
-
-    private function removeHistory($url) {
-        unset($this->history[$url]);
     }
 }

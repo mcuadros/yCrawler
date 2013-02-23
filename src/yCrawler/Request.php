@@ -34,7 +34,7 @@ class Request extends Base {
     private $maxExecutionTime;
     private $sslCertificate;
     
-    public function __construct($crawler, $url = null) {
+    public function __construct($url, Crawler $crawler = null) {
         parent::__construct($crawler);
         $this->headers = $this->config('headers');
         $this->userAgent = $this->config('user_agent');

@@ -16,7 +16,7 @@ class Document extends Request {
     protected $indexable;
     protected $parsed;
 
-    public function __construct($url, Parser $parser) {
+    public function __construct($url, Parser $parser = null) {
         parent::__construct($url);
         return $this->parser = $parser;
     }
@@ -32,14 +32,16 @@ class Document extends Request {
     }
 
     protected function createDOM() {
-        //We dont want get XML errors, bye bye
         libxml_use_internal_errors(true); 
         libxml_clear_errors();
 
         $this->dom = new \DOMDocument(); 
         
         if ( Config::get('utf8_dom_hack') ) {
-            return $this->dom->loadHtml('<?xml encoding="UTF-8">' . str_ireplace('utf-8','', $this->getResponse()));
+            return $this->dom->loadHtml(sprintf(
+                '<?xml encoding="UTF-8">%s</xml>',
+                str_ireplace('utf-8','', $this->getResponse())
+            ));
         }
 
         return $this->dom->loadHtml($this->getResponse());
@@ -67,7 +69,7 @@ class Document extends Request {
 
     public function getValues() { return $this->values; }
     public function getValue($name) { 
-        if ( !array_key_exists($name, $this->values) ) return false; 
+        if ( !isset($this->value[$name]) ) return false; 
         return $this->values[$name]; 
     }
 
@@ -101,16 +103,12 @@ class Document extends Request {
     }
     
     protected function verify() {
-
         if ( !$this->makeRequest() ) return false; 
         if ( !$verifyItems = $this->parser->getVerifyItems() ) return false;
 
         foreach($verifyItems as &$item) {
             $item[0]->setModifier('boolean', $item[1]);
-            if ( !$item[0]->evaluate($this) ) {
-                Output::log('Varification negative: ' . $item[0], Output::DEBUG);
-                return false;
-            }
+            if ( !$item[0]->evaluate($this) ) return false;
         }
 
         return true;
@@ -125,10 +123,7 @@ class Document extends Request {
 
         foreach($followItems as &$item) {
             $item[0]->setModifier('boolean', $item[1]);
-            if ( !$item[0]->evaluate($this) ) {
-                Output::log('Follow negative: ' . $item[0], Output::DEBUG);
-                return false;
-            }
+            if ( !$item[0]->evaluate($this) ) return false;
         }
 
         return true;
@@ -159,7 +154,6 @@ class Document extends Request {
     public function links() {
         if ( !$this->isIndexable() ) return false;
 
-
         if ( !$this->parser->getLinksItems() ) {
             $this->parser->createLinksItem('//a')->setAttribute('href');
         }
@@ -179,7 +173,7 @@ class Document extends Request {
      * Realiza un evaluate() y un links() sobre el documento.
      * @return Document
      */
-    public function &parse() {
+    public function parse() {
         if ( $this->parsed ) return $this;
         if ( $this->parser->configure() ) {
             $this->links();
@@ -233,6 +227,4 @@ class Document extends Request {
             return false; 
         }
     }      
-
 }
-        

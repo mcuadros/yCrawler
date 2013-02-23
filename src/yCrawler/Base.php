@@ -10,7 +10,7 @@ abstract class Base {
     private $data;
     private $constants;
 
-    public function __construct(Crawler $crawler) {
+    public function __construct(Crawler $crawler = null) {
         $this->crawler = $crawler;
     }
 
@@ -54,6 +54,7 @@ abstract class Base {
     }
 
     protected function config($setting) {
+        if ( !$this->crawler ) return false;
         return $this->crawler['config']->get($setting);
     }
 
