@@ -2,6 +2,7 @@
 namespace yCrawler\Cache\Driver;
 use yCrawler\Cache\Driver;
 use yCrawler\Crawler;
+use yCrawler\Config;
 use yCrawler\Base;
 
 class File extends Base implements Driver {
@@ -11,8 +12,8 @@ class File extends Base implements Driver {
     public function __construct(Crawler $crawler) {
         parent::__construct($crawler);
 
-        $this->path = $this->config('cache_path');
-        $this->depth = $this->config('cache_folder_depth');
+        $this->path = Config::get('cache_path');
+        $this->depth = Config::get('cache_folder_depth');
         $this->dir($this->path);
     }
 

@@ -1,75 +1,17 @@
 <?php
-namespace yCrawler;
+namespace yCrawler\Parser;
+use yCrawler\Document;
 
-/**
- * Parser_Item es una clase que compondrá Parser_Base, y define una regla concreta.
- * 
- * El objetivo de un Parser_Item, es definir una regla que Parser_Base pueda interpretar para obtener un resultado.
- * 
- * Los Parser_Item estarán definidos, básicamente, por una "regla", y un "tipo_de_regla"
- */
-class Parser_Item {
-    
+class Item {
     const TYPE_XPATH = 'xpath';
     const TYPE_REGEXP = 'regexp'; 
     const TYPE_LITERAL = 'literal';
 
-    /**
-     * Define la "regla" que se ha de cumplir en la evaluación del Parser_Item
-     * @access private
-     * @var String 
-     */
-    private $_pattern;
-    
-    /**
-     * Define el "tipo_de_regla", o cómo se debe interpretar la "regla"
-     * 
-     * Las reglas pueden ser de los siguientes tipos:<br />
-     * yCrawler\Parser_Item::TYPE_XPATH   -> Se interpreta como xPath (por defecto)<br />
-     * yCrawler\Parser_Item::TYPE_REGEXP  -> Se interpreta como RegExp<br />
-     * yCrawler\Parser_Item::TYPE_LITERAL -> Se interpreta literalmente
-
-     * @default TYPE_XPATH
-     * @access private
-     * @var String 
-     */
-    private $_type = self::TYPE_XPATH;
-    
-    /**
-     * Define el "atributo" del elemento DOM al que se refiere la "regla"
-     * @access private
-     * @var String 
-     * @deprecated since version 2.0 Úsese la sintaxis propia de xPath para capturar atributos
-     */
-    private $_attribute;
-    
-    /**
-     * Array de modificadores que se aplicarán sobre los resultados arrojados tras la interpretación de la "regla"
-     * 
-     * Un "MODIFICADOR" actúa modificando el resultado de la interpretación de la regla y el propio Documento.<br />
-     * Los modificadores se aplicarán por el orden en que fueron creados, y en que figuran en $_modifier.
-     * 
-     * Un MODIFICADOR, tiene la sintáxis : Array(String nombre_modificador [, Mixed params]*)
-     * 
-     * Siendo:<br />
-     *   String nombre_modificador , método estático : yCrawler\Parser_Item_Modifier::nombre_modificador<br />
-     *   Mixed params , parámetros del MODIFICADOR
-     * 
-     * @access private
-     * @var MODIFICADOR[]
-     */
-    private $_modifier;
-    
-    /**
-     * Define la función que se aplicará tras la interpretación de la "regla"
-     * 
-     * Un CALLBACK tiene la sintaxis : Array(Parser_Item, String nombre_callback)
-     * 
-     * @access private
-     * @var CALLBACK 
-     * @deprecated since version 2.0 Úsese el modificador 'callback'
-     */
-    private $_callback;
+    private $pattern;
+    private $type = self::TYPE_XPATH;
+    private $attribute;
+    private $modifier;
+    private $callback;
 
     
     /**
@@ -78,7 +20,7 @@ class Parser_Item {
      * @return \yCrawler\Parser_Item
      */
     public function setType($type) {
-        $this->_type = $type;
+        $this->type = $type;
         return $this;
     }
  
@@ -88,7 +30,7 @@ class Parser_Item {
      * @return \yCrawler\Parser_Item
      */
     public function setPattern($expression) {
-        $this->_pattern = $expression;
+        $this->pattern = $expression;
         return $this;
     }
 
@@ -99,7 +41,7 @@ class Parser_Item {
      * @deprecated since version 2.0 Úsese la sintaxis propia de xPath para capturar atributos
      */
     public function setAttribute($attribute) {
-        $this->_attribute = $attribute;
+        $this->attribute = $attribute;
         return $this;
     }
     
@@ -121,7 +63,7 @@ class Parser_Item {
         $args = func_get_args();
         array_shift($args);
         
-        $this->_modifier[] = Array($modifier, $args);
+        $this->modifier[] = Array($modifier, $args);
         return $this;
     }
 
@@ -136,7 +78,7 @@ class Parser_Item {
     public function setCallback(array $callback) {
         Output::log('Deprecated setCallback, use setModifier and callback modifier', Output::WARNING);
         if ( is_callable($callback) ) {
-            $this->_callback = $callback;
+            $this->callback = $callback;
         } else {
             throw new Exception('Unable to set a callback, non-callable.');
         }
@@ -148,33 +90,33 @@ class Parser_Item {
      * Devuelve el "tipo_de_regla" del Item
      * @return String
      */
-    public function getType() { return $this->_type; }
+    public function getType() { return $this->type; }
     
     /**
      * Devuelve la "regla" del Item
      * @return String
      */
-    public function getPattern() { return $this->_pattern; }
+    public function getPattern() { return $this->pattern; }
     
     /** 
      * Devuelve el atributo del DOM que pretende capturar la regla xPath
      * @return String
      * @deprecated since version 2.0 Úsese la sintaxis propia de xPath para capturar atributos
      */
-    public function getAttribute() { return $this->_attribute; }
+    public function getAttribute() { return $this->attribute; }
     
     /**
      * Devuelve los modificadores que haya solicitados en el Item
      * @return MODIFICADOR[] Array( Array(String nombre_modificador [, Mixed params]* )* )
      */
-    public function getModifier() { return $this->_modifier; }
+    public function getModifier() { return $this->modifier; }
     
     /**
      * Devuelve la función que se aplicará tras la interpretación de la "regla"
      * @return CALLBACK Array(Parser_Item, String nombre_callback)
      * @deprecated since version 2.0 Úsese el modificador 'callback'
      */
-    public function getCallback() { return $this->_callback; }
+    public function getCallback() { return $this->callback; }
 
     /**
      * Aplica los modificadores, si los hay, en el orden en que se insertaron
@@ -188,10 +130,10 @@ class Parser_Item {
      */
     private function applyModifier(&$result, Document &$document) {
         //si no hay modificadores, sale
-        if ( !$this->_modifier ) return true;
+        if ( !$this->modifier ) return true;
         
         //si hay modificadores, va procesando uno a uno
-        foreach( $this->_modifier as &$modifier) {
+        foreach( $this->modifier as &$modifier) {
             //TODO: if(is_callable($modifier))...
             forward_static_call_array(
                 Array(
@@ -215,10 +157,10 @@ class Parser_Item {
      */
     private function applyCallback(&$result, Document &$document) {
     //TODO: Arreglar Callback, para pasar Document
-        if ( !$this->_callback ) return true;
+        if ( !$this->callback ) return true;
  
         return call_user_func_array(
-            $this->_callback,
+            $this->callback,
             Array(&$result, &$document)
         );
     }
@@ -238,22 +180,24 @@ class Parser_Item {
      *   //-- varios : (Array){2,} ( (Array) ['value'=>String resultado_i]{2,} )<br />
      */
     public function evaluate(Document &$document) {
-        switch($this->_type) {
+        $result = array();
+
+        switch($this->type) {
             case self::TYPE_XPATH:
-                $result = $document->evaluateXPath($this->_pattern, $this->_attribute);
+                $result = $document->evaluateXPath($this->pattern, $this->attribute);
                 break;
             case self::TYPE_REGEXP:
-                $result = $document->evaluateRegExp($this->_pattern);
+                $result = $document->evaluateRegExp($this->pattern);
                 break;
             case self::TYPE_LITERAL:
-                $result = Array(Array('value'=> $this->_pattern));
+                $result = Array(Array('value'=> $this->pattern));
                 break;
         }
 
         $this->applyCallback($result, $document); //TODO: @deprecated      
         $this->applyModifier($result, $document);
         
-
+        if ( !$result ) return array();
         return $result; 
     }
 
@@ -262,6 +206,6 @@ class Parser_Item {
      * @return String
      */
     public function __toString() {
-        return '["' . $this->_pattern . '"][' . $this->_type . ']' . json_encode($this->_modifier);
+        return '["' . $this->pattern . '"][' . $this->type . ']' . json_encode($this->modifier);
     }
 }

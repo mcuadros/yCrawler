@@ -2,8 +2,7 @@
 namespace yCrawler;
 
 class Config {
-    private $config = Array();
-	private $default = Array(
+    static $default = Array(
         'max_threads' => Array('int', 100),
         'max_threads_by_parser' => Array('int', 10),
         'max_execution_time' => Array('int', 20),
@@ -16,7 +15,7 @@ class Config {
         'utf8' => Array('boolean', true),
         'max_retries' => Array('int', 3),
         'ssl_certificate' => Array('file', 'libs/cacert.pem'),
-        'user_agent' => Array('string', 'yCrawler/Alpha'),
+        'user_agent' => Array('string', 'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25'),
         'cookie' => Array('file', '/tmp/cookie'),
         'request_cache' => Array('int', 3600),
         'connection_timeout' => Array('int', 10),
@@ -24,36 +23,37 @@ class Config {
         'headers' => Array('boolean', true),
     );
 
-	public function loadConfig(array $config) {
-        foreach($this->default as $setting => $config) {
-            if ( isset($config[$setting]) ) $this->set($setting, $ini[$setting]);
-            else $this->set($setting, $config[1]);
+    static $config = Array();
+
+    public static function loadConfig(array $config) {
+        foreach($config as $setting => $value) {
+            self::set($setting, $value);
         }
 
         return $this->getConfig();
-	}
-
-    public function getConfig() {
-        return $this->config;
     }
 
-    public function get($setting) {
-        if ( isset($this->config[$setting]) ) return $this->config[$setting];
-        if ( isset($this->default[$setting]) ) return $this->default[$setting][1];
-        return false;
+    public static function getConfig() {
+        return self::$config;
     }
 
-    public function set($setting, $value) {
-        if ( !isset($this->default[$setting]) ) {
+    public static function get($setting) {
+        if ( isset(self::$config[$setting]) ) return self::$config[$setting][1];
+        if ( isset(self::$default[$setting]) ) return self::$default[$setting][1];
+        return null;
+    }
+
+    public static function set($setting, $value) {
+        if ( !isset(self::$default[$setting]) ) {
             throw new \InvalidArgumentException(sprintf('Unknown setting "%s"', $setting));
         }
 
-        if ( $this->isValid($setting, $value) ) $this->config[$setting] = $value;
+        if ( self::isValid($setting, $value) ) self::$config[$setting] = $value;
     }
 
-    public function isValid($setting, &$value) {
+    public static function isValid($setting, &$value) {
         $valid = false;
-        $type = $this->default[$setting][0];
+        $type = self::$default[$setting][0];
         switch ($type) {
             case 'int':
                 if ( is_integer($value) ) $valid = true; break;

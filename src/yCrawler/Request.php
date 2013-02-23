@@ -3,7 +3,7 @@ namespace yCrawler;
 use yCrawler\Misc\URL;
 use ForceUTF8\Encoding;
 
-class Request extends Base {
+class Request {
     const STATUS_NONE = 0;
     const STATUS_FAILED = 1;
     const STATUS_RETRY = 2;
@@ -33,19 +33,19 @@ class Request extends Base {
     private $connectionTimeout;
     private $maxExecutionTime;
     private $sslCertificate;
+    private $maxRetries;
     
-    public function __construct($url, Crawler $crawler = null) {
-        parent::__construct($crawler);
-        $this->headers = $this->config('headers');
-        $this->userAgent = $this->config('user_agent');
-        $this->connectionTimeout = $this->config('connection_timeout');
-        $this->maxExecutionTime = $this->config('max_execution_time');
-        $this->sslCertificate = $this->config('ssl_certificate');
-
-        $this->cache = $this->config('request_cache');
-        $this->cookie = $this->config('cookie');
-        $this->interface = $this->config('interface');
-        $this->utf8 = $this->config('utf8');
+    public function __construct($url = null) {
+        $this->maxRetries = Config::get('max_retries');
+        $this->sslCertificate = Config::get('ssl_certificate');
+        $this->userAgent = Config::get('user_agent');
+        $this->cookie = Config::get('cookie');
+        $this->cache = Config::get('request_cache');
+        $this->headers = Config::get('headers');
+        $this->maxExecutionTime = Config::get('max_execution_time');
+        $this->connectionTimeout = Config::get('connection_timeout');
+        $this->interface = Config::get('interface');
+        $this->utf8 = Config::get('utf8');
 
         if ( $url ) $this->setUrl($url);
     }
@@ -126,7 +126,7 @@ class Request extends Base {
     public function getExecutionTime() { return $this->elapsed; }
 
     public function newRetry() {
-        if ( ++$this->retries > $this->config('maxretries') ) return false;
+        if ( ++$this->retries > $this->maxRetries ) return false;
         $this->setStatus(self::STATUS_NONE);
         return $this->retries;
     }
@@ -199,7 +199,7 @@ class Request extends Base {
     }
 
     private function setResponse($response, $noCache = false) {
-        if ( !$noCache ) $this->setToCache($response);
+        //if ( !$noCache ) $this->setToCache($response);
         if ( !$response ) $this->response = false;
         
         if ( $this->utf8 ) { 
@@ -241,7 +241,9 @@ class Request extends Base {
 
     private function getFromCache() {
         if ( !$this->cache ) return false;
-        if ( !$cache = $this->readCache($this->getId(), true) ) return false;
+        return false;
+        
+        //if ( !$cache = $this->readCache($this->getId(), true) ) return false;
         $this->setResponseCode(200);
         $this->setResponse($cache, true); 
         $this->setStatus(self::STATUS_CACHED);

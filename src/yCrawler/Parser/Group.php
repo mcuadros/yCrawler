@@ -1,5 +1,6 @@
 <?php
-namespace yCrawler;
+namespace yCrawler\Parser;
+use yCrawler\Parser\Item;
 
 /**
  * Parser_Group es una clase que compondrá Parser_Base, y a su vez, es una composición de Parser_Item.
@@ -7,7 +8,7 @@ namespace yCrawler;
  * El objetivo de un Parser_Group, es definir una composición de Parser_Item, que Parser_Base pueda
  * interpretar para obtener un único resultado.
  */
-class Parser_Group {
+class Group {
     
     /**
      * Array de objetos Parser_Item, cuya interpretación definirán el resultado de la evaluación del Parser_Group

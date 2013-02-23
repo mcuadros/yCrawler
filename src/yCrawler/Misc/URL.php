@@ -12,7 +12,7 @@ class URL {
         return preg_match('~\.(?:'.$extensions.')(?:$|\?|&|\#)~i',$filename)==1;  
     }
 
-    public static function URL($url, $origin) {
+    public static function absolutize($url, $origin) {
         //Clean the fragment in the url
         if ( $fragment = parse_url($url,PHP_URL_FRAGMENT) ) {
             $url = str_replace('#' . $fragment, '', $url);
