@@ -82,21 +82,6 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame('{"origin": "24.127.96.129"}' . PHP_EOL, $result[0]['value']);
     }
 
-    public function testEvaluateXPathAttribute() {
-        $url = 'http://httpbin.org/';
-
-        $doc = $this->createDocument($url);
-        $this->assertSame(4, count($doc->evaluateXPath('//h3', 'id')));
-        $this->assertSame(1, count($doc->evaluateXPath('//h3[1]', 'id')));
-
-        $result = $doc->evaluateXPath('//h3[1]', 'id'); 
-        $this->assertTrue(isset($result[0]['value']));
-        $this->assertFalse(isset($result[0]['node']));
-        $this->assertFalse(isset($result[0]['dom']));
-
-        $this->assertSame('-curl-http-httpbin-org-ip', $result[0]['value']);
-    }
-
     public function testEvaluateRegExp() {
         $url = 'http://httpbin.org/';
 

@@ -11,7 +11,6 @@ namespace yCrawler;
  * @todo: ¿tiene sentido que la clase sea instanciada? ¿podría ser abstracta?
  */
 class Parser_Item_Modifier {
-    
     const BOOLEAN_POSITIVE = true;
     const BOOLEAN_NEGATIVE = false;
 

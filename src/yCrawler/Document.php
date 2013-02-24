@@ -36,7 +36,7 @@ class Document extends Request {
         if ( !$this->isIndexable() ) return false;
 
         if ( !$this->parser->getLinksItems() ) {
-            $this->parser->createLinksItem('//a')->setAttribute('href');
+            $this->parser->createLinksItem('//a/@href');
         }
 
         foreach($this->parser->getLinksItems() as $item) { 
@@ -62,7 +62,7 @@ class Document extends Request {
         return $this;
     }
 
-    public function evaluateXPath($expression, $attribute = false) {
+    public function evaluateXPath($expression) {
         if ( !$this->makeRequest() ) return false; 
 
         $output = Array();
@@ -72,17 +72,11 @@ class Document extends Request {
         if ( $result->length == 0 )  return null;
 
         foreach ($result as $node) {
-            if (!$attribute) {
-                $output[] = Array(
-                    'value' => $node->nodeValue,
-                    'node' => $node,
-                    'dom' => &$this->dom   
-                );
-            } else {
-                $output[] = Array(
-                    'value' =>  $node->getAttribute($attribute)   
-                );
-            }
+            $output[] = Array(
+                'value' => $node->nodeValue,
+                'node' => $node,
+                'dom' => &$this->dom   
+            );
         }
 
         if ( count($output) == 0 ) return null;
