@@ -74,7 +74,7 @@ class Document extends Request {
         foreach ($result as $node) {
             $output[] = Array(
                 'value' => $node->nodeValue,
-                'node' => $node,
+                'node' => &$node,
                 'dom' => &$this->dom   
             );
         }

@@ -126,4 +126,15 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(122.0, $result[0]['value']);
         $this->assertSame(12112.0, $result[1]['value']);
     }
+
+    function testJoin() {
+        $closure = Scalar::join();
+        $result = array(
+            array('value' => 'A'),
+            array('value' => 'B'),
+        );
+
+        $closure($result);
+        $this->assertSame('AB', $result[0]['value']);
+    }
 }

@@ -4,12 +4,20 @@ namespace yCrawler\Misc;
 class URL { 
     static $imageExtensions = Array('jpg','jpeg','png','gif');
 
-    public static function Image($filename) {
+    public static function isImage($filename) {
         if ( !$filename ) { return false; }
         
         $extensions=implode('|',self::$imageExtensions);
         //casa con imágenes seguidas de "?" o "#" o "&"
-        return preg_match('~\.(?:'.$extensions.')(?:$|\?|&|\#)~i',$filename)==1;  
+        return preg_match('~\.(?:'.$extensions.')(?:$|\?|&|\#)~i',$filename) == 1;  
+    }
+
+    public static function fromStyle($style) {
+        if ( preg_match('~url\s*\([\'\"\s]*([^\'\"]+?)[\'\"\s]*\)~', $style, $url) ) {
+            return $url[1];
+        }
+        
+        return false;
     }
 
     public static function absolutize($url, $origin) {

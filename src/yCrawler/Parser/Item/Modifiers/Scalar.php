@@ -32,4 +32,23 @@ final class Scalar {
             }
         };
     }
+
+    public static function join($glue = '') {
+        return function(array &$results) use ($glue) {
+            $output = array();
+            foreach($results as &$result) $output[] = $result['value'];
+
+            $results = Array(
+                Array('value' => implode($glue, $output))
+            );
+        };
+
+        if ( !$value ) return false;
+        $output=Array();
+        foreach($value as &$data) $output[] = $data['value'];
+        $value = Array(Array(
+            'value' => implode($glue, $output)
+        ));
+        return true;
+    }
 }
