@@ -42,8 +42,6 @@ class Item {
     }
 
     public function evaluate(Document $document) {
-        $result = array();
-
         switch($this->type) {
             case self::TYPE_XPATH:
                 $result = $document->evaluateXPath($this->pattern);
@@ -57,6 +55,8 @@ class Item {
         }
 
         $this->applyModifiers($result, $document);
+
+        if ( !$result ) return array();
         return $result; 
     }
 
