@@ -1,5 +1,6 @@
 <?php
 namespace yCrawler;
+use yCrawler\Parser\Item\Modifiers\Scalar;
 use yCrawler\Misc\URL;
 use yCrawler\Document;
 
@@ -154,7 +155,7 @@ class Document extends Request {
         if ( !$verifyItems = $this->parser->getVerifyItems() ) return true;
 
         foreach($verifyItems as &$item) {
-            $item[0]->setModifier('boolean', $item[1]);
+            $item[0]->setModifier(Scalar::boolean($item[1]));
             if ( !$item[0]->evaluate($this) ) return false;
         }
 
@@ -166,7 +167,7 @@ class Document extends Request {
         if ( !$followItems = $this->parser->getFollowItems() ) return true;
 
         foreach($followItems as &$item) {
-            $item[0]->setModifier('boolean', $item[1]);
+            $item[0]->setModifier(Scalar::boolean($item[1]));
             if ( !$item[0]->evaluate($this) ) return false;
         }
 

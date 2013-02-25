@@ -54,15 +54,14 @@ class Item {
                 break;
         }
 
+        if ( !$result ) $result = array();
         $this->applyModifiers($result, $document);
 
-        if ( !$result ) return array();
         return $result; 
     }
 
     private function applyModifiers(&$result, Document &$document) {
         if ( !$this->modifiers ) return true;
-        
         foreach( $this->modifiers as $modifier) $modifier($result, $document);
         return true;
     }

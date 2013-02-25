@@ -1,5 +1,6 @@
 <?php
 namespace yCrawler;
+use yCrawler\Document;
 use yCrawler\Misc\URL;
 use yCrawler\Parser\Item;
 use yCrawler\Parser\Group;
@@ -122,11 +123,12 @@ abstract class Parser {
 
         return false;
     }
-    
-    public function getStartupURLs() { return $this->startup; }
-    public function getURLPatterns() { return $this->urlPatterns; }
+
     public function &getFollowItems() { return $this->items['follow']; }
     public function &getLinksItems() { return $this->items['links']; }
     public function &getVerifyItems() { return $this->items['verify']; }
     public function &getValueItems() { return $this->items['values']; }
+    
+    public function getStartupURLs() { return $this->startup; }
+    public function getURLPatterns() { return $this->urlPatterns; }
 }

@@ -10,11 +10,47 @@
         "ext-pcntl": "*",
         "monolog/monolog": "1.4.0",
         "pimple/pimple": "v1.0.1",
-        "yunait/forceutf8": "dev-master"
+        "yunait/forceutf8": "dev-master",
+        "amal/AzaThread": "dev-master"
     },
     "autoload": {
         "psr-0": {
             "yCrawler": "src/"
+        }
+    },
+
+
+    "repositories": {
+        "amal": {
+            "type": "package",
+            "package": {
+                "source": {
+                    "url": "git@github.com:amal/AzaThread.git",
+                    "type": "git",
+                    "reference": "master"
+                },
+                "version": "master",
+                "name": "amal/AzaThread",
+                "homepage": "https://github.com/amal/AzaThread",
+                "type": "library",
+                "description": "AzaThread is a simple and powerful threads emulation component for PHP.",
+                "require": {
+                    "php": ">=5.3.3",
+                    "ext-posix": "*",
+                    "ext-libevent": "*",
+                    "ext-pcntl": "*"
+                },
+                "authors": [
+                    {
+                        "name":  "Amal Samally",
+                        "email": "amal.samally@gmail.com"
+                    }
+                ],
+                "target-dir": "Aza",
+                "autoload": {
+                    "psr-0": { "Aza\\Components": "" }
+                }
+            }
         }
     }
 }
