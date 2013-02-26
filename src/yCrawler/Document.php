@@ -57,7 +57,7 @@ class Document extends Request {
             $this->evaluate();
 
             $this->parsed = true;
-            $this->parser->parseCallback($this);
+            $this->parser->onParse($this);
         }    
 
         return $this;

@@ -94,12 +94,12 @@ abstract class Parser {
         return $group;
     }
 
-    public function setParseCallback(\Closure $closure) {
+    public function onParse(\Closure $closure) {
         $this->parseCallback = &$closure;
         return true;
     }
 
-    public function parseCallback(Document $document) {
+    public function parsed(Document $document) {
         if ( !$this->parseCallback ) return null;
 
         $closure = $this->parseCallback;
@@ -130,5 +130,8 @@ abstract class Parser {
     public function &getValueItems() { return $this->items['values']; }
     
     public function getStartupURLs() { return $this->startup; }
-    public function getURLPatterns() { return $this->urlPatterns; }
+    public function getURLPatterns() { 
+        $this->configure();
+        return $this->urlPatterns; 
+    }
 }

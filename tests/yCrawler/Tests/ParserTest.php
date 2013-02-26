@@ -128,13 +128,13 @@ class ParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('yCrawler\Parser\Group', $items['test']);
     }
 
-    public function testSetParseCallback() {
+    public function testOnParse() {
         $parser = new ParserTest_ParserMock();
-        $parser->setParseCallback(function($document) {
+        $parser->onParse(function($document) {
             return get_class($document);
         });
 
-        $result = $parser->parseCallback(new Document('http://test.com'));
+        $result = $parser->parsed(new Document('http://test.com'));
         $this->assertSame('yCrawler\Document', $result);
     }
 }

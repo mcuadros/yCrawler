@@ -3,6 +3,7 @@ namespace yCrawler\Tests;
 use yCrawler\Crawler;
 use yCrawler\Parser;
 use yCrawler\Queue;
+use yCrawler\Document;
 
 class CrawlerTest extends  \PHPUnit_Framework_TestCase { 
     public function createCrawler() {
@@ -14,7 +15,7 @@ class CrawlerTest extends  \PHPUnit_Framework_TestCase {
         $crawler = $this->createCrawler();
         $this->assertTrue($crawler->add(new CrawlerTest_ParserMock));
     }  
-    
+
     /**
      * @expectedException RuntimeException
      */
@@ -41,6 +42,20 @@ class CrawlerTest extends  \PHPUnit_Framework_TestCase {
             $crawler->get('CrawlerTest_ParserMock')
         );
     }  
+
+    public function testOnParse() {
+        $parser = new CrawlerTest_ParserMock;
+
+        $crawler = $this->createCrawler();
+        $crawler->onParse(function($document) {
+            return get_class($document);
+        });
+
+        $crawler->add($parser);
+
+        $result = $parser->parsed(new Document('http://test.com'));
+        $this->assertSame('yCrawler\Document', $result);
+    }
 }
 
 class CrawlerTest_ParserMock extends Parser {
