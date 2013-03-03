@@ -1,9 +1,13 @@
 <?php
 namespace yCrawler;
 use yCrawler\Parser;
+use yCrawler\Crawler\ThreadPool;
 
 class Crawler {
+    private $initialized = false;
+    private $pool;
     private $queue;
+
     private $parsers = Array();
     private $parseCallback;
 
@@ -12,61 +16,65 @@ class Crawler {
     protected $_linksHistory = Array();
     protected $_start;
 
-    public function __construct(Queue $queue) {
+    public function __construct(Queue $queue, ThreadPool $pool) {
+        $pool->setQueue($queue);
+
+        $this->pool = $pool;
         $this->queue = $queue;
     }
 
-    public function add(Parser $parser) {
+    public function initialize() {
+        if ( $this->initialized ) return true;
+       
+        foreach($this->parsers as $parser) {
+            $this->queueDocs($parser->getStartupDocs());
+        }
+
+        return $this->initialized = time();
+    }
+
+    public function addParser(Parser $parser) {
         $tmp = explode('\\', get_class($parser));
         $name = end($tmp);
 
-        if ( $this->has($name) ) {
+        if ( $this->hasParser($name) ) {
             throw new \RuntimeException(
                 sprintf('A parser of "%s" class already loaded.', $name)
             );
         }
 
-        if ( $this->parseCallback ) $parsers->onParse($this->parseCallback);
+        if ( $this->parseCallback ) $parser->onParse($this->parseCallback);
 
         $this->parsers[$name] = $parser;
         return true;
     }
 
-    public function has($name) {
+    public function hasParser($name) {
         return isset($this->parsers[$name]);
     }
 
-    public function get($name) {
-        if ( !$this->has($name) ) return false;
+    public function getParser($name) {
+        if ( !$this->hasParser($name) ) return false;
         return $this->parsers[$name];
     }
 
-    public function queue($links) {
-
-    }
-
     public function onParse(\Closure $closure) {
-        $this->parseCallback = &$closure;
+        if ( $this->parseCallback ) {
+            foreach( $this->parsers as $parser ) $parser->onParse($this->parseCallback);
+        } 
+
+        $this->parseCallback = $closure;
         return true;
     }
 
+    private function queueDocs(array $documents) {        
+        foreach ($documents as $document) $this->queue->add($document);
+    }
 
     //TODO: si no hay getStartupURLs...
     public function run() {
-        $this->_start = time();
-        foreach($this->parsers as $parser) {
-            $parser->configure();
-            $this->addLinks($parser->getStartupURLs());
-        }
-
-        while(1) {
-            $waiting = $this->_process->getWaitingJobs();
-            $queue = count($this->_links);
-            if ( $waiting == 0 && $queue == 0 ) break;   
-            else if ( $waiting >= Config::get('max_threads') ) sleep(1);
-            else if ( $queue > 0 ) $this->sendJob();
-            else { sleep(1); }
-        }
+        $this->initialize();
+        $this->pool->start();
     }
 
 
@@ -99,13 +107,6 @@ class Crawler {
         return true;
     }
 
-    private function queueDocuments(array $links, Parser $parser) {        
-        $links = array_diff($links, $this->_linksHistory);
-        $this->_linksHistory = array_merge($this->_linksHistory, $links);
-        $this->_links =  array_merge($this->_links, $links);
-
-        return $links;
-    }
 
 /*
 $pool = new ThreadPool('TestThreadReturnFirstArgument', $threads);

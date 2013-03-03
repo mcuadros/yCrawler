@@ -129,9 +129,19 @@ abstract class Parser {
     public function &getVerifyItems() { return $this->items['verify']; }
     public function &getValueItems() { return $this->items['values']; }
     
-    public function getStartupURLs() { return $this->startup; }
     public function getURLPatterns() { 
         $this->configure();
         return $this->urlPatterns; 
+    }
+
+    public function getStartupDocs() { 
+        $this->configure();
+
+        $documents = array();
+        foreach ( $this->startup as $url ) {
+            $documents[] = new Document($url, $this);
+        }
+
+        return $documents;
     }
 }

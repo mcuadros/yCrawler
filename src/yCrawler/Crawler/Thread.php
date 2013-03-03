@@ -1,5 +1,6 @@
 <?php
-use Aza\Components\Cli\Thread\Thread as AzaThread;
+namespace yCrawler\Crawler;
+use Aza\Components\Thread\Thread as AzaThread;
 
 class Thread extends AzaThread {
     protected function process() {

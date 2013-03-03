@@ -11,7 +11,8 @@
         "monolog/monolog": "1.4.0",
         "pimple/pimple": "v1.0.1",
         "yunait/forceutf8": "dev-master",
-        "amal/AzaThread": "dev-master"
+        "aza/libevent": "~1.0",
+        "aza/thread": "~1.0"
     },
     "autoload": {
         "psr-0": {
