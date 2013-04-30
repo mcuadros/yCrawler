@@ -1,25 +1,123 @@
 <?php
 namespace yCrawler;
+use yCrawler\Parser\Item\Modifiers\Scalar;
+use yCrawler\Misc\URL;
+use yCrawler\Document;
 
-/**
- * Document es  
- */
 class Document extends Request {
-    protected $_parser;
-    protected $_dom;
-    protected $_xpath;
+    protected $parser;
+    protected $dom;
+    protected $xpath;
 
-    protected $_values = Array();
-    protected $_links = Array();
+    protected $values = Array();
+    protected $links = Array();
 
-    protected $_verified;
-    protected $_indexable;
-    protected $_parsed;
+    protected $verified;
+    protected $indexable;
+    protected $parsed;
 
-    public function __construct($url, Parser_Base &$parser) {
+    public function __construct($url, Parser $parser = null) {
         parent::__construct($url);
-        return $this->_parser = &$parser;
+        return $this->parser = $parser;
     }
+
+    public function evaluate() {
+        $this->parser->configure();
+        if ( !$this->isVerified() ) return false;
+
+        foreach($this->parser->getValueItems() as $name => $item) { 
+            foreach($item->evaluate($this) as $data) $this->addValue($name, $data);
+        }
+
+        return $this->getValues();
+    }
+
+    public function links() {
+        $this->parser->configure();
+        if ( !$this->isIndexable() ) return false;
+
+        if ( !$this->parser->getLinksItems() ) {
+            $this->parser->createLinksItem('//a/@href');
+        }
+
+        foreach($this->parser->getLinksItems() as $item) { 
+            foreach($item->evaluate($this) as $data) {
+                $url = URL::absolutize($data['value'], $this->getUrl());
+                if ( $url && $this->parser->matchURL($url) ) $this->addLink($url);
+            }
+        }
+
+        return $this->getLinks();
+    }
+    
+    public function parse() {
+        if ( $this->parsed ) return $this;
+        if ( $this->parser->configure() ) {
+            $this->links();
+            $this->evaluate();
+
+            $this->parsed = true;
+            $this->parser->onParse($this);
+        }    
+
+        return $this;
+    }
+
+    public function evaluateXPath($expression) {
+        if ( !$this->makeRequest() ) return false; 
+
+        $output = Array();
+        $result = $this->xpath->evaluate($expression);
+        
+        if ( !$result ) return null;
+        if ( $result->length == 0 )  return null;
+
+        foreach ($result as $node) {
+            $output[] = Array(
+                'value' => $node->nodeValue,
+                'node' => &$node,
+                'dom' => &$this->dom   
+            );
+        }
+
+        if ( count($output) == 0 ) return null;
+        return $output;
+    }
+
+    public function evaluateRegExp($expression) {
+        if ( !$this->makeRequest() ) return false;          
+        if ( !preg_match_all($expression, $this->getResponse(), $matches) ) return false;
+
+        foreach(end($matches) as $index => $value) {
+            $output[] = Array(
+                'value' =>  $value,
+                'full' =>  $matches[0][$index]
+            );
+        } 
+
+        if ( count($output) == 0 ) return null;
+        return $output;
+    }
+
+    public function getParser() { return $this->parser; }
+    public function getLinks() { return array_keys($this->links); }
+    public function getValues() { return $this->values; }
+    public function getValue($name) { 
+        if ( !isset($this->values[$name]) ) return false; 
+        return $this->values[$name]; 
+    }
+
+    public function isVerified() {
+        if ( $this->verified === null ) $this->verified = $this->verify();
+        return $this->verified;
+    }
+    
+    public function isIndexable() {
+        if ( $this->indexable === null ) $this->indexable = $this->follow();
+        return $this->indexable;
+    }
+    
+    public function isParsed() { return $this->parsed; }
 
     protected function makeRequest() {
         if ( $this->getStatus() >= Request::STATUS_DONE ) return true;
@@ -32,209 +130,59 @@ class Document extends Request {
     }
 
     protected function createDOM() {
-        //We dont want get XML errors, bye bye
         libxml_use_internal_errors(true); 
         libxml_clear_errors();
 
-        $this->_dom = new \DOMDocument(); 
+        $this->dom = new \DOMDocument(); 
         
         if ( Config::get('utf8_dom_hack') ) {
-            return $this->_dom->loadHtml('<?xml encoding="UTF-8">' . str_ireplace('utf-8','', $this->getResponse()));
+            return $this->dom->loadHtml(sprintf(
+                '<?xml encoding="UTF-8">%s</xml>',
+                str_ireplace('utf-8','', $this->getResponse())
+            ));
         }
 
-        return $this->_dom->loadHtml($this->getResponse());
+        return $this->dom->loadHtml($this->getResponse());
     }
 
     protected function createXPath() {
-        $this->_xpath = new \DOMXPath($this->_dom); 
-        if ( $this->_xpath ) { return true; } else { return false; }
+        $this->xpath = new \DOMXPath($this->dom); 
+        if ( $this->xpath ) { return true; } else { return false; }
     }
 
-    public function &getParser() { return $this->_parser; }
-    public function setParser(Parser_Base &$parser) { 
-        return $this->_parser = &$parser;
-    }
-
-    public function getLinks() { return $this->_links; }
-    public function addLink($url,$override=false) {
-        if($override){
-            $this->_links=(Array)$url;
-        } else {
-            $this->_links[] = $url;
-        }
-        $this->_links = array_values(array_unique($this->_links));
-        $this->data('set', 'links', count($this->_links));
-        return $url;
-    }
-
-    public function getValues() { return $this->_values; }
-    public function getValue($name) { 
-        if ( !array_key_exists($name, $this->_values) ) return false; 
-        return $this->_values[$name]; 
-    }
-
-    public function addValue($name, $data, $override = false) {
-        $this->data('add', 'values');
-        if ( $override ) $this->_values[$name] = Array();
-        if ( is_array($data) )  return $this->_values[$name][] = $data['value'];
-        return $this->_values[$name][] = $data;
-    }
-    
-    /**
-     * Verifica si este documento es objetivo del parseo.
-     * @return boolean
-     */
-    public function isVerified() {
-        if ( $this->_verified === null ) {
-            $this->_verified = $this->verify();
-            $this->data('set', 'verified', $this->_verified);
-        }
-    
-        return $this->_verified;
-    }
-    
-    public function isIndexable() {
-        if ( $this->_indexable === null ) {
-            $this->_indexable = $this->follow();
-            $this->data('set', 'indexable', $this->_indexable);
-    }
-
-        return $this->_indexable;
-    }
-    
     protected function verify() {
-
         if ( !$this->makeRequest() ) return false; 
-        if ( !$verifyItems = $this->_parser->getVerifyItems() ) return false;
+        if ( !$verifyItems = $this->parser->getVerifyItems() ) return true;
 
         foreach($verifyItems as &$item) {
-            $item[0]->setModifier('boolean', $item[1]);
-            if ( !$item[0]->evaluate($this) ) {
-                Output::log('Varification negative: ' . $item[0], Output::DEBUG);
-                return false;
-            }
+            $item[0]->setModifier(Scalar::boolean($item[1]));
+            if ( !$item[0]->evaluate($this) ) return false;
         }
 
         return true;
     }
-    /**
-     * Verifica si este documento es indexable.
-     * @return boolean
-     */
+
     protected function follow() {
         if ( !$this->makeRequest() ) return false;
-        if ( !$followItems = $this->_parser->getFollowItems() ) return true;
+        if ( !$followItems = $this->parser->getFollowItems() ) return true;
 
         foreach($followItems as &$item) {
-            $item[0]->setModifier('boolean', $item[1]);
-            if ( !$item[0]->evaluate($this) ) {
-                Output::log('Follow negative: ' . $item[0], Output::DEBUG);
-                return false;
-            }
+            $item[0]->setModifier(Scalar::boolean($item[1]));
+            if ( !$item[0]->evaluate($this) ) return false;
         }
 
         return true;
     }
 
-    /**
-     * Extrae todos los valores definidos en el parser, del documento dado y
-     * los almacena en el documento. Devuelve un array con los dato extraidos.
-     * @return array
-     */
-    public function evaluate() {
-        if ( !$this->isVerified() ) return false;
-
-        $valueItems = (Array)$this->_parser->getValueItems();
-        foreach($valueItems  as $name => &$item) { 
-            foreach((Array)$item->evaluate($this) as $data) $this->addValue($name, $data);
-        }
-
-        return $this->getValues();
-    }
-
-    /**
-     * Extrae todos los enlaces siguiendo las reglas definidas en el parser, del 
-     * documento dado y los almacena en el documento. Devuelve un array con los 
-     * enlaces.
-     * @return array
-     */
-    public function links() {
-        if ( !$this->isIndexable() ) return false;
-
-
-        if ( !$this->_parser->getLinksItems() ) {
-            $this->_parser->createLinksItem('//a')->setAttribute('href');
-        }
-
-        $linksItems = (Array)$this->_parser->getLinksItems();
-        foreach($linksItems as &$item) { 
-            foreach((Array)$item->evaluate($this) as $data) {
-                $url = Misc_URL::URL($data['value'], $this->getUrl());
-                if ( $url && $this->_parser->matchURL($url) ) $this->addLink($url);
-            }
-        }
-
-        return $this->getLinks();
+    protected function addValue($name, $data, $override = false) {
+        if ( $override ) $this->values[$name] = Array();
+        if ( is_array($data) ) return $this->values[$name][] = $data['value'];
+        return $this->values[$name][] = $data;
     }
     
-    /**
-     * Realiza un evaluate() y un links() sobre el documento.
-     * @return Document
-     */
-    public function &parse() {
-        if ( $this->_parsed ) return $this;
-        if ( $this->_parser->configure() ) {
-            $this->links();
-            $this->evaluate();
-
-            $this->_parsed = true;
-            $this->_parser->parseCallback($this);
-        }    
-
-        return $this;
-    }
-
-    public function evaluateXPath($expression, $attribute = false) {
-        if ( !$this->makeRequest() ) return false; 
-
-        $output = Array();
-        $result = $this->_xpath->evaluate($expression);
-        
-        if ( !$result ) return null;
-        if ( $result->length == 0 )  return null;
-
-        foreach ($result as $node) {
-            if (!$attribute) {
-                $output[] = Array(
-                    'value' => $node->nodeValue,
-                    'node' => $node,
-                    'dom' => &$this->_dom   
-                );
-            } else {
-                $output[] = Array(
-                    'value' =>  $node->getAttribute($attribute)   
-                );
-            }
-        }
-
-        if ( count($output) == 0 ) return null;
-        return $output;
-    }
-
-    //TODO: preg_match_all
-    public function evaluateRegExp($expression) {
-        if ( !$this->makeRequest() ) return false; 
-         
-        if ( !preg_match($expression, $this->getResponse(), $matches) ) return false;
-
-        if ( count($matches) != 0 ) { 
-            return Array(
-                Array('value' => $matches[count($matches)-1])
-            ); 
-        } else {
-            return false; 
-        }
-    }      
-
+    protected function addLink($url, $override = false) {
+        if( $override ) $this->links = array($url => true);
+        else $this->links[$url] = true;
+        return $url;
+    }    
 }
-        

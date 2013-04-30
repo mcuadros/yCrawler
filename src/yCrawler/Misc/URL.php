@@ -1,23 +1,26 @@
 <?php 
-namespace yCrawler;
+namespace yCrawler\Misc;
 
-/**
- * Misc_URL es una clase que define métodos (estáticos) útiles para procesar URIs
- * 
- * @todo: ¿tiene sentido que la clase sea instanciada? ¿podría ser abstracta?
- */
-class Misc_URL { 
+class URL { 
     static $imageExtensions = Array('jpg','jpeg','png','gif');
 
-    public static function Image($filename) {
+    public static function isImage($filename) {
         if ( !$filename ) { return false; }
         
         $extensions=implode('|',self::$imageExtensions);
         //casa con imágenes seguidas de "?" o "#" o "&"
-        return preg_match('~\.(?:'.$extensions.')(?:$|\?|&|\#)~i',$filename)==1;  
+        return preg_match('~\.(?:'.$extensions.')(?:$|\?|&|\#)~i',$filename) == 1;  
     }
 
-    public static function URL($url, $origin) {
+    public static function fromStyle($style) {
+        if ( preg_match('~url\s*\([\'\"\s]*([^\'\"]+?)[\'\"\s]*\)~', $style, $url) ) {
+            return $url[1];
+        }
+        
+        return false;
+    }
+
+    public static function absolutize($url, $origin) {
         //Clean the fragment in the url
         if ( $fragment = parse_url($url,PHP_URL_FRAGMENT) ) {
             $url = str_replace('#' . $fragment, '', $url);
