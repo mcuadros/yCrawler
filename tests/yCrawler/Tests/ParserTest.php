@@ -3,14 +3,17 @@ namespace yCrawler\Tests;
 use yCrawler\Document;
 use yCrawler\Parser;
 
-class ParserTest extends \PHPUnit_Framework_TestCase { 
-    public function testConfigure() {
+class ParserTest extends \PHPUnit_Framework_TestCase
+{
+    public function testConfigure()
+    {
         $parser = new ParserTest_ParserMock();
         $this->assertTrue($parser->configure());
         $this->assertTrue($parser->configure());
     }
 
-    public function testSetStartupURL() {
+    public function testSetStartupURL()
+    {
         $url = 'http://test.com/';
 
         $parser = new ParserTest_ParserMock();
@@ -18,26 +21,29 @@ class ParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertSame(1, count($parser->getStartupURLs()));
     }
 
-    public function testSetURLPattern() {
+    public function testSetURLPattern()
+    {
         $regexp = '/httpbin/';
 
         $parser = new ParserTest_ParserMock();
         $this->assertSame($regexp, $parser->setURLPattern($regexp));
-        $this->assertSame(1, count($parser->getURLPatterns()));        
+        $this->assertSame(1, count($parser->getURLPatterns()));
     }
 
-    public function testMatchURL() {
+    public function testMatchURL()
+    {
         $url = 'http://test.com/';
         $regexp = '/httpbin/';
-        
+
         $parser = new ParserTest_ParserMock();
         $this->assertFalse($parser->matchURL('http://test.com/'));
     }
 
-    public function testMatchURLDefault() {
+    public function testMatchURLDefault()
+    {
         $url = 'http://test.com/';
         $regexp = '/httpbin/';
-        
+
         $parser = new ParserTest_ParserMock();
         $parser->setStartupURL($url);
         $this->assertTrue($parser->matchURL('http://test.com/'));
@@ -47,7 +53,8 @@ class ParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertSame('~^https?://test\.com~', $patterns[0]);
     }
 
-    public function testCreateLinkFollowItem() {
+    public function testCreateLinkFollowItem()
+    {
         $pattern = '//a';
 
         $parser = new ParserTest_ParserMock();
@@ -65,7 +72,8 @@ class ParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($items[2][1]);
     }
 
-    public function testCreateVerifyItem() {
+    public function testCreateVerifyItem()
+    {
         $pattern = '//a';
 
         $parser = new ParserTest_ParserMock();
@@ -83,7 +91,8 @@ class ParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($items[2][1]);
     }
 
-    public function testCreateLinksItem() {
+    public function testCreateLinksItem()
+    {
         $pattern = '//a';
 
         $parser = new ParserTest_ParserMock();
@@ -102,7 +111,8 @@ class ParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertSame(1, count($items));
     }
 
-    public function testCreateValueItem() {
+    public function testCreateValueItem()
+    {
         $pattern = '//a';
 
         $parser = new ParserTest_ParserMock();
@@ -116,7 +126,8 @@ class ParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('yCrawler\Parser\Item', $items['test']);
     }
 
-    public function testCreateValueGroup() {
+    public function testCreateValueGroup()
+    {
         $pattern = '//a';
 
         $parser = new ParserTest_ParserMock();
@@ -128,7 +139,8 @@ class ParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('yCrawler\Parser\Group', $items['test']);
     }
 
-    public function testOnParse() {
+    public function testOnParse()
+    {
         $parser = new ParserTest_ParserMock();
         $parser->onParse(function($document) {
             return get_class($document);
@@ -139,8 +151,9 @@ class ParserTest extends \PHPUnit_Framework_TestCase {
     }
 }
 
-class ParserTest_ParserMock extends Parser {
-    public function initialize() {
-
+class ParserTest_ParserMock extends Parser
+{
+    public function initialize()
+    {
     }
 }

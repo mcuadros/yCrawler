@@ -7,47 +7,54 @@ use yCrawler\Document;
 use yCrawler\Crawler\Thread;
 use yCrawler\Crawler\ThreadPool;
 
-class CrawlerTest extends  \PHPUnit_Framework_TestCase { 
-    public function createCrawler() {
+class CrawlerTest extends  \PHPUnit_Framework_TestCase
+{
+    public function createCrawler()
+    {
         $this->queue = new Queue();
         $this->pool = new ThreadPool('yCrawler\Crawler\Thread', 5);
 
         return new Crawler($this->queue, $this->pool);
     }
 
-    public function testAdd() {
+    public function testAdd()
+    {
         $crawler = $this->createCrawler();
         $this->assertTrue($crawler->addParser(new CrawlerTest_ParserMock));
-    }  
+    }
 
     /**
      * @expectedException RuntimeException
      */
-    public function testAddTwice() {
+    public function testAddTwice()
+    {
         $crawler = $this->createCrawler();
         $crawler->addParser(new CrawlerTest_ParserMock);
         $crawler->addParser(new CrawlerTest_ParserMock);
 
-    }  
+    }
 
-    public function testHas() {
+    public function testHas()
+    {
         $crawler = $this->createCrawler();
         $crawler->addParser(new CrawlerTest_ParserMock);
 
         $this->assertTrue($crawler->hasParser('CrawlerTest_ParserMock'));
-    }  
+    }
 
-    public function testGet() {
+    public function testGet()
+    {
         $crawler = $this->createCrawler();
         $crawler->addParser(new CrawlerTest_ParserMock);
 
         $this->assertInstanceOf(
-            'yCrawler\Parser', 
+            'yCrawler\Parser',
             $crawler->getParser('CrawlerTest_ParserMock')
         );
-    }  
+    }
 
-    public function testOnParse() {
+    public function testOnParse()
+    {
         $parser = new CrawlerTest_ParserMock;
 
         $crawler = $this->createCrawler();
@@ -61,7 +68,8 @@ class CrawlerTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame('yCrawler\Document', $result);
     }
 
-    public function testInitialize() {
+    public function testInitialize()
+    {
         $crawler = $this->createCrawler();
         $crawler->addParser(new CrawlerTest_ParserMock);
 
@@ -71,7 +79,8 @@ class CrawlerTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame('http://httpbin.org/', $doc->getUrl());
     }
 
-    public function testRun() {
+    public function testRun()
+    {
         $crawler = $this->createCrawler();
         $crawler->addParser(new CrawlerTest_ParserMock);
 
@@ -79,8 +88,10 @@ class CrawlerTest extends  \PHPUnit_Framework_TestCase {
     }
 }
 
-class CrawlerTest_ParserMock extends Parser {
-    public function initialize() {
+class CrawlerTest_ParserMock extends Parser
+{
+    public function initialize()
+    {
         $this->setStartupURL('http://httpbin.org/');
 
         $this->createLinkFollowItem('//a');

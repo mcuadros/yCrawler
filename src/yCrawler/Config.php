@@ -1,8 +1,9 @@
 <?php
 namespace yCrawler;
 
-class Config {
-    static $default = Array(
+class Config
+{
+    public static $default = Array(
         'max_threads' => Array('int', 100),
         'max_threads_by_parser' => Array('int', 10),
         'max_execution_time' => Array('int', 20),
@@ -23,27 +24,31 @@ class Config {
         'headers' => Array('boolean', true),
     );
 
-    static $config = Array();
+    public static $config = Array();
 
-    public static function loadConfig(array $config) {
-        foreach($config as $setting => $value) {
+    public static function loadConfig(array $config)
+    {
+        foreach ($config as $setting => $value) {
             self::set($setting, $value);
         }
 
         return $this->getConfig();
     }
 
-    public static function getConfig() {
+    public static function getConfig()
+    {
         return self::$config;
     }
 
-    public static function get($setting) {
+    public static function get($setting)
+    {
         if ( isset(self::$config[$setting]) ) return self::$config[$setting][1];
         if ( isset(self::$default[$setting]) ) return self::$default[$setting][1];
         return null;
     }
 
-    public static function set($setting, $value) {
+    public static function set($setting, $value)
+    {
         if ( !isset(self::$default[$setting]) ) {
             throw new \InvalidArgumentException(sprintf('Unknown setting "%s"', $setting));
         }
@@ -51,7 +56,8 @@ class Config {
         if ( self::isValid($setting, $value) ) self::$config[$setting] = $value;
     }
 
-    public static function isValid($setting, &$value) {
+    public static function isValid($setting, &$value)
+    {
         $valid = false;
         $type = self::$default[$setting][0];
         switch ($type) {
@@ -64,15 +70,15 @@ class Config {
             case 'path':
                 if ( is_dir($value) || mkdir($value) ) $valid = true;
                 if ( $value[strlen($value)-1] == '/' ) $value[strlen($value)-1] = ' ';
-                break; 
+                break;
             case 'file':
                 if ( is_file($value) || touch($value) ) $valid = true; break;
         }
 
-        if ( !$valid ) {
+        if (!$valid) {
             throw new \InvalidArgumentException(sprintf(
-                'Invalid %s value "%s" in %s setting', 
-                $type, (string)$value, $setting
+                'Invalid %s value "%s" in %s setting',
+                $type, (string) $value, $setting
             ));
         }
 

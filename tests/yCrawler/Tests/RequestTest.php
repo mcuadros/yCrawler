@@ -1,14 +1,16 @@
 <?php
 namespace yCrawler\Tests;
 use yCrawler\Request;
-use yCrawler\Crawler;
 
-class RequestTest extends  \PHPUnit_Framework_TestCase { 
-    private function createRequest() {
+class RequestTest extends  \PHPUnit_Framework_TestCase
+{
+    private function createRequest()
+    {
         return new Request();
     }
 
-    public function testSetURL() {
+    public function testSetURL()
+    {
         $request = $this->createRequest();
         $request->setURL('http://www.yunait.com/');
 
@@ -18,38 +20,42 @@ class RequestTest extends  \PHPUnit_Framework_TestCase {
         $this->assertEquals('www.yunait.com', $request->getHost());
     }
 
-    public function testSetPost() {
+    public function testSetPost()
+    {
         $test = Array('test' => 'element');
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/post');
         $request->setPost($test);
         $request->call();
-        
+
         $response = json_decode($request->getResponse(), true);
         $this->assertEquals($test, $response['form']);
     }
 
-    public function testSetUserAgent() {
+    public function testSetUserAgent()
+    {
         $test = 'Uno cualquiera';
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/user-agent');
         $request->setUserAgent($test);
         $request->call();
-        
+
         $response = json_decode($request->getResponse(), true);
         $this->assertEquals('Uno cualquiera', $response['user-agent']);
     }
 
-    public function testSetHeaders() {
+    public function testSetHeaders()
+    {
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/user-agent');
         $request->setHeaders(true);
         $request->call();
-        
+
         $this->assertTrue(strlen($request->getResponseHeaders()) > 1);
     }
 
-    public function testSetMaxExecutionTime() {
+    public function testSetMaxExecutionTime()
+    {
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/delay/2');
         $request->setMaxExecutionTime(1);
@@ -58,7 +64,8 @@ class RequestTest extends  \PHPUnit_Framework_TestCase {
         $this->assertEquals(28, $request->getResponseCode());
     }
 
-    public function testSetCookie() {
+    public function testSetCookie()
+    {
         $test = sys_get_temp_dir() . '/' . 'cookie' . uniqid();
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/cookies/set?supercali=fristicoespialidoso');
@@ -73,7 +80,8 @@ class RequestTest extends  \PHPUnit_Framework_TestCase {
         $this->assertTrue(strpos($cookieContent, 'fristicoespialidoso') > 1);
     }
 
-    public function testGetResponseCode() {
+    public function testGetResponseCode()
+    {
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/status/418');
         $request->call();
@@ -81,7 +89,8 @@ class RequestTest extends  \PHPUnit_Framework_TestCase {
         $this->assertEquals(418, $request->getResponseCode());
     }
 
-    public function testGetExecutionTime() {
+    public function testGetExecutionTime()
+    {
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/status/418');
         $request->call();
@@ -89,6 +98,4 @@ class RequestTest extends  \PHPUnit_Framework_TestCase {
         $this->assertTrue($request->getExecutionTime() != null);
     }
 
-
 }
-

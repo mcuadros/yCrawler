@@ -2,18 +2,21 @@
 namespace yCrawler\Cache\Driver;
 use yCrawler\Cache\Driver;
 
-class APC implements Driver  {
-    public function set($key, $data, $ttl = 0) {
+class APC implements Driver
+{
+    public function set($key, $data, $ttl = 0)
+    {
         $content = array(
             'time' => time(),
-            'ttl' => $ttl,          
+            'ttl' => $ttl,
             'data' => $data
         );
-        
-        return apc_store((string)$key, $content, $ttl);
+
+        return apc_store((string) $key, $content, $ttl);
     }
 
-    public function get($key) {
+    public function get($key)
+    {
         if ( !$result = apc_fetch($key) ) {
             return false;
         }
@@ -22,11 +25,13 @@ class APC implements Driver  {
         return $result['data'];
     }
 
-    public function delete($key) {
+    public function delete($key)
+    {
         return apc_delete($key);
     }
 
-    public function info($key) {
+    public function info($key)
+    {
         if ( !$result = apc_fetch($key) ) {
             return false;
         }
@@ -34,7 +39,8 @@ class APC implements Driver  {
         return $result;
     }
 
-    public function clear() {
+    public function clear()
+    {
         return apc_clear_cache('user');
     }
 }

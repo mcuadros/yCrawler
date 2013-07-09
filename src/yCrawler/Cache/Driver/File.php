@@ -1,60 +1,69 @@
 <?php
 namespace yCrawler\Cache\Driver;
 use yCrawler\Cache\Driver;
-use yCrawler\Crawler;
 use yCrawler\Config;
 
-class File implements Driver {
+class File implements Driver
+{
     private $path;
     private $depth;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->path = Config::get('cache_path');
         $this->depth = Config::get('cache_folder_depth');
         $this->dir($this->path);
     }
 
-    public function set($key, $data, $ttl = 0) {
+    public function set($key, $data, $ttl = 0)
+    {
         $content = array(
             'time' => time(),
-            'ttl' => $ttl,          
+            'ttl' => $ttl,
             'data' => $data
         );
-        
-        return $this->writeFile((string)$key, $content);
+
+        return $this->writeFile((string) $key, $content);
     }
 
-    public function get($key) {
+    public function get($key)
+    {
         if ( !$result = $this->readFile($key) ) {
             return false;
         }
 
         if ( $result['ttl'] > 0 && time() > $result['time'] + $result['ttl'] ) {
             $this->delete($key);
+
             return false;
         }
 
         if ( !is_array($result) ) return false;
         return $result['data'];
     }
-    
-    public function delete($key) {
+
+    public function delete($key)
+    {
         return $this->deleteFile($key);
     }
 
-    public function info($key) {
+    public function info($key)
+    {
         if ( !$result = $this->readFile($key) ) {
             return false;
         }
+
         return $result;
     }
 
-    public function clear() {
+    public function clear()
+    {
         $this->rmDir($this->path);
         $this->dir($this->path);
     }
 
-    private function getPath($key, $justDir = false) {
+    private function getPath($key, $justDir = false)
+    {
         $base = $this->path;
         for($i=0;$i<$this->depth;$i++) $base .= substr($key, $i, 1) . '/';
 
@@ -62,24 +71,28 @@ class File implements Driver {
         return $base . $key;
     }
 
-    private function deleteFile($key) {
+    private function deleteFile($key)
+    {
         return unlink($this->getPath($key));
     }
 
-    private function readFile($key) {
+    private function readFile($key)
+    {
         $filename = $this->getPath($key);
         if ( !file_exists($filename) ) return false;
-        
         return unserialize(file_get_contents($filename));
     }
 
-    private function writeFile($key, $content) {
+    private function writeFile($key, $content)
+    {
         $this->dir($this->getPath($key, true));
+
         return file_put_contents($this->getPath($key), serialize($content));
     }
 
-    private function rmDir($dir) {
-        foreach( glob($dir . '/*') as $file ) {
+    private function rmDir($dir)
+    {
+        foreach ( glob($dir . '/*') as $file ) {
             if ( is_dir($file) ) $this->rmDir($file);
             else unlink($file);
         }
@@ -87,7 +100,8 @@ class File implements Driver {
         return rmdir($dir);
     }
 
-    private function dir($dir) {
+    private function dir($dir)
+    {
         if ( !file_exists($dir) ) {
             if ( !mkdir($dir, 0700, true) ) {
                 throw new Exception('Unable to create dir "' . $dir . '"');
@@ -97,4 +111,3 @@ class File implements Driver {
         return true;
     }
 }
-

@@ -3,16 +3,19 @@ namespace yCrawler\Tests;
 use yCrawler\Queue;
 use yCrawler\Document;
 
-class QueueTest extends  \PHPUnit_Framework_TestCase { 
-    public function testInsert() {
+class QueueTest extends  \PHPUnit_Framework_TestCase
+{
+    public function testInsert()
+    {
         $queue = new Queue;
         $doc = new Document('http://www.test.com');
 
         $this->assertTrue($queue->add($doc));
         $this->assertFalse($queue->add($doc));
     }
-    
-    public function testGet() {
+
+    public function testGet()
+    {
         $queue = new Queue;
         $doc = new Document('http://www.test.com');
 
@@ -21,7 +24,8 @@ class QueueTest extends  \PHPUnit_Framework_TestCase {
         $this->assertFalse($queue->get($doc));
     }
 
-    public function testRetry() {
+    public function testRetry()
+    {
         $queue = new Queue;
         $doc = new Document('http://www.test.com');
 
@@ -29,34 +33,36 @@ class QueueTest extends  \PHPUnit_Framework_TestCase {
         $this->assertTrue($queue->retry($doc));
     }
 
-    public function testDefaultPriority() {
+    public function testDefaultPriority()
+    {
         $queue = new Queue;
         $docA = new Document('http://www.testA.com');
         $docB = new Document('http://www.testB.com');
-        
+
         $this->assertTrue($queue->add($docA));
         $this->assertTrue($queue->add($docB));
         $this->assertSame($docA, $queue->get());
     }
 
-    public function testDefaultPriorityLow() {
+    public function testDefaultPriorityLow()
+    {
         $queue = new Queue;
         $docA = new Document('http://www.testA.com');
         $docB = new Document('http://www.testB.com');
-        
+
         $this->assertTrue($queue->add($docA));
         $this->assertTrue($queue->add($docB, Queue::PRTY_LOW));
         $this->assertSame($docA, $queue->get());
     }
 
-    public function testDefaultPriorityHigh() {
+    public function testDefaultPriorityHigh()
+    {
         $queue = new Queue;
         $docA = new Document('http://www.testA.com');
         $docB = new Document('http://www.testB.com');
-        
+
         $this->assertTrue($queue->add($docA));
         $this->assertTrue($queue->add($docB, Queue::PRTY_HIGH));
         $this->assertSame($docB, $queue->get());
     }
 }
-

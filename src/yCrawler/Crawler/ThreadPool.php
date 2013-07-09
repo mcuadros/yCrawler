@@ -3,7 +3,8 @@ namespace yCrawler\Crawler;
 use Aza\Components\Thread\ThreadPool as AzaThreadPool;
 use yCrawler\Queue;
 
-class ThreadPool extends AzaThreadPool {
+class ThreadPool extends AzaThreadPool
+{
     public $debug = false;
     private $queue;
 
@@ -27,13 +28,15 @@ class ThreadPool extends AzaThreadPool {
        // $this->createAllThreads();
     }
 
-    public function setQueue(Queue $queue) {
+    public function setQueue(Queue $queue)
+    {
         $this->queue = $queue;
     }
 
-    public function start() {
+    public function start()
+    {
         $this->createAllThreads();
-        
+
         do {
             while ( $doc = $this->queue->get() && $this->hasWaiting() ) {
                 var_dump($doc); exit();
@@ -41,13 +44,13 @@ class ThreadPool extends AzaThreadPool {
                     throw new Exception('Pool slots error');
                 }
             }
-    
+
             if ($results = $this->wait($failed)) {
                 foreach ($results as $threadId => $doc) {
                     echo "Done: " . $doc->getUrl() . PHP_EOL;
                 }
             }
-   
+
             if ($failed) {
                 // Error handling here
                 // processing is not successful if thread dies

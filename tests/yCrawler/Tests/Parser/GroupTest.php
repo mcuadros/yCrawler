@@ -4,13 +4,16 @@ use yCrawler\Document;
 use yCrawler\Parser\Group;
 use yCrawler\Parser\Item;
 
-class GroupTest extends  \PHPUnit_Framework_TestCase { 
-    public function testCreateItem() {
+class GroupTest extends  \PHPUnit_Framework_TestCase
+{
+    public function testCreateItem()
+    {
         $group = new Group;
         $this->assertInstanceOf('yCrawler\Parser\Item', $group->createItem());
     }
 
-    public function testSetModifier() {
+    public function testSetModifier()
+    {
         $group = new Group;
         $group->setModifier(function() { return 1; });
         $group->setModifier(function() { return 2; });
@@ -22,7 +25,8 @@ class GroupTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(2, $modifiers[1]());
     }
 
-    public function testEvaluate() {
+    public function testEvaluate()
+    {
         $doc = new GroupTest_DocumentMock('http://test.com');
         $group = new Group;
         $group->createItem('a');
@@ -35,13 +39,14 @@ class GroupTest extends  \PHPUnit_Framework_TestCase {
 
     }
 
-    public function testEvaluateWithModifier() {
+    public function testEvaluateWithModifier()
+    {
         $doc = new GroupTest_DocumentMock('http://test.com');
         $group = new Group;
         $group->createItem('a');
-        $group->setModifier(function(&$result) { 
-            $result[0]['value'] += 3; 
-            $result[1]['value'] += 2; 
+        $group->setModifier(function(&$result) {
+            $result[0]['value'] += 3;
+            $result[1]['value'] += 2;
         });
 
         $result = $group->evaluate($doc);
@@ -51,22 +56,20 @@ class GroupTest extends  \PHPUnit_Framework_TestCase {
     }
 }
 
-
-
-
-class GroupTest_DocumentMock extends Document {
-    public function evaluateXPath($pattern) {
+class GroupTest_DocumentMock extends Document
+{
+    public function evaluateXPath($pattern)
+    {
         return Array(
             Array('value' => 1),
             Array('value' => 4)
         );
     }
 
-    public function evaluateRegExp($pattern) {
+    public function evaluateRegExp($pattern)
+    {
         return Array(
             Array('value' => 2)
         );
     }
 }
-
-

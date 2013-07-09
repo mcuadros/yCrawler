@@ -3,7 +3,8 @@ namespace yCrawler;
 use yCrawler\Parser;
 use yCrawler\Crawler\ThreadPool;
 
-class Crawler {
+class Crawler
+{
     private $initialized = false;
     private $pool;
     private $queue;
@@ -16,24 +17,27 @@ class Crawler {
     protected $_linksHistory = Array();
     protected $_start;
 
-    public function __construct(Queue $queue, ThreadPool $pool) {
+    public function __construct(Queue $queue, ThreadPool $pool)
+    {
         $pool->setQueue($queue);
 
         $this->pool = $pool;
         $this->queue = $queue;
     }
 
-    public function initialize() {
+    public function initialize()
+    {
         if ( $this->initialized ) return true;
-       
-        foreach($this->parsers as $parser) {
+
+        foreach ($this->parsers as $parser) {
             $this->queueDocs($parser->getStartupDocs());
         }
 
         return $this->initialized = time();
     }
 
-    public function addParser(Parser $parser) {
+    public function addParser(Parser $parser)
+    {
         $tmp = explode('\\', get_class($parser));
         $name = end($tmp);
 
@@ -46,41 +50,48 @@ class Crawler {
         if ( $this->parseCallback ) $parser->onParse($this->parseCallback);
 
         $this->parsers[$name] = $parser;
+
         return true;
     }
 
-    public function hasParser($name) {
+    public function hasParser($name)
+    {
         return isset($this->parsers[$name]);
     }
 
-    public function getParser($name) {
+    public function getParser($name)
+    {
         if ( !$this->hasParser($name) ) return false;
         return $this->parsers[$name];
     }
 
-    public function onParse(\Closure $closure) {
-        if ( $this->parseCallback ) {
+    public function onParse(\Closure $closure)
+    {
+        if ($this->parseCallback) {
             foreach( $this->parsers as $parser ) $parser->onParse($this->parseCallback);
-        } 
+        }
 
         $this->parseCallback = $closure;
+
         return true;
     }
 
-    private function queueDocs(array $documents) {        
+    private function queueDocs(array $documents)
+    {
         foreach ($documents as $document) $this->queue->add($document);
     }
 
     //TODO: si no hay getStartupURLs...
-    public function run() {
+    public function run()
+    {
         $this->initialize();
         $this->pool->start();
     }
 
-
-    public function jobDone(Document $document) {
+    public function jobDone(Document $document)
+    {
         $take = true;
-        switch( $status = $document->getStatus() ) { 
+        switch ( $status = $document->getStatus() ) {
             case Request::STATUS_DONE:
             case Request::STATUS_CACHED:
                 $this->addLinks($document->getLinks());
@@ -89,7 +100,7 @@ class Crawler {
             case Request::STATUS_RETRY:
                 if ( $retry = $document->newRetry() ) {
                     Output::log('Document (retry:'.$retry.') ' . $document->getUrl(), Output::DEBUG);
-                    $this->_process->sendJob($document);    
+                    $this->_process->sendJob($document);
                     $take = false;
                 } else {
                     Output::log('Document (max. retries) ' . $document->getUrl(), Output::WARNING);
@@ -106,7 +117,6 @@ class Crawler {
         if ( $take ) $this->getParser($document->getParser())->data('take', 'childs');
         return true;
     }
-
 
 /*
 $pool = new ThreadPool('TestThreadReturnFirstArgument', $threads);

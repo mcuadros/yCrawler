@@ -3,39 +3,46 @@ namespace yCrawler\Tests;
 use yCrawler\Document;
 use yCrawler\Parser;
 
-class DocumentTest extends  \PHPUnit_Framework_TestCase { 
-    public function createDocument($url) {
+class DocumentTest extends  \PHPUnit_Framework_TestCase
+{
+    public function createDocument($url)
+    {
         $parser = new DocumentTest_ParserMock();
+
         return new DocumentTest_DocumentMock($url, $parser);
     }
 
-    public function testSetURL() {
+    public function testSetURL()
+    {
         $url = 'http://httpbin.org/';
         $doc = $this->createDocument($url);
 
         $this->assertInstanceOf(
-            'yCrawler\Tests\DocumentTest_ParserMock', 
+            'yCrawler\Tests\DocumentTest_ParserMock',
             $doc->getParser()
         );
-    }  
+    }
 
-    public function testEvaluate() {
+    public function testEvaluate()
+    {
         $url = 'http://httpbin.org/';
         $doc = $this->createDocument($url);
 
         $result = $doc->evaluate();
         $this->assertSame(4, count($result['pre']));
-    } 
+    }
 
-    public function testLinks() {
+    public function testLinks()
+    {
         $url = 'http://httpbin.org/';
         $doc = $this->createDocument($url);
 
         $result = $doc->links();
         $this->assertSame(23, count($result));
-    }  
+    }
 
-    public function testParse() {
+    public function testParse()
+    {
         $url = 'http://httpbin.org/';
         $doc = $this->createDocument($url);
 
@@ -51,23 +58,26 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(23, count($result));
 
         $this->assertTrue($doc->isParsed());
-    } 
+    }
 
-    public function testIsVerified() {
+    public function testIsVerified()
+    {
         $url = 'http://httpbin.org/';
 
         $doc = $this->createDocument($url);
         $this->assertTrue($doc->isVerified());
-    } 
+    }
 
-    public function testIsIndexable() {
+    public function testIsIndexable()
+    {
         $url = 'http://httpbin.org/';
 
         $doc = $this->createDocument($url);
         $this->assertTrue($doc->isIndexable());
     }
 
-    public function testEvaluateXPathNode() {
+    public function testEvaluateXPathNode()
+    {
         $url = 'http://httpbin.org/';
 
         $doc = $this->createDocument($url);
@@ -82,7 +92,8 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame('{"origin": "24.127.96.129"}' . PHP_EOL, $result[0]['value']);
     }
 
-    public function testEvaluateRegExp() {
+    public function testEvaluateRegExp()
+    {
         $url = 'http://httpbin.org/';
 
         $doc = $this->createDocument($url);
@@ -94,16 +105,20 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase {
      }
 }
 
-class DocumentTest_DocumentMock extends Document {
+class DocumentTest_DocumentMock extends Document
+{
     public function call() { return true; }
     public function getResponseCode() { return 200; }
-    public function getResponse() { 
+    public function getResponse()
+    {
         return file_get_contents(__DIR__ . '/../../Resources/Basic.html');
     }
 }
 
-class DocumentTest_ParserMock extends Parser {
-    public function initialize() {
+class DocumentTest_ParserMock extends Parser
+{
+    public function initialize()
+    {
         $this->setStartupURL('http://httpbin.org/');
 
         $this->createLinkFollowItem('//a');

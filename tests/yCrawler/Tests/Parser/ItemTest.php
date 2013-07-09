@@ -3,13 +3,16 @@ namespace yCrawler\Tests;
 use yCrawler\Document;
 use yCrawler\Parser\Item;
 
-class ItemTest extends  \PHPUnit_Framework_TestCase { 
-    public function testDefaultType() {
+class ItemTest extends  \PHPUnit_Framework_TestCase
+{
+    public function testDefaultType()
+    {
         $item = new Item;
         $this->assertSame(Item::TYPE_XPATH, $item->getType());
     }
 
-    public function testSetType() {
+    public function testSetType()
+    {
         $item = new Item;
         $item->setType(Item::TYPE_REGEXP);
         $this->assertSame(Item::TYPE_REGEXP, $item->getType());
@@ -18,12 +21,14 @@ class ItemTest extends  \PHPUnit_Framework_TestCase {
     /**
      * @expectedException InvalidArgumentException
      */
-    public function testSetTypeInvalid() {
+    public function testSetTypeInvalid()
+    {
         $item = new Item;
         $item->setType('not-valid');
     }
 
-    public function testSetPattern() {
+    public function testSetPattern()
+    {
         $pattern = '//a';
 
         $item = new Item;
@@ -34,14 +39,16 @@ class ItemTest extends  \PHPUnit_Framework_TestCase {
     /**
      * @expectedException InvalidArgumentException
      */
-    public function testSetPatternRegExpInvalid() {
+    public function testSetPatternRegExpInvalid()
+    {
         $item = new Item;
         $item->setType(Item::TYPE_REGEXP);
 
         $item->setPattern('aaaaa');
     }
 
-    public function testSetModifier() {
+    public function testSetModifier()
+    {
         $item = new Item;
         $item->setModifier(function() { return 1; });
         $item->setModifier(function() { return 2; });
@@ -53,7 +60,8 @@ class ItemTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(2, $modifiers[1]());
     }
 
-    public function testEvaluateXPath() {
+    public function testEvaluateXPath()
+    {
         $item = new Item;
         $item->setPattern('//a');
 
@@ -63,7 +71,8 @@ class ItemTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(1, $result[0]['value']);
     }
 
-    public function testEvaluateRegExp() {
+    public function testEvaluateRegExp()
+    {
         $item = new Item;
         $item->setType(Item::TYPE_REGEXP);
         $item->setPattern('/a/');
@@ -74,7 +83,8 @@ class ItemTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(2, $result[0]['value']);
     }
 
-    public function testEvaluateXPathWithModifier() {
+    public function testEvaluateXPathWithModifier()
+    {
         $item = new Item;
         $item->setPattern('//a');
         $item->setModifier(function(&$result) { $result[0]['value'] += 2; });
@@ -86,21 +96,19 @@ class ItemTest extends  \PHPUnit_Framework_TestCase {
     }
 }
 
-
-
-
-class ItemTest_DocumentMock extends Document {
-    public function evaluateXPath($pattern) {
+class ItemTest_DocumentMock extends Document
+{
+    public function evaluateXPath($pattern)
+    {
         return Array(
             Array('value' => 1)
         );
     }
 
-    public function evaluateRegExp($pattern) {
+    public function evaluateRegExp($pattern)
+    {
         return Array(
             Array('value' => 2)
         );
     }
 }
-
-

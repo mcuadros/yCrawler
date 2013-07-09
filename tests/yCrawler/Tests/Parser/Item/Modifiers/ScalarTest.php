@@ -2,8 +2,10 @@
 namespace yCrawler\Tests\Parse\Item\Modifiers;
 use yCrawler\Parser\Item\Modifiers\Scalar;
 
-class ScalarTest extends  \PHPUnit_Framework_TestCase { 
-    function testBooleanPositive() {
+class ScalarTest extends  \PHPUnit_Framework_TestCase
+{
+    public function testBooleanPositive()
+    {
         $closure = Scalar::boolean(Scalar::BOOLEAN_POSITIVE);
         $result = array(
             array('value' => false),
@@ -25,7 +27,8 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase {
         $this->assertTrue($result[6]['value']);
     }
 
-    function testBooleanNegative() {
+    public function testBooleanNegative()
+    {
         $closure = Scalar::boolean(Scalar::BOOLEAN_NEGATIVE);
         $result = array(
             array('value' => false),
@@ -47,7 +50,8 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase {
         $this->assertFalse($result[6]['value']);
     }
 
-    function testIntDefaultRegExp() {
+    public function testIntDefaultRegExp()
+    {
         $closure = Scalar::int();
         $result = array(
             array('value' => false),
@@ -75,7 +79,8 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(1, $result[9]['value']);
     }
 
-    function testIntCustomRegExp() {
+    public function testIntCustomRegExp()
+    {
         $closure = Scalar::int('/[^0-9]/');
         $result = array(
             array('value' => '122 string'),
@@ -87,7 +92,8 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(12112, $result[1]['value']);
     }
 
-    function testFloatDefaultRegExp() {
+    public function testFloatDefaultRegExp()
+    {
         $closure = Scalar::float();
         $result = array(
             array('value' => false),
@@ -115,7 +121,8 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(1.0, $result[9]['value']);
     }
 
-    function testFloatCustomRegExp() {
+    public function testFloatCustomRegExp()
+    {
         $closure = Scalar::float('/[^0-9]/');
         $result = array(
             array('value' => '122 string'),
@@ -127,7 +134,8 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(12112.0, $result[1]['value']);
     }
 
-    function testJoin() {
+    public function testJoin()
+    {
         $closure = Scalar::join();
         $result = array(
             array('value' => 'A'),

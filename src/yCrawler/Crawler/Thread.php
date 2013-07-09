@@ -2,8 +2,10 @@
 namespace yCrawler\Crawler;
 use Aza\Components\Thread\Thread as AzaThread;
 
-class Thread extends AzaThread {
-    protected function process() {
+class Thread extends AzaThread
+{
+    protected function process()
+    {
         echo '[' . getmypid() . '] Running job: ' . $this->getParam(0) . PHP_EOL;
         sleep(3);
 

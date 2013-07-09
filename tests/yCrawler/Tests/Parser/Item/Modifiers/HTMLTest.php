@@ -3,8 +3,10 @@ namespace yCrawler\Tests\Parse\Item\Modifiers;
 use yCrawler\Parser\Item\Modifiers\HTML;
 use yCrawler\Document;
 
-class HTMLTest extends  \PHPUnit_Framework_TestCase { 
-    function testBoolean() {
+class HTMLTest extends  \PHPUnit_Framework_TestCase
+{
+    public function testBoolean()
+    {
         $dom = new \DOMDocument();
         $dom->loadHTML('<html><a href="link">test</a></html>');
         $node = $dom->getElementsByTagName('a')->item(0);
@@ -18,7 +20,8 @@ class HTMLTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame('<a href="link">test</a>', $result[0]['value']);
     }
 
-    function testBR2NL() {
+    public function testBR2NL()
+    {
         $dom = new \DOMDocument();
         $dom->loadHTML('<html><p>test<br>test<br/>test<br />test</p></html>');
         $node = $dom->getElementsByTagName('p')->item(0);
@@ -32,7 +35,8 @@ class HTMLTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame(4, count(explode(PHP_EOL, $result[0]['value'])));
     }
 
-    function testImageFromSRC() {
+    public function testImageFromSRC()
+    {
         $dom = new \DOMDocument();
         $dom->loadHTML('<html><img src="test.jpg" /></html>');
         $node = $dom->getElementsByTagName('img')->item(0);
@@ -48,7 +52,8 @@ class HTMLTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame('http://test.com/test.jpg', $result[0]['value']);
     }
 
-    function testImageFromHREF() {
+    public function testImageFromHREF()
+    {
         $dom = new \DOMDocument();
         $dom->loadHTML('<html><a href="http://other.com/test2.jpg" /></html>');
         $node = $dom->getElementsByTagName('a')->item(0);
@@ -64,7 +69,8 @@ class HTMLTest extends  \PHPUnit_Framework_TestCase {
         $this->assertSame('http://other.com/test2.jpg', $result[0]['value']);
     }
 
-    function testImageFromStyle() {
+    public function testImageFromStyle()
+    {
         $dom = new \DOMDocument();
         $dom->loadHTML('<html><b style="background:url(\'test2.jpg\')" /></html>');
         $node = $dom->getElementsByTagName('b')->item(0);
