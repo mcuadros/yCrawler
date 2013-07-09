@@ -30,13 +30,13 @@ final class HTML
         return function(array &$results, Document $document) {
             foreach ($results as &$result) {
                 $img = $result['node']->getAttribute('src');
-                if ( !URL::isImage($img) ) $img = $result['node']->getAttribute('href');
-                if ( !URL::isImage($img) ) {
+                if (!URL::isImage($img)) $img = $result['node']->getAttribute('href');
+                if (!URL::isImage($img)) {
                     $img = $result['node']->getAttribute('style');
                     $img = URL::fromStyle($img);
                 }
 
-                if ( !URL::isImage($img) ) break;
+                if (!URL::isImage($img)) break;
                 $result['value'] = URL::absolutize($img, $document->getURL());
             }
         };

@@ -11,7 +11,7 @@ class Group
     public function createItem($expression = false)
     {
         $item = new Item();
-        if ( $expression ) $item->setPattern($expression);
+        if ($expression) $item->setPattern($expression);
         $this->items[] = $item;
 
         return $item;
@@ -39,7 +39,7 @@ class Group
 
     private function applyModifiers(&$result, Document &$document)
     {
-        if ( !$this->modifiers ) return true;
+        if (!$this->modifiers) return true;
         foreach( $this->modifiers as $modifier) $modifier($result, $document);
 
         return true;

@@ -28,17 +28,17 @@ class File implements Driver
 
     public function get($key)
     {
-        if ( !$result = $this->readFile($key) ) {
+        if (!$result = $this->readFile($key)) {
             return false;
         }
 
-        if ( $result['ttl'] > 0 && time() > $result['time'] + $result['ttl'] ) {
+        if ($result['ttl'] > 0 && time() > $result['time'] + $result['ttl']) {
             $this->delete($key);
 
             return false;
         }
 
-        if ( !is_array($result) ) return false;
+        if (!is_array($result)) return false;
         return $result['data'];
     }
 
@@ -49,7 +49,7 @@ class File implements Driver
 
     public function info($key)
     {
-        if ( !$result = $this->readFile($key) ) {
+        if (!$result = $this->readFile($key)) {
             return false;
         }
 
@@ -65,9 +65,9 @@ class File implements Driver
     private function getPath($key, $justDir = false)
     {
         $base = $this->path;
-        for($i=0;$i<$this->depth;$i++) $base .= substr($key, $i, 1) . '/';
+        for ($i=0;$i<$this->depth;$i++) $base .= substr($key, $i, 1) . '/';
 
-        if ( $justDir ) return $base;
+        if ($justDir) return $base;
         return $base . $key;
     }
 
@@ -79,7 +79,7 @@ class File implements Driver
     private function readFile($key)
     {
         $filename = $this->getPath($key);
-        if ( !file_exists($filename) ) return false;
+        if (!file_exists($filename)) return false;
         return unserialize(file_get_contents($filename));
     }
 
@@ -92,8 +92,8 @@ class File implements Driver
 
     private function rmDir($dir)
     {
-        foreach ( glob($dir . '/*') as $file ) {
-            if ( is_dir($file) ) $this->rmDir($file);
+        foreach (glob($dir . '/*') as $file) {
+            if (is_dir($file)) $this->rmDir($file);
             else unlink($file);
         }
 
@@ -102,7 +102,7 @@ class File implements Driver
 
     private function dir($dir)
     {
-        if ( !file_exists($dir) ) {
+        if (!file_exists($dir)) {
             if ( !mkdir($dir, 0700, true) ) {
                 throw new Exception('Unable to create dir "' . $dir . '"');
             }

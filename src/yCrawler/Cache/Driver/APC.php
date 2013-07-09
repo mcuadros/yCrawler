@@ -17,11 +17,11 @@ class APC implements Driver
 
     public function get($key)
     {
-        if ( !$result = apc_fetch($key) ) {
+        if (!$result = apc_fetch($key)) {
             return false;
         }
 
-        if ( !is_array($result) ) return false;
+        if (!is_array($result)) return false;
         return $result['data'];
     }
 
@@ -32,7 +32,7 @@ class APC implements Driver
 
     public function info($key)
     {
-        if ( !$result = apc_fetch($key) ) {
+        if (!$result = apc_fetch($key)) {
             return false;
         }
 

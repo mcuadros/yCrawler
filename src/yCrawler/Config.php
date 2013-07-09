@@ -42,18 +42,18 @@ class Config
 
     public static function get($setting)
     {
-        if ( isset(self::$config[$setting]) ) return self::$config[$setting][1];
-        if ( isset(self::$default[$setting]) ) return self::$default[$setting][1];
+        if (isset(self::$config[$setting])) return self::$config[$setting][1];
+        if (isset(self::$default[$setting])) return self::$default[$setting][1];
         return null;
     }
 
     public static function set($setting, $value)
     {
-        if ( !isset(self::$default[$setting]) ) {
+        if (!isset(self::$default[$setting])) {
             throw new \InvalidArgumentException(sprintf('Unknown setting "%s"', $setting));
         }
 
-        if ( self::isValid($setting, $value) ) self::$config[$setting] = $value;
+        if (self::isValid($setting, $value)) self::$config[$setting] = $value;
     }
 
     public static function isValid($setting, &$value)
@@ -62,17 +62,17 @@ class Config
         $type = self::$default[$setting][0];
         switch ($type) {
             case 'int':
-                if ( is_integer($value) ) $valid = true; break;
+                if (is_integer($value)) $valid = true; break;
             case 'boolean':
-                if ( is_bool($value) ) $valid = true; break;
+                if (is_bool($value)) $valid = true; break;
             case 'string':
-                if ( is_string($value) ) $valid = true; break;
+                if (is_string($value)) $valid = true; break;
             case 'path':
-                if ( is_dir($value) || mkdir($value) ) $valid = true;
-                if ( $value[strlen($value)-1] == '/' ) $value[strlen($value)-1] = ' ';
+                if (is_dir($value) || mkdir($value)) $valid = true;
+                if ($value[strlen($value)-1] == '/') $value[strlen($value)-1] = ' ';
                 break;
             case 'file':
-                if ( is_file($value) || touch($value) ) $valid = true; break;
+                if (is_file($value) || touch($value)) $valid = true; break;
         }
 
         if (!$valid) {

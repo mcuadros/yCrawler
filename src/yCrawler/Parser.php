@@ -108,14 +108,14 @@ abstract class Parser
 
     public function onParse(\Closure $closure)
     {
-        $this->parseCallback = &$closure;
+        $this->parseCallback = $closure;
 
         return true;
     }
 
     public function parsed(Document $document)
     {
-        if ( !$this->parseCallback ) return null;
+        if (!$this->parseCallback) return null;
 
         $closure = $this->parseCallback;
 
@@ -124,7 +124,7 @@ abstract class Parser
 
     public function matchURL($url)
     {
-        if ( count($this->urlPatterns) == 0 ) {
+        if (count($this->urlPatterns) == 0) {
             $tmp = Array();
             foreach ($this->startup as $url) {
                 $domain = parse_url($url, PHP_URL_HOST);
@@ -141,10 +141,10 @@ abstract class Parser
         return false;
     }
 
-    public function &getFollowItems() { return $this->items['follow']; }
-    public function &getLinksItems() { return $this->items['links']; }
-    public function &getVerifyItems() { return $this->items['verify']; }
-    public function &getValueItems() { return $this->items['values']; }
+    public function getFollowItems() { return $this->items['follow']; }
+    public function getLinksItems() { return $this->items['links']; }
+    public function getVerifyItems() { return $this->items['verify']; }
+    public function getValueItems() { return $this->items['values']; }
 
     public function getURLPatterns()
     {

@@ -21,7 +21,7 @@ class Queue
     public function add(Document $document, $priority = self::PRTY_NORMAL)
     {
         $url = $document->getUrl();
-        if ( $this->inHistory($url) ) return false;
+        if ($this->inHistory($url)) return false;
 
         $this->queue->insert($document, $priority);
         $this->addHistory($url);
@@ -32,7 +32,7 @@ class Queue
     public function retry(Document $document, $priority = self::PRTY_NORMAL)
     {
         $url = $document->getUrl();
-        if ( !$this->inHistory($url) ) return false;
+        if (!$this->inHistory($url)) return false;
 
         $this->queue->insert($document, $priority);
 
@@ -41,7 +41,7 @@ class Queue
 
     public function get()
     {
-        if ( !$this->queue->valid() ) return false;
+        if (!$this->queue->valid()) return false;
         return $this->queue->extract();
     }
 

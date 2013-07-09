@@ -15,7 +15,7 @@ final class DateTime
     {
         return function(array &$results) use ($milliseconds) {
             foreach ($results as &$result) {
-                if ( $milliseconds ) $seconds = (int) ($result['value']/1000);
+                if ($milliseconds) $seconds = (int) ($result['value']/1000);
                 else $seconds = (int) $result['value'];
 
                 $result['value'] = time() + $seconds;

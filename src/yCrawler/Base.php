@@ -19,7 +19,7 @@ abstract class Base
 
     public function getConstant($value)
     {
-        if ( !is_array($this->_constants) ) {
+        if (!is_array($this->_constants)) {
             $reflection = new \ReflectionClass(get_called_class());
             $this->_constants = array_flip($reflection->getConstants());
         }
@@ -33,33 +33,33 @@ abstract class Base
 
     protected function writeCache($key, $data, $ttl = 0, $persist = false)
     {
-        if ( $persist ) $cache = $this->crawler['cache.persistent'];
+        if ($persist) $cache = $this->crawler['cache.persistent'];
         else $cache = $this->crawler['cache.memory'];
         $cache->set($key, $data, $ttl);
     }
 
     protected function readCache($key, $persist = false)
     {
-        if ( $persist ) $cache = $this->crawler['cache.persistent'];
+        if ($persist) $cache = $this->crawler['cache.persistent'];
         else $cache = $this->crawler['cache.memory'];
         $cache->get($key);
     }
 
     protected function data($function, $name, $value = null)
     {
-        if ( !$this->data ) $this->data = new Data();
+        if (!$this->data) $this->data = new Data();
 
         $callback = Array($this->data, $function);
-        if ( !is_callable($callback) ) { return false; }
+        if (!is_callable($callback)) { return false; }
 
         $params = Array($name);
-        if ( $value !== null ) $params[] = $value;
+        if ($value !== null) $params[] = $value;
         return call_user_func_array($callback, $params);
     }
 
     protected function config($setting)
     {
-        if ( !$this->crawler ) return false;
+        if (!$this->crawler) return false;
         return $this->crawler['config']->get($setting);
     }
 

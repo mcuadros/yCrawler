@@ -27,7 +27,7 @@ class Crawler
 
     public function initialize()
     {
-        if ( $this->initialized ) return true;
+        if ($this->initialized) return true;
 
         foreach ($this->parsers as $parser) {
             $this->queueDocs($parser->getStartupDocs());
@@ -41,13 +41,13 @@ class Crawler
         $tmp = explode('\\', get_class($parser));
         $name = end($tmp);
 
-        if ( $this->hasParser($name) ) {
+        if ($this->hasParser($name)) {
             throw new \RuntimeException(
                 sprintf('A parser of "%s" class already loaded.', $name)
             );
         }
 
-        if ( $this->parseCallback ) $parser->onParse($this->parseCallback);
+        if ($this->parseCallback) $parser->onParse($this->parseCallback);
 
         $this->parsers[$name] = $parser;
 
@@ -61,7 +61,7 @@ class Crawler
 
     public function getParser($name)
     {
-        if ( !$this->hasParser($name) ) return false;
+        if (!$this->hasParser($name)) return false;
         return $this->parsers[$name];
     }
 

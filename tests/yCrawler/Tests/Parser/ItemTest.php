@@ -71,6 +71,23 @@ class ItemTest extends  \PHPUnit_Framework_TestCase
         $this->assertSame(1, $result[0]['value']);
     }
 
+    public function testEvaluateCSS()
+    {
+        $item = new Item;
+        $item->setType(Item::TYPE_CSS);
+        $item->setPattern('div.item > h4 > a');
+
+        $this->assertSame(
+            "descendant-or-self::div[@class and contains(concat(' ', normalize-space(@class), ' '), ' item ')]/h4/a",
+            $item->getPattern()
+        );
+
+        $doc = new ItemTest_DocumentMock(false);
+        $result = $item->evaluate($doc);
+
+        $this->assertSame(1, $result[0]['value']);
+    }
+
     public function testEvaluateRegExp()
     {
         $item = new Item;

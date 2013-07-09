@@ -48,7 +48,7 @@ final class Scalar
             );
         };
 
-        if ( !$value ) return false;
+        if (!$value) return false;
         $output=Array();
         foreach($value as &$data) $output[] = $data['value'];
         $value = Array(Array(

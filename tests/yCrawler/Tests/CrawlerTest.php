@@ -11,6 +11,8 @@ class CrawlerTest extends  \PHPUnit_Framework_TestCase
 {
     public function createCrawler()
     {
+        $this->markTestSkipped('WIP.');
+
         $this->queue = new Queue();
         $this->pool = new ThreadPool('yCrawler\Crawler\Thread', 5);
 

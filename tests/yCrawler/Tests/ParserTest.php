@@ -18,7 +18,7 @@ class ParserTest extends \PHPUnit_Framework_TestCase
 
         $parser = new ParserTest_ParserMock();
         $this->assertSame($url, $parser->setStartupURL($url));
-        $this->assertSame(1, count($parser->getStartupURLs()));
+        $this->assertSame(1, count($parser->getStartupDocs()));
     }
 
     public function testSetURLPattern()

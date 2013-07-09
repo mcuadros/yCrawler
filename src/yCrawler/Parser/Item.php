@@ -1,9 +1,11 @@
 <?php
 namespace yCrawler\Parser;
 use yCrawler\Document;
+use Symfony\Component\CssSelector\CssSelector;
 
 class Item
 {
+    const TYPE_CSS = 'css';
     const TYPE_XPATH = 'xpath';
     const TYPE_REGEXP = 'regexp';
     const TYPE_LITERAL = 'literal';
@@ -20,6 +22,7 @@ class Item
         if (
             $type != self::TYPE_XPATH &&
             $type != self::TYPE_REGEXP &&
+            $type != self::TYPE_CSS &&
             $type != self::TYPE_LITERAL
         ) {
             throw new \InvalidArgumentException(sprintf('Invalid type "%s"' , $type));
@@ -33,7 +36,10 @@ class Item
     public function getPattern() { return $this->pattern; }
     public function setPattern($pattern)
     {
-        if ( $this->type == self::TYPE_REGEXP ) $this->validateRegExp($pattern);
+        if ($this->type == self::TYPE_REGEXP) $this->validateRegExp($pattern);
+        else if ($this->type == self::TYPE_CSS) {
+            $pattern = $this->convertCSSPaternToXpath($pattern);
+        }
 
         $this->pattern = $pattern;
 
@@ -52,6 +58,7 @@ class Item
     {
         switch ($this->type) {
             case self::TYPE_XPATH:
+            case self::TYPE_CSS:
                 $result = $document->evaluateXPath($this->pattern);
                 break;
             case self::TYPE_REGEXP:
@@ -62,7 +69,7 @@ class Item
                 break;
         }
 
-        if ( !$result ) $result = array();
+        if (!$result) $result = array();
         $this->applyModifiers($result, $document);
 
         return $result;
@@ -70,10 +77,17 @@ class Item
 
     private function applyModifiers(&$result, Document &$document)
     {
-        if ( !$this->modifiers ) return true;
+        if (!$this->modifiers) return true;
         foreach( $this->modifiers as $modifier) $modifier($result, $document);
 
         return true;
+    }
+
+    private function convertCSSPaternToXpath($cssPattern)
+    {
+        $xpathPattern = CssSelector::toXPath($cssPattern);
+
+        return $xpathPattern;
     }
 
     private function validateRegExp($regexp)
