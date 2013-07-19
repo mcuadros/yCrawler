@@ -9,7 +9,7 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase
     {
         $parser = new DocumentTest_ParserMock();
 
-        return new DocumentTest_DocumentMock($url, $parser);
+        return new Document($url, $parser);
     }
 
     public function testSetURL()
@@ -28,8 +28,9 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase
         $url = 'http://httpbin.org/';
         $doc = $this->createDocument($url);
 
-        $result = $doc->evaluate();
-        $this->assertSame(4, count($result['pre']));
+        $doc->evaluate();
+        $this->assertCount(4, $doc->getValuesStorage()->get('pre'));
+
     }
 
     public function testLinks()
@@ -38,7 +39,7 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase
         $doc = $this->createDocument($url);
 
         $result = $doc->links();
-        $this->assertSame(23, count($result));
+        $this->assertSame(26, count($result));
     }
 
     public function testParse()
@@ -47,15 +48,15 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase
         $doc = $this->createDocument($url);
 
         $this->assertInstanceOf(
-            'yCrawler\Tests\DocumentTest_DocumentMock',
+            'yCrawler\Document',
             $doc->parse()
         );
 
-        $result = $doc->getValue('pre');
+        $result = $doc->getValuesStorage()->get('pre');
         $this->assertSame(4, count($result));
 
         $result = $doc->getLinks();
-        $this->assertSame(23, count($result));
+        $this->assertSame(26, count($result));
 
         $this->assertTrue($doc->isParsed());
     }
@@ -98,21 +99,11 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase
 
         $doc = $this->createDocument($url);
         $result = $doc->evaluateRegExp('/<code>(.*)<\/code>/');
-        $this->assertSame(24, count($result));
+        $this->assertSame(28, count($result));
 
         $this->assertTrue(isset($result[0]['value']));
         $this->assertTrue(isset($result[0]['full']));
      }
-}
-
-class DocumentTest_DocumentMock extends Document
-{
-    public function call() { return true; }
-    public function getResponseCode() { return 200; }
-    public function getResponse()
-    {
-        return file_get_contents(__DIR__ . '/../../Resources/Basic.html');
-    }
 }
 
 class DocumentTest_ParserMock extends Parser

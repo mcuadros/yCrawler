@@ -2,15 +2,22 @@
 namespace yCrawler;
 use yCrawler\Parser\Item\Modifiers\Scalar;
 use yCrawler\Misc\URL;
-use yCrawler\Document;
+use yCrawler\Document\ValuesStorage;
 
-class Document extends Request
+use DOMDocument;
+use DOMXPath;
+
+class Document
 {
+    private $url;
+    private $request;
+    private $valuesStorage;
+
     protected $parser;
     protected $dom;
     protected $xpath;
 
-    protected $values = Array();
+    
     protected $links = Array();
 
     protected $verified;
@@ -19,9 +26,10 @@ class Document extends Request
 
     public function __construct($url, Parser $parser = null)
     {
-        parent::__construct($url);
-
-        return $this->parser = $parser;
+        $this->url = $url;
+        $this->valuesStorage = new ValuesStorage();
+        $this->request = new Request($url);
+        $this->parser = $parser;
     }
 
     public function evaluate()
@@ -29,11 +37,15 @@ class Document extends Request
         $this->parser->configure();
         if (!$this->isVerified()) return false;
 
-        foreach ($this->parser->getValueItems() as $name => $item) {
-            foreach($item->evaluate($this) as $data) $this->addValue($name, $data);
+        foreach ($this->parser->getValueItems() as $key => $item) {
+            $result = $item->evaluate($this);
+            $this->saveEvaluationResult($key, $result);
         }
+    }
 
-        return $this->getValues();
+    private function saveEvaluationResult($key, $result)
+    {
+        $this->valuesStorage->set($key, $result);
     }
 
     public function links()
@@ -47,7 +59,7 @@ class Document extends Request
 
         foreach ($this->parser->getLinksItems() as $item) {
             foreach ($item->evaluate($this) as $data) {
-                $url = URL::absolutize($data['value'], $this->getUrl());
+                $url = URL::absolutize($data['value'], $this->url);
                 if ($url && $this->parser->matchURL($url) ) $this->addLink($url);
             }
         }
@@ -94,7 +106,9 @@ class Document extends Request
     public function evaluateRegExp($expression)
     {
         if (!$this->makeRequest()) return false;
-        if (!preg_match_all($expression, $this->getResponse(), $matches)) return false;
+
+        $response = $this->getResponseFromRequest();
+        if (!preg_match_all($expression, $response, $matches)) return false;
 
         foreach (end($matches) as $index => $value) {
             $output[] = Array(
@@ -109,13 +123,7 @@ class Document extends Request
 
     public function getParser() { return $this->parser; }
     public function getLinks() { return array_keys($this->links); }
-    public function getValues() { return $this->values; }
-    public function getValue($name)
-    {
-        if (!isset($this->values[$name])) return false;
-        return $this->values[$name];
-    }
-
+  
     public function isVerified()
     {
         if ($this->verified === null) $this->verified = $this->verify();
@@ -130,12 +138,12 @@ class Document extends Request
 
     public function isParsed() { return $this->parsed; }
 
-    protected function makeRequest()
+    private function makeRequest()
     {
-        if ($this->getStatus() >= Request::STATUS_DONE) return true;
-        if ($this->getStatus() != Request::STATUS_NONE) return false;
+        if ($this->getStatusFromRequest() >= Request::STATUS_DONE) return true;
+        if ($this->getStatusFromRequest() != Request::STATUS_NONE) return false;
 
-        if (!$this->call()) return false;
+        if (!$this->executeRequest()) return false;
         if (!$this->createDOM()) return false;
         if (!$this->createXPath()) return false;
         return true;
@@ -146,21 +154,22 @@ class Document extends Request
         libxml_use_internal_errors(true);
         libxml_clear_errors();
 
-        $this->dom = new \DOMDocument();
+        $this->dom = new DOMDocument();
+        $response = $this->getResponseFromRequest();
 
         if (Config::get('utf8_dom_hack') ) {
             return $this->dom->loadHtml(sprintf(
                 '<?xml encoding="UTF-8">%s</xml>',
-                str_ireplace('utf-8','', $this->getResponse())
+                str_ireplace('utf-8','', $response)
             ));
         }
 
-        return $this->dom->loadHtml($this->getResponse());
+        return $this->dom->loadHtml($response);
     }
 
     protected function createXPath()
     {
-        $this->xpath = new \DOMXPath($this->dom);
+        $this->xpath = new DOMXPath($this->dom);
         if ($this->xpath) { return true; } else { return false; }
     }
 
@@ -190,17 +199,30 @@ class Document extends Request
         return true;
     }
 
-    protected function addValue($name, $data, $override = false)
-    {
-        if ($override) $this->values[$name] = Array();
-        if (is_array($data)) return $this->values[$name][] = $data['value'];
-        return $this->values[$name][] = $data;
-    }
-
     protected function addLink($url, $override = false)
     {
         if ($override) $this->links = array($url => true);
         else $this->links[$url] = true;
         return $url;
+    }
+
+    public function getValuesStorage()
+    {
+        return $this->valuesStorage;
+    }
+
+    private function getStatusFromRequest()
+    {
+        return $this->request->getStatus();
+    }
+
+    private function getResponseFromRequest()
+    {
+        return $this->request->getResponse();
+    }
+
+    private function executeRequest()
+    {
+        return $this->request->call();
     }
 }

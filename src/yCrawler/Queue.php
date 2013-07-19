@@ -1,6 +1,10 @@
 <?php
 namespace yCrawler;
 
+use yCrawler\Queue\History;
+use yCrawler\Queue\Exceptions;
+use SplPriorityQueue;
+
 class Queue
 {
     const PRTY_NONE = 10;
@@ -15,28 +19,33 @@ class Queue
 
     public function __construct()
     {
-        $this->queue = new \SplPriorityQueue();
+        $this->restart();
+    }
+
+    public function restart()
+    {
+        $this->queue = new SplPriorityQueue();
+        $this->history = new History();
+
     }
 
     public function add(Document $document, $priority = self::PRTY_NORMAL)
     {
-        $url = $document->getUrl();
-        if ($this->inHistory($url)) return false;
+        if ($this->hasDocumentInHisotry($document)) {
+            throw new Exceptions\DuplicateDocument();
+        }
 
-        $this->queue->insert($document, $priority);
-        $this->addHistory($url);
-
-        return true;
+        $this->insertDocumentToQueue($document, $priority);
+        $this->addDocumentToHistory($document);
     }
 
     public function retry(Document $document, $priority = self::PRTY_NORMAL)
     {
-        $url = $document->getUrl();
-        if (!$this->inHistory($url)) return false;
-
-        $this->queue->insert($document, $priority);
-
-        return true;
+        if (!$this->hasDocumentInHisotry($document)) {
+            throw new Exceptions\DocumentNotFound();
+        }
+        
+        $this->insertDocumentToQueue($document, $priority);
     }
 
     public function get()
@@ -45,13 +54,18 @@ class Queue
         return $this->queue->extract();
     }
 
-    private function inHistory($url)
+    private function hasDocumentInHisotry(Document $document)
     {
-        return isset($this->history[$url]);
+        return $this->history->hasDocument($document);
     }
 
-    private function addHistory($url)
+    private function addDocumentToHistory(Document $document)
     {
-        $this->history[$url] = true;
+        $this->history->addDocument($document);
+    }
+
+    private function insertDocumentToQueue(Document $document, $priority)
+    {
+        $this->queue->insert($document, $priority);
     }
 }

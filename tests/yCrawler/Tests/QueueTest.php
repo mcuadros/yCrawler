@@ -10,8 +10,19 @@ class QueueTest extends  \PHPUnit_Framework_TestCase
         $queue = new Queue;
         $doc = new Document('http://www.test.com');
 
-        $this->assertTrue($queue->add($doc));
-        $this->assertFalse($queue->add($doc));
+        $queue->add($doc);
+    }
+
+    /**
+     * @expectedException yCrawler\Queue\Exceptions\DuplicateDocument
+     */
+    public function testDoubleInsert()
+    {
+        $queue = new Queue;
+        $doc = new Document('http://www.test.com');
+
+        $queue->add($doc);
+        $queue->add($doc);
     }
 
     public function testGet()
@@ -19,7 +30,7 @@ class QueueTest extends  \PHPUnit_Framework_TestCase
         $queue = new Queue;
         $doc = new Document('http://www.test.com');
 
-        $this->assertTrue($queue->add($doc));
+        $queue->add($doc);
         $this->assertSame($doc, $queue->get($doc));
         $this->assertFalse($queue->get($doc));
     }
@@ -29,8 +40,19 @@ class QueueTest extends  \PHPUnit_Framework_TestCase
         $queue = new Queue;
         $doc = new Document('http://www.test.com');
 
-        $this->assertTrue($queue->add($doc));
-        $this->assertTrue($queue->retry($doc));
+        $queue->add($doc);
+        $queue->retry($doc);
+    }
+
+    /**
+     * @expectedException yCrawler\Queue\Exceptions\DocumentNotFound
+     */
+    public function testRetryWithoutAdd()
+    {
+        $queue = new Queue;
+        $doc = new Document('http://www.test.com');
+
+        $queue->retry($doc);
     }
 
     public function testDefaultPriority()
@@ -39,8 +61,8 @@ class QueueTest extends  \PHPUnit_Framework_TestCase
         $docA = new Document('http://www.testA.com');
         $docB = new Document('http://www.testB.com');
 
-        $this->assertTrue($queue->add($docA));
-        $this->assertTrue($queue->add($docB));
+        $queue->add($docA);
+        $queue->add($docB);
         $this->assertSame($docA, $queue->get());
     }
 
@@ -50,8 +72,8 @@ class QueueTest extends  \PHPUnit_Framework_TestCase
         $docA = new Document('http://www.testA.com');
         $docB = new Document('http://www.testB.com');
 
-        $this->assertTrue($queue->add($docA));
-        $this->assertTrue($queue->add($docB, Queue::PRTY_LOW));
+        $queue->add($docA);
+        $queue->add($docB, Queue::PRTY_LOW);
         $this->assertSame($docA, $queue->get());
     }
 
@@ -61,8 +83,8 @@ class QueueTest extends  \PHPUnit_Framework_TestCase
         $docA = new Document('http://www.testA.com');
         $docB = new Document('http://www.testB.com');
 
-        $this->assertTrue($queue->add($docA));
-        $this->assertTrue($queue->add($docB, Queue::PRTY_HIGH));
+        $queue->add($docA);
+        $queue->add($docB, Queue::PRTY_HIGH);
         $this->assertSame($docB, $queue->get());
     }
 }
