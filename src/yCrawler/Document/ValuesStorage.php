@@ -8,9 +8,9 @@ class ValuesStorage implements IteratorAggregate, Countable
 {
     private $values;
 
-    public function __construct(array $values = array())
+    public function __construct()
     {
-        $this->values = $values;
+        $this->values = array();
     }
 
     public function all()

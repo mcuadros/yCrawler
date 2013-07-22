@@ -1,7 +1,7 @@
 <?php
 namespace yCrawler\Parser;
+use yCrawler\Parser\Item\Types;
 use yCrawler\Document;
-use Symfony\Component\CssSelector\CssSelector;
 
 class Item
 {
@@ -58,24 +58,27 @@ class Item
     {
         switch ($this->type) {
             case self::TYPE_XPATH:
+                $type = new Types\XPathType();
+                break;
             case self::TYPE_CSS:
-                $result = $document->evaluateXPath($this->pattern);
+                $type = new Types\CSSType();
                 break;
             case self::TYPE_REGEXP:
-                $result = $document->evaluateRegExp($this->pattern);
+                $type = new Types\RegExpType();
                 break;
             case self::TYPE_LITERAL:
                 $result = Array(Array('value'=> $this->pattern));
                 break;
         }
 
+        $result = $type->evaluate($document, $this->pattern);
         if (!$result) $result = array();
         $this->applyModifiers($result, $document);
 
         return $result;
     }
 
-    private function applyModifiers(&$result, Document &$document)
+    private function applyModifiers(&$result, Document $document)
     {
         if (!$this->modifiers) return true;
         foreach( $this->modifiers as $modifier) $modifier($result, $document);

@@ -12,7 +12,15 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase
         return new Document($url, $parser);
     }
 
-    public function testSetURL()
+    public function testGetURL()
+    {
+        $url = 'http://httpbin.org/';
+        $doc = $this->createDocument($url);
+
+        $this->assertSame($url, $doc->getURL());
+    }
+
+    public function testGetParser()
     {
         $url = 'http://httpbin.org/';
         $doc = $this->createDocument($url);
@@ -23,49 +31,36 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testEvaluate()
+    public function testGetHTML()
     {
         $url = 'http://httpbin.org/';
         $doc = $this->createDocument($url);
 
-        $doc->evaluate();
-        $this->assertCount(4, $doc->getValuesStorage()->get('pre'));
-
+        $this->assertTrue(strlen($doc->getHTML()) > 0);
     }
 
-    public function testLinks()
+    public function testGetDOM()
     {
         $url = 'http://httpbin.org/';
         $doc = $this->createDocument($url);
 
-        $result = $doc->links();
-        $this->assertSame(26, count($result));
+        $this->assertInstanceOf('DOMDocument', $doc->getDOM());
+        $this->assertTrue(strlen($doc->getDOM()->saveHTML()) > 0);
     }
 
-    public function testParse()
+    public function testGetXPath()
     {
         $url = 'http://httpbin.org/';
         $doc = $this->createDocument($url);
 
-        $this->assertInstanceOf(
-            'yCrawler\Document',
-            $doc->parse()
-        );
-
-        $result = $doc->getValuesStorage()->get('pre');
-        $this->assertSame(4, count($result));
-
-        $result = $doc->getLinks();
-        $this->assertSame(26, count($result));
-
-        $this->assertTrue($doc->isParsed());
+        $this->assertInstanceOf('DOMXPath', $doc->getXPath());
     }
 
     public function testIsVerified()
     {
         $url = 'http://httpbin.org/';
-
         $doc = $this->createDocument($url);
+
         $this->assertTrue($doc->isVerified());
     }
 
@@ -77,6 +72,23 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase
         $this->assertTrue($doc->isIndexable());
     }
 
+    public function testGetLinksStorage()
+    {
+        $url = 'http://httpbin.org/';
+        $doc = $this->createDocument($url);
+
+        $this->assertCount(26, $doc->getLinksStorage()->all());
+    }
+
+    public function testGetValuesStorage()
+    {
+        $url = 'http://httpbin.org/';
+        $doc = $this->createDocument($url);
+
+        $this->assertCount(4, $doc->getValuesStorage()->get('pre'));
+    }
+
+    /*
     public function testEvaluateXPathNode()
     {
         $url = 'http://httpbin.org/';
@@ -103,7 +115,8 @@ class DocumentTest extends  \PHPUnit_Framework_TestCase
 
         $this->assertTrue(isset($result[0]['value']));
         $this->assertTrue(isset($result[0]['full']));
-     }
+    }
+    */
 }
 
 class DocumentTest_ParserMock extends Parser

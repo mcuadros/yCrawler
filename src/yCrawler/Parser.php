@@ -141,7 +141,11 @@ abstract class Parser
         return false;
     }
 
-    public function getFollowItems() { return $this->items['follow']; }
+    public function getFollowItems()
+    { 
+        return $this->items['follow']; 
+    }
+    
     public function getLinksItems() { return $this->items['links']; }
     public function getVerifyItems() { return $this->items['verify']; }
     public function getValueItems() { return $this->items['values']; }
