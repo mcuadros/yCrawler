@@ -36,11 +36,6 @@ class Item
     public function getPattern() { return $this->pattern; }
     public function setPattern($pattern)
     {
-        if ($this->type == self::TYPE_REGEXP) $this->validateRegExp($pattern);
-        else if ($this->type == self::TYPE_CSS) {
-            $pattern = $this->convertCSSPaternToXpath($pattern);
-        }
-
         $this->pattern = $pattern;
 
         return $this;

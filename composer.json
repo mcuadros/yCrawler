@@ -12,6 +12,10 @@
         "neitanod/forceutf8": "dev-master",
         "symfony/css-selector": "~2.0"
     },
+    "require-dev": {
+        "mockery/mockery": "*",
+        "phpunit/phpunit": "3.7.*"
+    },
     "autoload": {
         "psr-0": {
             "yCrawler": "src/"

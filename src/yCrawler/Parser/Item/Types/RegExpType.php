@@ -13,7 +13,8 @@ class RegExpType implements Type
         foreach (end($result) as $index => $value) {
             $output[] = Array(
                 'value' =>  $value,
-                'full' =>  $result[0][$index]
+                'full' =>  $result[0][$index],
+                'dom' => $document->getDOM()
             );
         }
 

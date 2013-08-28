@@ -41,7 +41,7 @@ abstract class Parser
         if ( $this->initialized ) return true;
         $this->initialize();
 
-        return $this->initialized = true;
+        $this->initialized = true;
     }
 
     public function setStartupURL($url, $clean = false)

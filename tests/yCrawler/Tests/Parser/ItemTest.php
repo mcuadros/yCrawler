@@ -36,17 +36,6 @@ class ItemTest extends  \PHPUnit_Framework_TestCase
         $this->assertSame($pattern, $item->getPattern());
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testSetPatternRegExpInvalid()
-    {
-        $item = new Item;
-        $item->setType(Item::TYPE_REGEXP);
-
-        $item->setPattern('aaaaa');
-    }
-
     public function testSetModifier()
     {
         $item = new Item;
@@ -76,11 +65,6 @@ class ItemTest extends  \PHPUnit_Framework_TestCase
         $item = new Item;
         $item->setType(Item::TYPE_CSS);
         $item->setPattern('div.item > h4 > a');
-
-        $this->assertSame(
-            "descendant-or-self::div[@class and contains(concat(' ', normalize-space(@class), ' '), ' item ')]/h4/a",
-            $item->getPattern()
-        );
 
         $doc = new ItemTest_DocumentMock(false);
         $result = $item->evaluate($doc);
