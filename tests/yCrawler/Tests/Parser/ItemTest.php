@@ -3,15 +3,18 @@ namespace yCrawler\Tests;
 use yCrawler\Document;
 use yCrawler\Parser\Item;
 
-class ItemTest extends  \PHPUnit_Framework_TestCase
+class ItemTest extends TestCase
 {
-    public function testDefaultType()
+    const INVALID_TYPE = 'not-valid';
+    const EXAMPLE_PATTERN = 'foo';
+
+    public function testGetTypeDefaultType()
     {
         $item = new Item;
         $this->assertSame(Item::TYPE_XPATH, $item->getType());
     }
 
-    public function testSetType()
+    public function testSetTypeAndGetType()
     {
         $item = new Item;
         $item->setType(Item::TYPE_REGEXP);
@@ -24,16 +27,14 @@ class ItemTest extends  \PHPUnit_Framework_TestCase
     public function testSetTypeInvalid()
     {
         $item = new Item;
-        $item->setType('not-valid');
+        $item->setType(self::INVALID_TYPE);
     }
 
-    public function testSetPattern()
+    public function testSetPatternAndGetPattern()
     {
-        $pattern = '//a';
-
         $item = new Item;
-        $item->setPattern($pattern);
-        $this->assertSame($pattern, $item->getPattern());
+        $item->setPattern(self::EXAMPLE_PATTERN);
+        $this->assertSame(self::EXAMPLE_PATTERN, $item->getPattern());
     }
 
     public function testSetModifier()
@@ -49,67 +50,27 @@ class ItemTest extends  \PHPUnit_Framework_TestCase
         $this->assertSame(2, $modifiers[1]());
     }
 
-    public function testEvaluateXPath()
+    public function testEvaluate()
     {
         $item = new Item;
-        $item->setPattern('//a');
+        $item->setType(Item::TYPE_LITERAL);
+        $item->setPattern(self::EXAMPLE_PATTERN);
 
-        $doc = new ItemTest_DocumentMock(false);
+        $doc = $this->createDocumentMock();
         $result = $item->evaluate($doc);
 
-        $this->assertSame(1, $result[0]['value']);
+        $this->assertCount(1, $result);
+        $this->assertSame(self::EXAMPLE_PATTERN, $result[0]['value']);
     }
 
-    public function testEvaluateCSS()
+    protected function createDocumentMock()
     {
-        $item = new Item;
-        $item->setType(Item::TYPE_CSS);
-        $item->setPattern('div.item > h4 > a');
+        $document = parent::createDocumentMock();
+        $document->shouldReceive('getDOM')
+            ->withNoArgs()
+            ->once()
+            ->andReturn(new \DOMDocument());
 
-        $doc = new ItemTest_DocumentMock(false);
-        $result = $item->evaluate($doc);
-
-        $this->assertSame(1, $result[0]['value']);
-    }
-
-    public function testEvaluateRegExp()
-    {
-        $item = new Item;
-        $item->setType(Item::TYPE_REGEXP);
-        $item->setPattern('/a/');
-
-        $doc = new ItemTest_DocumentMock(false);
-        $result = $item->evaluate($doc);
-
-        $this->assertSame(2, $result[0]['value']);
-    }
-
-    public function testEvaluateXPathWithModifier()
-    {
-        $item = new Item;
-        $item->setPattern('//a');
-        $item->setModifier(function(&$result) { $result[0]['value'] += 2; });
-
-        $doc = new ItemTest_DocumentMock(false);
-        $result = $item->evaluate($doc);
-
-        $this->assertSame(3, $result[0]['value']);
-    }
-}
-
-class ItemTest_DocumentMock extends Document
-{
-    public function evaluateXPath($pattern)
-    {
-        return Array(
-            Array('value' => 1)
-        );
-    }
-
-    public function evaluateRegExp($pattern)
-    {
-        return Array(
-            Array('value' => 2)
-        );
+        return $document;
     }
 }

@@ -1,14 +1,16 @@
 <?php
 namespace yCrawler\Parser;
-use yCrawler\Parser\Item\Types;
+use yCrawler\Parser\Item\Types\Type;
 use yCrawler\Document;
+use ReflectionClass;
+use Closure;
 
 class Item
 {
-    const TYPE_CSS = 'css';
-    const TYPE_XPATH = 'xpath';
-    const TYPE_REGEXP = 'regexp';
-    const TYPE_LITERAL = 'literal';
+    const TYPE_CSS = 'yCrawler\Parser\Item\Types\CSSType';
+    const TYPE_XPATH = 'yCrawler\Parser\Item\Types\XPathType';
+    const TYPE_REGEXP = 'yCrawler\Parser\Item\Types\RegExpType';
+    const TYPE_LITERAL = 'yCrawler\Parser\Item\Types\LiteralType';
 
     private $pattern;
     private $type = self::TYPE_XPATH;
@@ -16,24 +18,31 @@ class Item
     private $modifiers;
     private $callback;
 
-    public function getType() { return $this->type; }
     public function setType($type)
     {
-        if (
-            $type != self::TYPE_XPATH &&
-            $type != self::TYPE_REGEXP &&
-            $type != self::TYPE_CSS &&
-            $type != self::TYPE_LITERAL
-        ) {
-            throw new \InvalidArgumentException(sprintf('Invalid type "%s"' , $type));
-        }
-
+        $this->isValidType($type);
         $this->type = $type;
 
         return $this;
     }
 
-    public function getPattern() { return $this->pattern; }
+    private function isValidType($typeValue)
+    {
+        $r = new ReflectionClass(__CLASS__);
+        foreach ($r->getConstants() as $const => $value) {
+            if ($value === $typeValue) {
+                return true;
+            }
+        }
+
+        throw new \InvalidArgumentException(sprintf('Invalid type "%s"' , $typeValue));
+    }
+
+    public function getType()
+    {
+        return $this->type;
+    }
+
     public function setPattern($pattern)
     {
         $this->pattern = $pattern;
@@ -41,32 +50,28 @@ class Item
         return $this;
     }
 
-    public function getModifiers() { return $this->modifiers; }
-    public function setModifier(\Closure $modifier)
+    public function getPattern()
+    {
+        return $this->pattern;
+    }
+
+    public function setModifier(Closure $modifier)
     {
         $this->modifiers[] = $modifier;
 
         return $this;
     }
 
+    public function getModifiers()
+    {
+        return $this->modifiers;
+    }
+    
     public function evaluate(Document $document)
     {
-        switch ($this->type) {
-            case self::TYPE_XPATH:
-                $type = new Types\XPathType();
-                break;
-            case self::TYPE_CSS:
-                $type = new Types\CSSType();
-                break;
-            case self::TYPE_REGEXP:
-                $type = new Types\RegExpType();
-                break;
-            case self::TYPE_LITERAL:
-                $result = Array(Array('value'=> $this->pattern));
-                break;
-        }
-
+        $type = new $this->type();
         $result = $type->evaluate($document, $this->pattern);
+
         if (!$result) $result = array();
         $this->applyModifiers($result, $document);
 
@@ -77,21 +82,6 @@ class Item
     {
         if (!$this->modifiers) return true;
         foreach( $this->modifiers as $modifier) $modifier($result, $document);
-
-        return true;
-    }
-
-    private function convertCSSPaternToXpath($cssPattern)
-    {
-        $xpathPattern = CssSelector::toXPath($cssPattern);
-
-        return $xpathPattern;
-    }
-
-    private function validateRegExp($regexp)
-    {
-        if ( @preg_match($regexp, '') !== false) return true;
-        throw new \InvalidArgumentException(sprintf('Invalid regexp "%s"' , $regexp));
 
         return true;
     }

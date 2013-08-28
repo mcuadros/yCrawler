@@ -4,7 +4,9 @@ use yCrawler\Parser\Item\Types;
 use yCrawler\Tests\Testcase;
 
 class RegExpTypeTest extends Type
-{
+{   
+    protected $emptyNode = true;
+
     const TESTED_CLASS = 'yCrawler\Parser\Item\Types\RegExpType';
 
     const EXAMPLE_PATTERN_INPUT = '/f([a-z]*)/';
@@ -24,6 +26,7 @@ class RegExpTypeTest extends Type
 
         $result = $type->evaluate($document, static::EXAMPLE_PATTERN_INPUT);
 
+        $this->assertNull($result[0]['node']);
         $this->assertSame(static::EXAMPLE_RESULT, $result[0]['value']);
         $this->assertSame(static::EXAMPLE_RESULT_FULL, $result[0]['full']);
 

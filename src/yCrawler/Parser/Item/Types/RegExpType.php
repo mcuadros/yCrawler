@@ -14,6 +14,7 @@ class RegExpType implements Type
             $output[] = Array(
                 'value' =>  $value,
                 'full' =>  $result[0][$index],
+                'node' => null,
                 'dom' => $document->getDOM()
             );
         }

@@ -5,6 +5,8 @@ use yCrawler\Tests\Testcase;
 
 class Type extends TestCase
 {
+    protected $emptyNode = false;
+
     public function testEvaluate()
     {
         $document = $this->createDocumentMock();
@@ -15,7 +17,13 @@ class Type extends TestCase
         $result = $type->evaluate($document, static::EXAMPLE_PATTERN_INPUT);
 
         $this->assertSame(static::EXAMPLE_RESULT, $result[0]['value']);
-        $this->assertInstanceOf('StdClass', $result[0]['node']);
+        
+        if ($this->emptyNode) {
+            $this->assertNull($result[0]['node']);
+        } else {
+            $this->assertInstanceOf('StdClass', $result[0]['node']);
+        }
+
         $this->assertInstanceOf('DOMDocument', $result[0]['dom']);        
     }
 
