@@ -4,7 +4,7 @@ use yCrawler\Document;
 use yCrawler\Parser\Group;
 use yCrawler\Parser\Item;
 
-class GroupTest extends  \PHPUnit_Framework_TestCase
+class GroupTest extends TestCase
 {
     public function testCreateItem()
     {
@@ -27,23 +27,23 @@ class GroupTest extends  \PHPUnit_Framework_TestCase
 
     public function testEvaluate()
     {
-        $doc = new GroupTest_DocumentMock('http://test.com');
+        $doc = $this->createDocumentMock();
         $group = new Group;
-        $group->createItem('a');
-        $group->createItem('b')->setType(Item::TYPE_REGEXP);
+        $group->createItem('a')->setType(Item::TYPE_LITERAL);
+        $group->createItem('b')->setType(Item::TYPE_LITERAL);
 
         $result = $group->evaluate($doc);
-        $this->assertSame(1, $result[0]['value']);
-        $this->assertSame(4, $result[1]['value']);
-        $this->assertSame(2, $result[2]['value']);
-
+        $this->assertSame('a', $result[0]['value']);
+        $this->assertSame('b', $result[1]['value']);
     }
 
     public function testEvaluateWithModifier()
     {
-        $doc = new GroupTest_DocumentMock('http://test.com');
+        $doc = $this->createDocumentMock();
         $group = new Group;
-        $group->createItem('a');
+        $group->createItem(1)->setType(Item::TYPE_LITERAL);
+        $group->createItem(4)->setType(Item::TYPE_LITERAL);
+
         $group->setModifier(function(&$result) {
             $result[0]['value'] += 3;
             $result[1]['value'] += 2;
@@ -54,22 +54,15 @@ class GroupTest extends  \PHPUnit_Framework_TestCase
         $this->assertSame(4, $result[0]['value']);
         $this->assertSame(6, $result[1]['value']);
     }
-}
 
-class GroupTest_DocumentMock extends Document
-{
-    public function evaluateXPath($pattern)
+    protected function createDocumentMock()
     {
-        return Array(
-            Array('value' => 1),
-            Array('value' => 4)
-        );
-    }
+        $document = parent::createDocumentMock();
+        $document->shouldReceive('getDOM')
+            ->withNoArgs()
+            ->once()
+            ->andReturn(new \DOMDocument());
 
-    public function evaluateRegExp($pattern)
-    {
-        return Array(
-            Array('value' => 2)
-        );
+        return $document;
     }
 }
