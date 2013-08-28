@@ -1,10 +1,24 @@
 <?php
 namespace yCrawler\Tests\Parse\Item\Modifiers;
 use yCrawler\Parser\Item\Modifiers\HTML;
+use yCrawler\Tests\Testcase;
 use yCrawler\Document;
 
-class HTMLTest extends  \PHPUnit_Framework_TestCase
+class HTMLTest extends TestCase
 {
+    const DOCUMENT_URL = 'http://test.com/url.html';
+
+    protected function createDocumentMock()
+    {
+        $document = parent::createDocumentMock();
+        $document->shouldReceive('getURL')
+            ->withNoArgs()
+            ->once()
+            ->andReturn(self::DOCUMENT_URL);
+
+        return $document;
+    }
+
     public function testBoolean()
     {
         $dom = new \DOMDocument();
@@ -41,8 +55,8 @@ class HTMLTest extends  \PHPUnit_Framework_TestCase
         $dom->loadHTML('<html><img src="test.jpg" /></html>');
         $node = $dom->getElementsByTagName('img')->item(0);
 
-        $document = new Document('http://test.com/url.html');
-
+        $document = $this->createDocumentMock();
+        
         $closure = HTML::image();
         $result = array(
             array('value' => 'test', 'dom' => $dom, 'node' => $node)
@@ -58,7 +72,7 @@ class HTMLTest extends  \PHPUnit_Framework_TestCase
         $dom->loadHTML('<html><a href="http://other.com/test2.jpg" /></html>');
         $node = $dom->getElementsByTagName('a')->item(0);
 
-        $document = new Document('http://test.com/url.html');
+        $document = $this->createDocumentMock();
 
         $closure = HTML::image();
         $result = array(
@@ -75,7 +89,7 @@ class HTMLTest extends  \PHPUnit_Framework_TestCase
         $dom->loadHTML('<html><b style="background:url(\'test2.jpg\')" /></html>');
         $node = $dom->getElementsByTagName('b')->item(0);
 
-        $document = new Document('http://test.com/url.html');
+        $document = $this->createDocumentMock();
 
         $closure = HTML::image();
         $result = array(
