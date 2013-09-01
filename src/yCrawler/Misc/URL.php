@@ -77,6 +77,7 @@ class URL
     public static function validate($url)
     {
         //TODO: code for 'validate($url)'
+        if (!$url) return false;
         return true;
     }
 

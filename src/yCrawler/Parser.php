@@ -5,6 +5,8 @@ use yCrawler\Misc\URL;
 use yCrawler\Parser\Item;
 use yCrawler\Parser\Group;
 
+use yCrawler\Parser\Exceptions;
+
 /**
  * Parser_Base es una clase abstracta que ha de ser extendida por una clase final a modo de
  * configuración, donde se definirán todos los permenores para cada parser.
@@ -25,6 +27,8 @@ use yCrawler\Parser\Group;
  */
 abstract class Parser
 {
+    const URL_PATTERN_BASED_ON_DOMAIN = '~^https?://%s~';
+
     private $initialized = false;
     private $startup = Array();
     private $urlPatterns = Array();
@@ -38,123 +42,38 @@ abstract class Parser
 
     public function configure()
     {
-        if ( $this->initialized ) return true;
-        $this->initialize();
+        if (!$this->isInitialized()) {
+            $this->initialize();
+            $this->initialized = true;
+        }
+    }
 
-        $this->initialized = true;
+    public function isInitialized()
+    {
+        return $this->initialized;
+    }
+
+    public function getStartupURLs()
+    {
+        return $this->startup;
+    }
+
+    public function clearStartupURLs()
+    {
+        $this->startup = array();
     }
 
     public function setStartupURL($url, $clean = false)
     {
-        if ( $clean ) $this->startup = Array();
-        if ( !URL::validate($url) ) {
-            throw new Exception('Unable to set startup URL, non-valid url. ' . $url);
+        if ($clean) {
+            $this->clearStartupURLs();
+        }
+
+        if (!URL::validate($url)) {
+            throw new Exceptions\InvalidStartupURL();
         }
 
         return $this->startup[] = $url;
-    }
-
-    public function setURLPattern($regexp, $clean = false)
-    {
-        if ( $clean ) $this->urlPatterns = Array();
-        if ( preg_match($regexp, '') === false ) return false;
-        return $this->urlPatterns[] = $regexp;
-    }
-
-    public function createLinkFollowItem($expression = false, $sign = true)
-    {
-        $item = new Item();
-        if ( $expression ) $item->setPattern($expression);
-        $this->items['follow'][] = Array($item, $sign);
-
-        return $item;
-    }
-
-    public function createVerifyItem($expression = false, $sign = true)
-    {
-        $item = new Item();
-        if ( $expression ) $item->setPattern($expression);
-        $this->items['verify'][] = Array($item, $sign);
-
-        return $item;
-    }
-
-    public function createLinksItem($expression = false, $override = false)
-    {
-        $item = new Item();
-        if ( $expression ) $item->setPattern($expression);
-
-        if ( $override ) $this->items['links']= Array($item);
-        else $this->items['links'][] = $item;
-        return $item;
-    }
-
-    public function createValueItem($name, $expression = false)
-    {
-        $item = new Item();
-        if ( $expression ) $item->setPattern($expression);
-        $this->items['values'][$name] = $item;
-
-        return $item;
-    }
-
-    public function createValueGroup($name)
-    {
-        $group = new Group();
-        $this->items['values'][$name] = &$group;
-
-        return $group;
-    }
-
-    public function onParse(\Closure $closure)
-    {
-        $this->parseCallback = $closure;
-
-        return true;
-    }
-
-    public function parsed(Document $document)
-    {
-        if (!$this->parseCallback) return null;
-
-        $closure = $this->parseCallback;
-
-        return $closure($document);
-    }
-
-    public function matchURL($url)
-    {
-        if (count($this->urlPatterns) == 0) {
-            $tmp = Array();
-            foreach ($this->startup as $url) {
-                $domain = parse_url($url, PHP_URL_HOST);
-                $tmp[] = '~^https?://' . str_replace('.', '\.', $domain) . '~';
-            }
-
-            $this->urlPatterns = array_unique($tmp);
-        }
-
-        foreach ($this->urlPatterns as $regexp) {
-            if ( preg_match($regexp, $url) === 1 ) return true;
-        }
-
-        return false;
-    }
-
-    public function getFollowItems()
-    { 
-        return $this->items['follow']; 
-    }
-    
-    public function getLinksItems() { return $this->items['links']; }
-    public function getVerifyItems() { return $this->items['verify']; }
-    public function getValueItems() { return $this->items['values']; }
-
-    public function getURLPatterns()
-    {
-        $this->configure();
-
-        return $this->urlPatterns;
     }
 
     public function getStartupDocs()
@@ -167,5 +86,187 @@ abstract class Parser
         }
 
         return $documents;
+    }
+
+    public function getURLPatterns()
+    {
+        return $this->urlPatterns;
+    }
+
+    public function clearURLPatterns()
+    {
+        $this->urlPatterns = array();
+    }
+
+    public function setURLPattern($regexp, $clean = false)
+    {
+        if ($clean) {
+            $this->clearURLPatterns();
+        }
+
+        if (!$this->validateRegExp($regexp)) {
+            throw new Exceptions\InvalidURLPattern();
+        }
+
+        return $this->urlPatterns[] = $regexp;
+    }
+
+    private function validateRegExp($regexp)
+    {
+        if (@preg_match($regexp, '') === false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function matchURL($url)
+    {
+        if (count($this->urlPatterns) == 0) {
+            $this->createDefaultURLPatterns();
+        }
+
+        foreach ($this->urlPatterns as $regexp) {
+            if (preg_match($regexp, $url) === 1) return true;
+        }
+
+        return false;
+    }
+
+    private function createDefaultURLPatterns()
+    {
+        $tmp = Array();
+        foreach ($this->startup as $url) {
+            $tmp[] = $this->createURLPatternBasedOnURL($url);
+        }
+
+        $this->urlPatterns = array_unique($tmp);
+    }
+
+    private function createURLPatternBasedOnURL($url)
+    {
+        $domain = parse_url($url, PHP_URL_HOST);
+        $domainWithEscapedDots = str_replace('.', '\.', $domain);
+
+        return sprintf(self::URL_PATTERN_BASED_ON_DOMAIN, $domainWithEscapedDots);
+    }
+
+    public function getFollowItems()
+    { 
+        return $this->items['follow']; 
+    }
+
+    public function addLinkFollowItem(Item $item, $sign)
+    {
+        $this->items['follow'][] = Array($item, $sign);
+    }
+
+    public function clearFollowItems()
+    { 
+        $this->items['follow'] = Array(); 
+    }
+
+    public function createLinkFollowItem($expression = false, $sign = true)
+    {
+        $item = new Item();
+        if ($expression) $item->setPattern($expression);
+        
+        $this->addLinkFollowItem($item, $sign);
+        return $item;
+    }
+
+    public function getVerifyItems()
+    { 
+        return $this->items['verify'];
+    }
+
+    public function addVerifyItem(Item $item, $sign)
+    {
+        $this->items['verify'][] = Array($item, $sign);
+    }
+
+    public function clearVerifyItems()
+    {
+        $this->items['verify'] = Array();
+    }
+
+    public function createVerifyItem($expression = false, $sign = true)
+    {
+        $item = new Item();
+        if ($expression) $item->setPattern($expression);
+
+        $this->addVerifyItem($item, $sign);
+        return $item;
+    }
+
+    public function getLinksItems()
+    {
+        return $this->items['links'];
+    }
+
+    public function addLinksItem(Item $item)
+    {
+        $this->items['links'][] = $item;
+    }
+
+    public function clearLinksItems()
+    {
+        $this->items['links'] = Array();
+    }
+
+    public function createLinksItem($expression = false)
+    {
+        $item = new Item();
+        if ($expression) $item->setPattern($expression);
+
+        $this->addLinksItem($item);
+        return $item;
+    }
+
+    public function getValueItems()
+    {
+        return $this->items['values'];
+    }
+
+    public function addValueItem($name, Item $item)
+    {
+        $this->items['values'][$name] = $item;
+    }
+
+    public function clearValueItems()
+    {
+        $this->items['values'] = Array();
+    }
+
+    public function createValueItem($name, $expression = false)
+    {
+        $item = new Item();
+        if ($expression) $item->setPattern($expression);
+        
+        $this->addValueItem($name, $item);
+        return $item;
+    }
+
+    public function addValueGroup($name, Group $group)
+    {
+        $this->items['values'][$name] = $group;
+    }
+
+    public function createValueGroup($name)
+    {
+        $group = new Group();
+
+        $this->addValueGroup($name, $group);
+        return $group;
+    }
+
+    public function setOnParseCallback(\Closure $closure)
+    {
+        $this->parseCallback = $closure;
+    }
+
+    public function getOnParseCallback()
+    {
+        return $this->parseCallback;
     }
 }
