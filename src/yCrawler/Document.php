@@ -8,6 +8,7 @@ use yCrawler\Document\Exceptions;
 
 use DOMDocument;
 use DOMXPath;
+use Closure;
 
 class Document
 {
@@ -22,6 +23,7 @@ class Document
 
     protected $isVerified;
     protected $isIndexable;
+    protected $isParsed;
 
     public function __construct($url, Parser $parser)
     {
@@ -42,25 +44,21 @@ class Document
 
     public function getHTML()
     {
-        $this->makeRequest();
         return $this->request->getResponse();
     }
 
     public function getDOM()
     {
-        $this->makeRequest();
         return $this->dom;
     }
 
     public function getXPath()
     {
-        $this->makeRequest();
         return $this->xpath;
     }
 
     public function isIndexable()
     {
-        $this->makeRequest();
         if ($this->isIndexable !== null) return $this->isIndexable;
  
         $this->isIndexable = true;
@@ -76,7 +74,6 @@ class Document
 
     public function isVerified()
     {
-        $this->makeRequest();
         if ($this->isVerified !== null) return $this->isVerified;
         
         $this->isVerified = true;
@@ -84,7 +81,9 @@ class Document
         $verifyItems = $this->parser->getVerifyItems();
         foreach ($verifyItems as &$item) {
             $this->isVerified = $this->evaluteItemAsScalar($item);
-            if (!$this->isVerified) break;
+            if (!$this->isVerified) {
+                break;
+            }
         }
 
         return $this->isVerified;
@@ -100,23 +99,19 @@ class Document
         return true;
     }
 
-    public function getLinksStorage()
-    {
-        if ($this->linksStorage === null) {
-            if (!$this->isIndexable()) {
-                $this->linksStorage = false;
-            } else {
-                $this->createLinksStorage();
-                $this->fillLinksStorage();    
-            }
-        }
-
-        return $this->linksStorage;
-    }
-
     protected function createLinksStorage()
     {
-        $this->linksStorage = new LinksStorage($this->url, $this->parser);
+        if (!$this->isIndexable()) {
+            $this->linksStorage = false;
+        } else {
+            $this->linksStorage = new LinksStorage($this->url, $this->parser);
+            $this->fillLinksStorage();    
+        }
+    }
+
+    public function getLinksStorage()
+    {
+        return $this->linksStorage;
     }
 
     protected function fillLinksStorage()
@@ -138,23 +133,19 @@ class Document
         }
     }
 
-    public function getValuesStorage()
+    public function createValuesStorage()
     {
-        if ($this->valuesStorage === null) {
-            if (!$this->isVerified()) {
-                $this->valuesStorage = false;
-            } else {
-                $this->createValuesStorage();
-                $this->fillValuesStorage();
-            }
+        if (!$this->isVerified()) {
+            $this->valuesStorage = false;
+        } else {
+            $this->valuesStorage = new ValuesStorage();
+            $this->fillValuesStorage();
         }
-
-        return $this->valuesStorage;
     }
 
-    protected function createValuesStorage()
+    public function getValuesStorage()
     {
-        $this->valuesStorage = new ValuesStorage();
+        return $this->valuesStorage;
     }
 
     protected function fillValuesStorage()
@@ -170,6 +161,22 @@ class Document
         $this->valuesStorage->set($key, $result);
     }
 
+    public function parse()
+    { 
+        $this->makeRequest();
+        
+        $this->createValuesStorage();
+        $this->createLinksStorage();
+        $this->callOnParseCallback();
+
+        $this->isParsed = true;
+    }
+
+    public function isParsed()
+    {
+        return $this->isParsed;
+    }
+
     protected function makeRequest()
     {
         if ($this->isNeededExecuteRequest()) {
@@ -181,7 +188,6 @@ class Document
     }
 
     protected function initizalizeParser()
-
     {
         $this->parser->configure();
     }
@@ -189,6 +195,14 @@ class Document
     protected function executeRequest()
     {
         $this->request->call();
+    }
+
+    protected function callOnParseCallback()
+    {
+        $cb = $this->parser->getOnParseCallback();
+        if ($cb instanceOf Closure) {
+            $cb($this);
+        }
     }
 
     protected function isNeededExecuteRequest()

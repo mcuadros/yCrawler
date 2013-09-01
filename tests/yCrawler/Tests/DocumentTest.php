@@ -5,6 +5,8 @@ use Mockery as m;
 
 class DocumentTest extends TestCase
 {
+    const EXAMPLE_URL = 'http://httpbin.org/';
+
     public function createDocument($url)
     {
         $parser = $this->createParserMock();
@@ -14,16 +16,14 @@ class DocumentTest extends TestCase
 
     public function testGetURL()
     {
-        $url = 'http://httpbin.org/';
-        $doc = $this->createDocument($url);
+        $doc = $this->createDocument(self::EXAMPLE_URL);
 
-        $this->assertSame($url, $doc->getURL());
+        $this->assertSame(self::EXAMPLE_URL, $doc->getURL());
     }
 
     public function testGetParser()
     {
-        $url = 'http://httpbin.org/';
-        $doc = $this->createDocument($url);
+        $doc = $this->createDocument(self::EXAMPLE_URL);
 
         $this->assertInstanceOf(
             'yCrawler\Mocks\ParserMock',
@@ -33,16 +33,16 @@ class DocumentTest extends TestCase
 
     public function testGetHTML()
     {
-        $url = 'http://httpbin.org/';
-        $doc = $this->createDocument($url);
+        $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->parse();
 
         $this->assertTrue(strlen($doc->getHTML()) > 0);
     }
 
     public function testGetDOM()
     {
-        $url = 'http://httpbin.org/';
-        $doc = $this->createDocument($url);
+        $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->parse();
 
         $this->assertInstanceOf('DOMDocument', $doc->getDOM());
         $this->assertTrue(strlen($doc->getDOM()->saveHTML()) > 0);
@@ -50,41 +50,65 @@ class DocumentTest extends TestCase
 
     public function testGetXPath()
     {
-        $url = 'http://httpbin.org/';
-        $doc = $this->createDocument($url);
+        $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->parse();
 
         $this->assertInstanceOf('DOMXPath', $doc->getXPath());
     }
 
     public function testIsVerified()
     {
-        $url = 'http://httpbin.org/';
-        $doc = $this->createDocument($url);
+        $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->parse();
 
         $this->assertTrue($doc->isVerified());
     }
 
     public function testIsIndexable()
     {
-        $url = 'http://httpbin.org/';
+        $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->parse();
 
-        $doc = $this->createDocument($url);
         $this->assertTrue($doc->isIndexable());
     }
 
     public function testGetLinksStorage()
     {
-        $url = 'http://httpbin.org/';
-        $doc = $this->createDocument($url);
+        $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->parse();
 
-        $this->assertCount(26, $doc->getLinksStorage()->all());
+        $this->assertCount(25, $doc->getLinksStorage()->all());
     }
 
     public function testGetValuesStorage()
     {
-        $url = 'http://httpbin.org/';
-        $doc = $this->createDocument($url);
+        $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->parse();
 
         $this->assertCount(4, $doc->getValuesStorage()->get('pre'));
+    }
+
+    public function testParseAndIsParsed()
+    {
+        $doc = $this->createDocument(self::EXAMPLE_URL);
+
+        $this->assertNull($doc->isParsed());
+
+        $doc->parse();
+        $this->assertTrue($doc->isParsed());
+    }
+
+    public function testCallOnParseCallback()
+    {
+        $doc = $this->createDocument(self::EXAMPLE_URL);
+
+        $parser = $doc->getParser();
+        $called = false;
+        $parser->setOnParseCallback(function() use (&$called) {
+            $called = true;
+        });
+
+        $doc->parse();
+        $this->assertTrue($called);
     }
 }
