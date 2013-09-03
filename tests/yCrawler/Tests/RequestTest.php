@@ -1,6 +1,7 @@
 <?php
 namespace yCrawler\Tests;
 use yCrawler\Request;
+use yCrawler\Request\Exceptions;
 
 class RequestTest extends  \PHPUnit_Framework_TestCase
 {
@@ -54,14 +55,16 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
         $this->assertTrue(strlen($request->getResponseHeaders()) > 1);
     }
 
+    /**
+     * @expectedException yCrawler\Request\Exceptions\NetworkError
+     * @expectedExceptionCode 28
+     */
     public function testSetMaxExecutionTime()
     {
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/delay/2');
         $request->setMaxExecutionTime(1);
         $request->call();
-
-        $this->assertEquals(28, $request->getResponseCode());
     }
 
     public function testSetCookie()
@@ -83,16 +86,54 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
     public function testGetResponseCode()
     {
         $request = $this->createRequest();
-        $request->setURL('http://httpbin.org/status/418');
+        $request->setURL('http://httpbin.org/status/200');
         $request->call();
 
-        $this->assertEquals(418, $request->getResponseCode());
+        $this->assertEquals(200, $request->getResponseCode());
+    }
+
+    public function testGetResponseCodeNetworkError()
+    {
+        $request = $this->createRequest();
+        $request->setURL('http://httpbin.org/delay/2');
+        $request->setMaxExecutionTime(1);
+
+        try {
+            $request->call();
+        } catch (Exceptions\NetworkError $e) {
+            $this->assertSame(28, $request->getResponseCode());
+            $this->assertSame(Request::STATUS_RETRY, $request->getStatus());
+        }
+    }
+
+    public function testGetResponseCodeHTTPError()
+    {
+        $request = $this->createRequest();
+        $request->setURL('http://httpbin.org/status/418');
+
+        try {
+            $request->call();
+        } catch (Exceptions\HTTPError $e) {
+            $this->assertSame(418, $request->getResponseCode());
+            $this->assertSame(Request::STATUS_FAILED, $request->getStatus());
+        }
+    }
+
+    /**
+     * @expectedException yCrawler\Request\Exceptions\HTTPError
+     * @expectedExceptionCode 418
+     */
+    public function testHTTPError()
+    {
+        $request = $this->createRequest();
+        $request->setURL('http://httpbin.org/status/418');
+        $request->call();
     }
 
     public function testGetExecutionTime()
     {
         $request = $this->createRequest();
-        $request->setURL('http://httpbin.org/status/418');
+        $request->setURL('http://httpbin.org/status/200');
         $request->call();
 
         $this->assertTrue($request->getExecutionTime() != null);

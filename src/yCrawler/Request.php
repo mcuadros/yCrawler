@@ -1,5 +1,6 @@
 <?php
 namespace yCrawler;
+use yCrawler\Request\Exceptions;
 use yCrawler\Misc\URL;
 use ForceUTF8\Encoding;
 
@@ -139,7 +140,7 @@ class Request
     public function getResponseHeaders() { return $this->responseHeaders; }
     public function getStatus() { return $this->status; }
     public function getExecutionTime() { return $this->elapsed; }
-
+    
     public function newRetry()
     {
         if ( ++$this->retries > $this->maxRetries ) return false;
@@ -155,38 +156,14 @@ class Request
         $start = microtime(true);
 
         $this->curl = curl_init();
-        curl_setopt($this->curl, CURLOPT_USERAGENT, $this->userAgent);
-        curl_setopt($this->curl, CURLOPT_URL, $this->cleanUrl);
-        curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($this->curl, CURLOPT_AUTOREFERER, true);
-        curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($this->curl, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
-        curl_setopt($this->curl, CURLOPT_TIMEOUT, $this->maxExecutionTime);
 
-        if ($this->headers) {
-            curl_setopt($this->curl, CURLOPT_HEADER, true);
-            curl_setopt($this->curl, CURLOPT_FAILONERROR, false);
-        } else {
-            curl_setopt($this->curl, CURLOPT_FAILONERROR, true);
-        }
+        $this->configureBase();
+        $this->configureHeaders();
+        $this->configureCookies();
+        $this->configureInterface();
+        $this->configureSSL();
+        $this->configurePOST();
 
-        if ($this->cookie) {
-            curl_setopt($this->curl, CURLOPT_COOKIEJAR, $this->cookie);
-            curl_setopt($this->curl, CURLOPT_COOKIEFILE, $this->cookie);
-        }
-
-        if ($this->interface) {
-            curl_setopt($this->curl, CURLOPT_INTERFACE,$this->interface);
-        }
-
-        if ($this->sslCertificate) {
-            curl_setopt($this->curl, CURLOPT_CAINFO, $this->sslCertificate);
-        }
-
-        if ($this->post) {
-            curl_setopt ($this->curl, CURLOPT_POSTFIELDS, $this->post);
-            curl_setopt ($this->curl, CURLOPT_POST, 1);
-        }
 
         $response = curl_exec($this->curl);
         if ($this->headers) {
@@ -199,23 +176,68 @@ class Request
 
         $this->setExecutionTime(microtime(true) - $start);
 
-        $errorNo = curl_errno($this->curl);
+        $errno = curl_errno($this->curl);
+        if ($errno) {
+            $this->setResponseCode($errno);
+            throw new Exceptions\NetworkError(curl_error($this->curl), $errno);
+        }
+
         $httpCode = curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
 
-        if (!$errorNo && $httpCode == 200) {
-            $this->setResponseCode(curl_getinfo($this->curl, CURLINFO_HTTP_CODE));
+        $this->setResponseCode($httpCode);
+        if ($httpCode != 200) {
+            throw new Exceptions\HTTPError($httpCode);
+        }
+    }
 
-            return true;
+    private function configureBase()
+    {
+        curl_setopt($this->curl, CURLOPT_USERAGENT, $this->userAgent);
+        curl_setopt($this->curl, CURLOPT_URL, $this->cleanUrl);
+        curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($this->curl, CURLOPT_AUTOREFERER, true);
+        curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($this->curl, CURLOPT_CONNECTTIMEOUT, $this->connectionTimeout);
+        curl_setopt($this->curl, CURLOPT_TIMEOUT, $this->maxExecutionTime);
+    }
+
+    private function configureHeaders()
+    {
+        if ($this->headers) {
+            curl_setopt($this->curl, CURLOPT_HEADER, true);
+            curl_setopt($this->curl, CURLOPT_FAILONERROR, false);
         } else {
-            if ($httpCode) {
-                $this->setResponseCode($httpCode);
+            curl_setopt($this->curl, CURLOPT_FAILONERROR, true);
+        }
+    }
 
-                return false;
-            } else {
-                $this->setResponseCode($errorNo);
+    private function configureCookies()
+    {
+        if ($this->cookie) {
+            curl_setopt($this->curl, CURLOPT_COOKIEJAR, $this->cookie);
+            curl_setopt($this->curl, CURLOPT_COOKIEFILE, $this->cookie);
+        }
+    }
 
-                return false;
-            }
+    private function configureInterface()
+    {
+        if ($this->interface) {
+            curl_setopt($this->curl, CURLOPT_INTERFACE,$this->interface);
+        }
+    }
+
+    private function configureSSL()
+    {
+        if ($this->sslCertificate) {
+            curl_setopt($this->curl, CURLOPT_CAINFO, $this->sslCertificate);
+        }
+    }
+
+    private function configurePOST()
+    {
+        if ($this->post) {
+            curl_setopt ($this->curl, CURLOPT_POSTFIELDS, $this->post);
+            curl_setopt ($this->curl, CURLOPT_POST, 1);
         }
     }
 
