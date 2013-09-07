@@ -6,7 +6,9 @@
             <directory>tests/yCrawler/</directory>
         </testsuite>
     </testsuites>
-
+    <listeners>
+        <listener class="\Mockery\Adapter\Phpunit\TestListener"></listener>
+    </listeners>
     <filter>
         <whitelist>
             <directory suffix=".php">src/yCrawler/</directory>
