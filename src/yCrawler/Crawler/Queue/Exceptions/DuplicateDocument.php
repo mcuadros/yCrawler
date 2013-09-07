@@ -1,5 +1,5 @@
 <?php
-namespace yCrawler\Queue\Exceptions;
+namespace yCrawler\Crawler\Queue\Exceptions;
 
 use yCrawler\Document;
 use RuntimeException;

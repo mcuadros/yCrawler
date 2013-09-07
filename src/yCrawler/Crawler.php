@@ -1,12 +1,12 @@
 <?php
 namespace yCrawler;
 use yCrawler\Parser;
-use yCrawler\Crawler\ThreadPool;
+use yCrawler\Crawler;
 
 class Crawler
 {
     private $initialized = false;
-    private $pool;
+    private $history;
     private $queue;
 
     private $parsers = Array();
@@ -25,6 +25,40 @@ class Crawler
         $this->queue = $queue;
     }
 
+    public function setQueue(Crawler\Queue $queue)
+    {
+        $this->queue = $queue;
+    }
+
+    public function getQueue()
+    {
+        return $this->queue;
+    }
+
+    public function setHistory(Crawler\History $history)
+    {
+        $this->history = $history;
+    }
+
+    public function getHistory()
+    {
+        return $this->history;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*****************/
     public function initialize()
     {
         if ($this->initialized) return true;
