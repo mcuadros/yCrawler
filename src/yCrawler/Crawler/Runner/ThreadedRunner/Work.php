@@ -1,55 +1,68 @@
 <?php
 namespace yCrawler\Crawler\Runner\ThreadedRunner;
+use yCrawler\Document;
 use Stackable;
 
 class Work extends Stackable {
-    private $finished;
-    private $object;
-    private $waiting;
+    private $originalDocument;
+    private $document;
+    private $exception;
 
-    public function __construct($data) {
-        $this->local = $data;
+    private $failed;
+    private $read;
+
+    public function __construct(Document $document) {
+        $this->originalDocument = $document;
     }
 
     public function run() {
-        printf('Running on %s pid(%s)'  . PHP_EOL, $this->worker->getThreadId(), getmypid());
-
-        $this->worker->addData([
-            'date' => date('Y-m-d H:i:s'),
-            'worker' => $this->worker->getThreadId()
-        ]);
-
-        $object = $this->local;
-       // $object->add();
-        
-        $this->object = $object;
-        //sleep(1);
-
-        $this->finished = true;
-        $this->waiting = true;
-
-    }   
-
-    public function getObject()
-    {
-        return $this->object;
+        $this->parseDocument();
     }
 
-    public function getLocal()
+    private function parseDocument()
     {
-        return $this->local;
+        $document = $this->copyDocument();
+
+        try {
+            $document->parse();
+        } catch (Exception $exception) {
+            $this->exception = $exception;
+            $this->failed = true;
+        }
     }
 
-    public function isFinished()
+    private function copyDocument()
     {
-        return $this->finished;
+        $this->document = clone $this->originalDocument;
+        return $this->document;
+    }
+
+    public function isParsed()
+    {
+        return $this->document->isParsed();
+    }
+
+    public function isFailed()
+    {
+        return $this->isFailed;
+    }
+
+    public function getDocument()
+    {
+        return $this->document;
+    }
+
+    public function getException()
+    {
+        return $this->exception;
     }
 
     public function dataWaiting()
     {
-        $status = $this->waiting;
-        $this->waiting = false;
-
-        return $status;
+        if ($this->isParsed()) {
+            $this->read = true;
+        }
+        
+        return !$this->read;
     }
 }
