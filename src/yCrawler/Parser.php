@@ -29,11 +29,11 @@ abstract class Parser
 {
     const URL_PATTERN_BASED_ON_DOMAIN = '~^https?://%s~';
 
-    private $initialized = false;
+    protected $initialized = false;
     private $startup = Array();
     private $urlPatterns = Array();
     private $parseCallback;
-    private $items = Array(
+    protected $items = Array(
         'follow' => array(), 'links' => array(),
         'verify' => array(), 'values' => array()
     );

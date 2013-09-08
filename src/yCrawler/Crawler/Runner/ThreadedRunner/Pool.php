@@ -52,7 +52,7 @@ class Pool
         $id = $this->createNewWorkerId();
 
         $worker = new Worker(sprintf("Worker [%d]", $id));
-        $worker->start();
+        $worker->start(PTHREADS_INHERIT_ALL);
 
         $this->workers[$id] = $worker;
 
