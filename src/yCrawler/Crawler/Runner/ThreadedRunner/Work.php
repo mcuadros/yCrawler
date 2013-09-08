@@ -2,6 +2,7 @@
 namespace yCrawler\Crawler\Runner\ThreadedRunner;
 use yCrawler\Document;
 use Stackable;
+use Exception;
 
 class Work extends Stackable {
     private $originalDocument;
@@ -39,6 +40,7 @@ class Work extends Stackable {
 
     public function isParsed()
     {
+        if (!$this->document) return false;
         return $this->document->isParsed();
     }
 

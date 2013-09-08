@@ -30,7 +30,6 @@ class Pool
         }
 
         if ($worker->stack($work)) {
-            echo "HOLA";
             return $work;
         } 
     

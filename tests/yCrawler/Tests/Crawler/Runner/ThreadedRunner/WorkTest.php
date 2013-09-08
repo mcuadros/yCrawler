@@ -4,20 +4,39 @@ use yCrawler\Tests\TestCase;
 use yCrawler\Crawler\Runner\ThreadedRunner\Work;
 use yCrawler\Crawler\Runner\ThreadedRunner\Pool;
 use yCrawler\Document;
+use Exception;
 
 class WorkTest extends TestCase
 {
-    public function testCreateItem()
+    public function testSubmitWorkFail()
     {   
         $document = new Document('foo', $this->createParserMock());
 
-        $work = new Work($document);
         $pool = new Pool();
+        
+        $work = new Work($document);
         $pool->submitWork($work);
 
+        $pool->shutdownWorkers();
 
-        echo "hola";
+        $this->assertInstanceOf('Exception', $work->getException());
+    }
 
-        //$this->assertInstanceOf('yCrawler\Parser\Item', $group->createItem());
+    public function testSubmitWorkOk()
+    {   
+
+        $document = new Document('http://httpbin.org/', $this->createParserMock());
+
+        $pool = new Pool();
+
+        $work = new Work($document);
+        $pool->submitWork($work);
+
+        $work = new Work($document);
+        $pool->submitWork($work);
+
+        $pool->shutdownWorkers();
+
+        $this->assertNull($work->getException());
     }
 }
