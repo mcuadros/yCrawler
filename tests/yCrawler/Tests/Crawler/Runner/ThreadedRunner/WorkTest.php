@@ -13,13 +13,18 @@ class WorkTest extends TestCase
         $document = new Document('foo', $this->createParserMock());
 
         $pool = new Pool();
-        
-        $work = new Work($document);
-        $pool->submitWork($work);
 
+        $works = [];
+        foreach (range(0,1000) as $key => $value) {
+            $works[] = $work = new Work($document);
+            $pool->submitWork($work);        
+        }
+    
         $pool->shutdownWorkers();
 
-        $this->assertInstanceOf('Exception', $work->getException());
+        foreach ($works as $work) {
+            $this->assertInstanceOf('Exception', $work->getException());
+        }
     }
 
     public function testSubmitWorkOk()
@@ -28,9 +33,6 @@ class WorkTest extends TestCase
         $document = new Document('http://httpbin.org/', $this->createParserMock());
 
         $pool = new Pool();
-
-        $work = new Work($document);
-        $pool->submitWork($work);
 
         $work = new Work($document);
         $pool->submitWork($work);

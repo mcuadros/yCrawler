@@ -3,6 +3,7 @@ namespace yCrawler\Parser;
 use yCrawler\Parser\Item\Types\Type;
 use yCrawler\Document;
 use ReflectionClass;
+use yCrawler\SerializableClosure;
 use Closure;
 
 class Item
@@ -57,7 +58,7 @@ class Item
 
     public function setModifier(Closure $modifier)
     {
-        $this->modifiers[] = $modifier;
+        $this->modifiers[] = new SerializableClosure($modifier);
 
         return $this;
     }

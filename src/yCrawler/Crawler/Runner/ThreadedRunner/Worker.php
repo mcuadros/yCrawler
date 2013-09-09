@@ -7,6 +7,6 @@ class Worker extends PThreadWorker {
     {
         include("vendor/autoload.php");
 
-        printf("Creating worker (%lu) \n", $this->getThreadId());
+        //printf("Creating worker (%lu) \n", $this->getThreadId());
     }
 }

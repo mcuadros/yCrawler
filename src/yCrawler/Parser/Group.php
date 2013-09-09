@@ -2,6 +2,8 @@
 namespace yCrawler\Parser;
 use yCrawler\Parser\Item;
 use yCrawler\Document;
+use yCrawler\SerializableClosure;
+use Closure;
 
 class Group
 {
@@ -30,9 +32,9 @@ class Group
     }
 
     public function getModifiers() { return $this->modifiers; }
-    public function setModifier(\Closure $modifier)
+    public function setModifier(Closure $modifier)
     {
-        $this->modifiers[] = $modifier;
+        $this->modifiers[] = new SerializableClosure($modifier);
 
         return $this;
     }
