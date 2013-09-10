@@ -8,46 +8,52 @@ use Exception;
 
 class WorkTest extends TestCase
 {
-    /**
-     * @outputBuffering disabled
-     */
-    public function testForkerd()
+    public function testIsParsed()
     {   
-        $this->expectOutputString(''); // tell PHPUnit to expect '' as output
+        $document = $this->createDocumentMock();
+        $document->shouldReceive('isParsed')
+            ->withNoArgs()
+            ->once()
+            ->andReturn(true);
 
-        $document = new Document('http://httpbin.org/', $this->createParserMock());
         $work = new Work($document);
+        $this->assertTrue($work->isParsed());
+    }
 
-        $pool = new Pool('yCrawler\Crawler\Runner\ForkedRunner\Fork', 10);
-        $pool->run($work);
+    public function testIsFailed()
+    {   
+        $document = $this->createDocumentMock();
+        $document->shouldReceive('parse')
+            ->withNoArgs()
+            ->once()
+            ->andThrow(new Exception());
 
-        
-        //$this->assertNull($work->getException());
+        $work = new Work($document);
+        $work->run();
 
-        $loops = 0;
-        while(1){ 
-            try {
-                if ($loops++ > 5) break;
+        $this->assertTrue($work->isFailed());
+    }
 
-                if ($results = $pool->wait($failed)) {
-                    foreach ($results as $threadId => $result) {
-                        $resultDocument = $result;
-                        //echo "result: $result (thread $threadId)", PHP_EOL;
-                    }
-                }
+    public function testGetException()
+    {   
+        $exception = new Exception();
+        $document = $this->createDocumentMock();
+        $document->shouldReceive('parse')
+            ->withNoArgs()
+            ->once()
+            ->andThrow($exception);
 
-                if ($failed) 
-                {
-                    var_dump($failed);
-                }
+        $work = new Work($document);
+        $work->run();
 
-                echo "Loop";
-            } catch (Exception $e) {
-                echo $e->getMessage();
-                break;
-            }
-        }
-        $this->assertSame($resultDocument->getDocument(), $resultDocument->isParsed());
+        $this->assertSame($exception, $work->getException());
+    }
 
+    public function testGetDocument()
+    {   
+        $document = $this->createDocumentMock();
+        $work = new Work($document);
+      
+        $this->assertSame($document, $work->getDocument());
     }
 }

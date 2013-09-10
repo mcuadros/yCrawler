@@ -30,3 +30,30 @@ class ForkedRunner extends Runner
     }
 
 }
+
+
+/*
+        $loops = 0;
+        while(1){ 
+            try {
+                if ($loops++ > 5) break;
+
+                if ($results = $pool->wait($failed)) {
+                    foreach ($results as $threadId => $result) {
+                        $resultDocument = $result;
+                        //echo "result: $result (thread $threadId)", PHP_EOL;
+                    }
+                }
+
+                if ($failed) 
+                {
+                    var_dump($failed);
+                }
+
+                echo "Loop";
+            } catch (Exception $e) {
+                echo $e->getMessage();
+                break;
+            }
+        }
+        */

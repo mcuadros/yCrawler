@@ -4,6 +4,7 @@ use Closure;
 use ReflectionFunction;
 use SplFileObject;
 
+#http://www.htmlist.com/development/extending-php-5-3-closures-with-serialization-and-reflection/
 class SerializableClosure {
 
     protected $closure = NULL;
