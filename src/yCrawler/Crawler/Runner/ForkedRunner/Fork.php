@@ -10,7 +10,7 @@ class Fork extends Thread
     {
         $work = $this->getParam(0);
         if (!$work instanceOf Work) {
-            throw new Exceptions\ForkRecievedNonWork;
+            throw new Exceptions\NonRecievedWork;
         }
 
         $work->run();
