@@ -20,9 +20,23 @@ class TestCase extends BaseTestCase
         $callback = function() {};
 
         $runner = $this->createRunner();
-        $runner->setOnFaildCallback($callback);
+        $runner->setOnFailedCallback($callback);
 
-        $this->assertSame($callback, $runner->getOnFaildCallback());
+        $this->assertSame($callback, $runner->getOnFailedCallback());
+    }
+
+    public function testIsFull()
+    {
+        $document = $this->createDocumentMock();
+        $runner = $this->createRunner();
+
+        $this->assertFalse($runner->isFull());
+
+        for($i=0;$i<$this->getPoolSize();$i++) {
+            $runner->addDocument($document);
+        }
+
+        $this->assertTrue($runner->isFull());
     }
 
     public function testParseDocumentDone()
@@ -42,7 +56,8 @@ class TestCase extends BaseTestCase
             ->once()
             ->andReturn(null);
 
-        $runner->parseDocument($document);
+        $runner->addDocument($document);
+        $runner->wait();
 
         $this->assertSame($expectedDocument, $document);
     }
@@ -53,7 +68,7 @@ class TestCase extends BaseTestCase
         $expectedException = null;
 
         $runner = $this->createRunner();
-        $runner->setOnFaildCallback(
+        $runner->setOnFailedCallback(
             function($document, $exception) 
             use (&$expectedDocument, &$expectedException) {
                 $expectedDocument = $document;
@@ -69,7 +84,8 @@ class TestCase extends BaseTestCase
             ->andThrow($exception);
 
 
-        $runner->parseDocument($document);
+        $runner->addDocument($document);
+        $runner->wait();
 
         $this->assertSame($expectedDocument, $document);
         $this->assertSame($expectedException, $exception);

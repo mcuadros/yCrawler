@@ -5,10 +5,14 @@ use Exception;
 
 abstract class Runner
 {
-    private $onFaildCallback;
+    private $onFailedCallback;
     private $onDoneCallback;
 
-    abstract public function parseDocument(Document $document);
+    abstract public function isFull();
+    
+    abstract public function wait();
+
+    abstract public function addDocument(Document $document);
 
     public function setOnDoneCallback(Callable $callback)
     {
@@ -20,24 +24,28 @@ abstract class Runner
         return $this->onDoneCallback;
     }
 
-    public function setOnFaildCallback(Callable $callback)
+    public function setOnFailedCallback(Callable $callback)
     {
-        $this->onFaildCallback = $callback;
+        $this->onFailedCallback = $callback;
     }
 
-    public function getOnFaildCallback()
+    public function getOnFailedCallback()
     {
-        return $this->onFaildCallback;
+        return $this->onFailedCallback;
     }
 
-    public function onFaild(Document $document, Exception $exception)
+    public function onFailed(Document $document, Exception $exception)
     {
-        $callback = $this->onFaildCallback;
+        if (!$this->onFailedCallback) return;
+
+        $callback = $this->onFailedCallback;
         $callback($document, $exception);
     }
 
     public function onDone(Document $document)
     {
+        if (!$this->onDoneCallback) return;
+
         $callback = $this->onDoneCallback;
         $callback($document);
     }

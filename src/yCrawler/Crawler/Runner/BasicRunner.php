@@ -6,13 +6,34 @@ use Exception;
 
 class BasicRunner extends Runner
 {
-    public function parseDocument(Document $document)
+    private $document;
+
+    public function addDocument(Document $document)
+    {
+        $this->document = $document;
+    }
+
+    public function isFull()
+    {
+        if ($this->document) return true;
+
+        return false;
+    }
+
+    public function wait()
     {
         try {
-            $document->parse();
-            $this->onDone($document);
+            $this->document->parse();
+            $this->onDone($this->document);
         } catch (Exception $exception) {
-            $this->onFaild($document, $exception);
+            $this->onFailed($this->document, $exception);
         }
+
+        $this->freeDocument();
+    }
+
+    protected function freeDocument()
+    {
+        $this->document = null;
     }
 }
