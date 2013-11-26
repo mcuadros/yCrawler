@@ -33,6 +33,7 @@ abstract class Parser
     private $startup = Array();
     private $urlPatterns = Array();
     private $parseCallback;
+    private $name;
     protected $items = Array(
         'follow' => array(), 'links' => array(),
         'verify' => array(), 'values' => array()
@@ -48,6 +49,20 @@ abstract class Parser
         }
     }
 
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
+    public function getName()
+    {
+        if ($this->name) {
+            return $this->name;
+        }
+
+        return get_class($this);
+    }
+    
     public function isInitialized()
     {
         return $this->initialized;

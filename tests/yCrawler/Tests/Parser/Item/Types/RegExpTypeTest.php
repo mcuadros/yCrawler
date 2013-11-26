@@ -35,7 +35,14 @@ class RegExpTypeTest extends Type
 
     protected function createDocumentMock()
     {
+        $node = (object) ['nodeValue' => static::EXAMPLE_RESULT];
+
         $document = parent::createDocumentMock();
+        $document->shouldReceive('getDOM')
+            ->withNoArgs()
+            ->once()
+            ->andReturn(new \DOMDocument());
+
         $document->shouldReceive('getHTML')
             ->withNoArgs()
             ->once()

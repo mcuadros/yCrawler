@@ -12,7 +12,6 @@ class SimpleQueueTest extends TestCase
         $document = parent::createDocumentMock();
         $document->shouldReceive('getURL')
             ->withNoArgs()
-            ->once()
             ->andReturn(rand(0, 1000));
 
         return $document;

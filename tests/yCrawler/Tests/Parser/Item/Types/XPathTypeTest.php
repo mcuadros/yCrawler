@@ -10,4 +10,28 @@ class XPathTypeTest extends Type
     const EXAMPLE_PATTERN_INPUT = '/foo/';
     const EXAMPLE_PATTERN_OUTPUT = '/foo/';
     const EXAMPLE_RESULT = 'foo';
+
+    protected function createDocumentMock()
+    {
+        $node = (object) ['nodeValue' => static::EXAMPLE_RESULT];
+
+        $xpath = $this->createXPathMock();
+        $xpath->shouldReceive('evaluate')
+            ->with(static::EXAMPLE_PATTERN_OUTPUT)
+            ->once()
+            ->andReturn([$node]);
+
+        $document = parent::createDocumentMock();
+        $document->shouldReceive('getXPath')
+            ->withNoArgs()
+            ->once()
+            ->andReturn($xpath);
+
+        $document->shouldReceive('getDOM')
+            ->withNoArgs()
+            ->once()
+            ->andReturn(new \DOMDocument());
+
+        return $document;
+    }
 }

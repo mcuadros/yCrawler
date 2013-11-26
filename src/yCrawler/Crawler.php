@@ -1,64 +1,26 @@
 <?php
 namespace yCrawler;
 use yCrawler\Parser;
-use yCrawler\Crawler;
+use yCrawler\Crawler\Runner;
+use yCrawler\Crawler\Queue;
+use yCrawler\Crawler\Exceptions;
 
 class Crawler
 {
-    private $initialized = false;
-    private $history;
+    const LOOP_WAIT_TIME = 4;
+
+    private $initialized;
+    private $runner;
     private $queue;
 
     private $parsers = Array();
-    private $parseCallback;
 
-    protected $threads = 1;
-    protected $_links = Array();
-    protected $_linksHistory = Array();
-    protected $_start;
-
-    public function __construct(Queue $queue, ThreadPool $pool)
+    public function __construct(Queue $queue, Runner $runner)
     {
-        $pool->setQueue($queue);
-
-        $this->pool = $pool;
+        $this->runner = $runner;
         $this->queue = $queue;
     }
 
-    public function setQueue(Crawler\Queue $queue)
-    {
-        $this->queue = $queue;
-    }
-
-    public function getQueue()
-    {
-        return $this->queue;
-    }
-
-    public function setHistory(Crawler\History $history)
-    {
-        $this->history = $history;
-    }
-
-    public function getHistory()
-    {
-        return $this->history;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*****************/
     public function initialize()
     {
         if ($this->initialized) return true;
@@ -70,15 +32,23 @@ class Crawler
         return $this->initialized = time();
     }
 
+    public function addDocument(Document $document)
+    {
+        $this->queue->add($document);
+    }
+
+    protected function queueDocs(Array $documents)
+    {
+        foreach ($documents as $document) {
+            $this->addDocument($document);
+        }
+    }
+
     public function addParser(Parser $parser)
     {
-        $tmp = explode('\\', get_class($parser));
-        $name = end($tmp);
-
+        $name = $this->getName();
         if ($this->hasParser($name)) {
-            throw new \RuntimeException(
-                sprintf('A parser of "%s" class already loaded.', $name)
-            );
+            throw new Exceptions\ParserAlreadyLoaded($parser);
         }
 
         if ($this->parseCallback) $parser->onParse($this->parseCallback);
@@ -99,28 +69,39 @@ class Crawler
         return $this->parsers[$name];
     }
 
-    public function onParse(\Closure $closure)
+
+    public function onParse(Callable $callable)
     {
-        if ($this->parseCallback) {
-            foreach( $this->parsers as $parser ) $parser->onParse($this->parseCallback);
+        $this->parseCallback = $callable;
+        $this->setOnParserCallbackOnParsers();
+    }
+
+    protected function setOnParserCallbackOnParsers()
+    {
+        foreach($this->parsers as $parser) {
+            $parser->onParse($this->parseCallback);
         }
-
-        $this->parseCallback = $closure;
-
-        return true;
     }
-
-    private function queueDocs(array $documents)
-    {
-        foreach ($documents as $document) $this->queue->add($document);
-    }
-
-    //TODO: si no hay getStartupURLs...
+    
     public function run()
     {
         $this->initialize();
-        $this->pool->start();
+
+        while($this->queue->count() > 0) {
+            $this->addDocumentsToRunnerWhileNotIsFull();
+            sleep(self::LOOP_WAIT_TIME);
+        }
     }
+
+    protected function addDocumentsToRunnerWhileNotIsFull()
+    {
+        while(!$this->runner->isFull()) {
+            $document = $this->queue->get();
+            $this->runner->addDocument($document);    
+        }
+    }
+
+
 
     public function jobDone(Document $document)
     {
@@ -151,41 +132,4 @@ class Crawler
         if ( $take ) $this->getParser($document->getParser())->data('take', 'childs');
         return true;
     }
-
-/*
-$pool = new ThreadPool('TestThreadReturnFirstArgument', $threads);
-
-$num     = $jobs_num; // Number of tasks
-$left    = $jobs_num; // Number of remaining tasks
-$started = array();
-do {
-    while ($left > 0 && $pool->hasWaiting()) {
-        $task = array_shift($jobs);
-        if (!$threadId = $pool->run($task)) {
-            throw new Exception('Pool slots error');
-        }
-        $started[$threadId] = $task;
-        $left--;
-    }
-    if ($results = $pool->wait($failed)) {
-        foreach ($results as $threadId => $result) {
-            unset($started[$threadId]);
-            $num--;
-            echo 'result: ' . $result . PHP_EOL;
-        }
-    }
-    if ($failed) {
-        // Error handling here
-        // processing is not successful if thread dies
-        // when worked or working timeout exceeded
-        foreach ($failed as $threadId) {
-            $jobs[] = $started[$threadId];
-            echo 'error: ' . $started[$threadId] . PHP_EOL;
-            unset($started[$threadId]);
-            $left++;
-        }
-    }
-} while ($num > 0);
-$pool->cleanup();
-*/
 }

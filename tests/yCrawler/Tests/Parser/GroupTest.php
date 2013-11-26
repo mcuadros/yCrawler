@@ -60,7 +60,7 @@ class GroupTest extends TestCase
         $document = parent::createDocumentMock();
         $document->shouldReceive('getDOM')
             ->withNoArgs()
-            ->once()
+            ->twice()
             ->andReturn(new \DOMDocument());
 
         return $document;
