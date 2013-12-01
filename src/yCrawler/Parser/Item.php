@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Parser;
+
 use yCrawler\Parser\Item\Types\Type;
 use yCrawler\Document;
 use ReflectionClass;
@@ -67,7 +69,7 @@ class Item
     {
         return $this->modifiers;
     }
-    
+
     public function evaluate(Document $document)
     {
         $type = new $this->type();

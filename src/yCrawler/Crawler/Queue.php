@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Crawler;
+
 use yCrawler\Document;
 
 interface Queue
@@ -12,11 +14,11 @@ interface Queue
     const PRIORITY_INMEDIATE = 60;
 
     public function add(Document $document, $priority = self::PRIORITY_NORMAL);
-    
+
     public function has(Document $document);
-    
+
     public function delete(Document $document);
-    
+
     public function get();
 
     public function clear();

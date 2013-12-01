@@ -1,10 +1,11 @@
 <?php
+
 namespace yCrawler\Crawler\Runner;
+
 use yCrawler\Crawler\Runner;
 use yCrawler\Crawler\Runner\ThreadedRunner\Pool;
 use yCrawler\Crawler\Runner\ThreadedRunner\Work;
 use yCrawler\Document;
-use Exception;
 
 class ThreadedRunner extends Runner
 {
@@ -26,6 +27,7 @@ class ThreadedRunner extends Runner
     private function createWork(Document $document)
     {
         $this->works[] = $work = new Work($document);
+
         return $work;
     }
 

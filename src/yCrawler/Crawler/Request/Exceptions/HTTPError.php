@@ -1,8 +1,11 @@
 <?php
-namespace yCrawler\Request\Exceptions;
+
+namespace yCrawler\Crawler\Request\Exceptions;
+
 use RuntimeException;
 
-class HTTPError extends RuntimeException {
+class HTTPError extends RuntimeException
+{
     const MESSAGE = 'Received http error code %d';
 
     public function __construct($code)

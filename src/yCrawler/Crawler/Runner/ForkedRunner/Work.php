@@ -1,14 +1,18 @@
 <?php
+
 namespace yCrawler\Crawler\Runner\ForkedRunner;
+
 use yCrawler\Document;
 use Exception;
 
-class Work {
+class Work
+{
     private $document;
     private $exception;
     private $isFailed;
 
-    public function __construct(Document $document) {
+    public function __construct(Document $document)
+    {
         $this->document = $document;
     }
 

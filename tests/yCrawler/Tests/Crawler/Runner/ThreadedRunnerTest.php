@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests\Crawler\Runner;
+
 use yCrawler\Crawler\Runner\ThreadedRunner;
 use yCrawler\Crawler\Runner\ThreadedRunner\Work;
 

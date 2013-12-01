@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests;
+
 use yCrawler\Crawler;
 use yCrawler\Parser;
 use yCrawler\Queue;

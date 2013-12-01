@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Crawler\Runner;
+
 use yCrawler\Crawler\Runner;
 use yCrawler\Document;
 use Exception;
@@ -16,7 +18,6 @@ class BasicRunner extends Runner
     public function isFull()
     {
         if ($this->document) return true;
-
         return false;
     }
 

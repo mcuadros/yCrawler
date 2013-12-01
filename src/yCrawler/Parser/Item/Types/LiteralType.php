@@ -1,6 +1,7 @@
 <?php
+
 namespace yCrawler\Parser\Item\Types;
-use yCrawler\Parser\Exceptions;
+
 use yCrawler\Document;
 
 class LiteralType implements Type
@@ -12,7 +13,7 @@ class LiteralType implements Type
             'node' => null,
             'dom' => $document->getDOM()
         );
-        
+
         return Array($output);
     }
 }

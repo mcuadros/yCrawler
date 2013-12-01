@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Parser\Item\Modifiers;
+
 final class Scalar
 {
     const BOOLEAN_POSITIVE = true;

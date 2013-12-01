@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Crawler\Runner\ForkedRunner;
+
 use Aza\Components\Thread\ThreadPool;
 
 class Pool extends ThreadPool
@@ -8,9 +10,9 @@ class Pool extends ThreadPool
     const DEFAULT_THREADS = 10;
 
     public function __construct(
-        $maxThreads = self::DEFAULT_THREADS, 
-        $pName = null, 
-        $name = null, 
+        $maxThreads = self::DEFAULT_THREADS,
+        $pName = null,
+        $name = null,
         $debug = false
     )
     {

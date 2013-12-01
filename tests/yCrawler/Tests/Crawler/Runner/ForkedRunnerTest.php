@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests\Crawler\Runner;
+
 use yCrawler\Crawler\Runner\ForkedRunner;
 
 class ForkedRunnerTest extends TestCase

@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Parser\Item\Types;
+
 use yCrawler\Parser\Exceptions;
 use yCrawler\Document;
 
@@ -8,7 +10,7 @@ class RegExpType implements Type
     public function evaluate(Document $document, $pattern)
     {
         $result = $this->evaluateRegExp($document, $pattern);
-        
+
         $output = Array();
         foreach (end($result) as $index => $value) {
             $output[] = Array(

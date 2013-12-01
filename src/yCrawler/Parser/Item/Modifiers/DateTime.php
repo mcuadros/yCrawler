@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Parser\Item\Modifiers;
+
 final class DateTime
 {
     public static function strtotime()

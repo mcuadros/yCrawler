@@ -1,12 +1,14 @@
 <?php
+
 namespace yCrawler;
+
 use Closure;
 use ReflectionFunction;
 use SplFileObject;
 
 #http://www.htmlist.com/development/extending-php-5-3-closures-with-serialization-and-reflection/
-class SerializableClosure {
-
+class SerializableClosure
+{
     protected $closure = NULL;
     protected $reflection = NULL;
     protected $code = NULL;
@@ -26,6 +28,7 @@ class SerializableClosure {
     public function __invoke()
     {
         $args = func_get_args();
+
         return $this->reflection->invokeArgs($args);
     }
 
@@ -42,8 +45,7 @@ class SerializableClosure {
 
         // Retrieve all of the lines that contain code for the closure
         $code = '';
-        while ($file->key() < $this->reflection->getEndLine())
-        {
+        while ($file->key() < $this->reflection->getEndLine()) {
             $code .= $file->current();
             $file->next();
         }
@@ -80,11 +82,10 @@ class SerializableClosure {
 
         // Get the static variables of the function via reflection
         $static_vars = $this->reflection->getStaticVariables();
-    
+
         // Only keep the variables that appeared in both sets
         $used_vars = array();
-        foreach ($vars as $var)
-        {
+        foreach ($vars as $var) {
             $var = trim($var, ' $&amp;');
             $used_vars[$var] = $static_vars[$var];
         }
@@ -107,12 +108,10 @@ class SerializableClosure {
         extract($this->used_variables);
 
         eval('$_function = '.$this->code.';');
-        if (isset($_function) AND $_function instanceOf Closure)
-        {
+        if (isset($_function) AND $_function instanceOf Closure) {
             $this->closure = $_function;
             $this->reflection = new ReflectionFunction($_function);
-        }
-        else
+        } else
             throw new Exception();
     }
 }

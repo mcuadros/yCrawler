@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Crawler\Runner\ThreadedRunner;
+
 use yCrawler\Crawler\Runner\ThreadedRunner\Exceptions;
 use yCrawler\Crawler\Runner\ThreadedRunner\Work;
 use yCrawler\Crawler\Runner\ThreadedRunner\Worker;
@@ -22,7 +24,8 @@ class Pool
         return $this->poolSize;
     }
 
-    public function submitWork(Work $work) {
+    public function submitWork(Work $work)
+    {
         if (!$this->poolSizeReached()) {
             $worker = $this->launchWorker($work);
         } else {
@@ -31,8 +34,8 @@ class Pool
 
         if ($worker->stack($work)) {
             return $work;
-        } 
-    
+        }
+
         throw new Exceptions\FailedToStack();
     }
 
@@ -63,13 +66,14 @@ class Pool
         return $this->workers[array_rand($this->workers)];
     }
 
-    public function shutdownWorkers() {
+    public function shutdownWorkers()
+    {
         $status = [];
 
-        foreach($this->workers as $worker) {
+        foreach ($this->workers as $worker) {
             $status[$worker->getThreadId()] = $worker->shutdown();
         }
-        
+
         return $status;
     }
 }

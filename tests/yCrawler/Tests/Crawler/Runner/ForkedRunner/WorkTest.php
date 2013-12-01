@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests\Crawler\Runner\ForkedRunner;
+
 use yCrawler\Tests\TestCase;
 use yCrawler\Crawler\Runner\ForkedRunner\Work;
 use yCrawler\Crawler\Runner\ForkedRunner\Pool;

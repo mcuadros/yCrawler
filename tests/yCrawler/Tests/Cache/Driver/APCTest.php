@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests\Cache\Driver;
+
 use yCrawler\Cache\Driver\APC;
 use yCrawler\Crawler;
 

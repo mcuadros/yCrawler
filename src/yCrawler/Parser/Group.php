@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Parser;
+
 use yCrawler\Parser\Item;
 use yCrawler\Document;
 use yCrawler\SerializableClosure;

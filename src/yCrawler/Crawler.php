@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler;
+
 use yCrawler\Parser;
 use yCrawler\Crawler\Runner;
 use yCrawler\Crawler\Queue;
@@ -69,7 +71,6 @@ class Crawler
         return $this->parsers[$name];
     }
 
-
     public function onParse(Callable $callable)
     {
         $this->parseCallback = $callable;
@@ -78,16 +79,16 @@ class Crawler
 
     protected function setOnParserCallbackOnParsers()
     {
-        foreach($this->parsers as $parser) {
+        foreach ($this->parsers as $parser) {
             $parser->onParse($this->parseCallback);
         }
     }
-    
+
     public function run()
     {
         $this->initialize();
 
-        while($this->queue->count() > 0) {
+        while ($this->queue->count() > 0) {
             $this->addDocumentsToRunnerWhileNotIsFull();
             sleep(self::LOOP_WAIT_TIME);
         }
@@ -95,13 +96,11 @@ class Crawler
 
     protected function addDocumentsToRunnerWhileNotIsFull()
     {
-        while(!$this->runner->isFull()) {
+        while (!$this->runner->isFull()) {
             $document = $this->queue->get();
-            $this->runner->addDocument($document);    
+            $this->runner->addDocument($document);
         }
     }
-
-
 
     public function jobDone(Document $document)
     {

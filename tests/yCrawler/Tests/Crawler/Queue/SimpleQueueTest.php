@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests\Crawler\Queue;
+
 use yCrawler\Tests\TestCase;
 use yCrawler\Document;
 use yCrawler\Crawler\Queue\SimpleQueue;

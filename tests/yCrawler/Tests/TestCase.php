@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests;
+
 use PHPUnit_Framework_TestCase;
 use yCrawler\Mocks;
 use Mockery as m;

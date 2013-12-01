@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Crawler\Queue;
+
 use yCrawler\Crawler\Queue;
 use yCrawler\Crawler\Queue\Exceptions;
 use yCrawler\Document;

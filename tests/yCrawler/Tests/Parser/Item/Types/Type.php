@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests\Parser\Item\Types;
+
 use yCrawler\Parser\Item\Types;
 use yCrawler\Tests\Testcase;
 

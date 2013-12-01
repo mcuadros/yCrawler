@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Crawler;
+
 use yCrawler\Document;
 use Exception;
 
@@ -9,7 +11,7 @@ abstract class Runner
     private $onDoneCallback;
 
     abstract public function isFull();
-    
+
     abstract public function wait();
 
     abstract public function addDocument(Document $document);

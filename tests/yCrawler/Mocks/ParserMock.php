@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Mocks;
+
 use yCrawler\Parser;
 
 class ParserMock extends Parser

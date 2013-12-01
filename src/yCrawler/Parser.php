@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler;
+
 use yCrawler\Document;
 use yCrawler\Misc\URL;
 use yCrawler\Parser\Item;
@@ -62,7 +64,7 @@ abstract class Parser
 
         return get_class($this);
     }
-    
+
     public function isInitialized()
     {
         return $this->initialized;
@@ -167,8 +169,8 @@ abstract class Parser
     }
 
     public function getFollowItems()
-    { 
-        return $this->items['follow']; 
+    {
+        return $this->items['follow'];
     }
 
     public function addLinkFollowItem(Item $item, $sign)
@@ -177,21 +179,22 @@ abstract class Parser
     }
 
     public function clearFollowItems()
-    { 
-        $this->items['follow'] = Array(); 
+    {
+        $this->items['follow'] = Array();
     }
 
     public function createLinkFollowItem($expression = false, $sign = true)
     {
         $item = new Item();
         if ($expression) $item->setPattern($expression);
-        
+
         $this->addLinkFollowItem($item, $sign);
+
         return $item;
     }
 
     public function getVerifyItems()
-    { 
+    {
         return $this->items['verify'];
     }
 
@@ -211,6 +214,7 @@ abstract class Parser
         if ($expression) $item->setPattern($expression);
 
         $this->addVerifyItem($item, $sign);
+
         return $item;
     }
 
@@ -235,6 +239,7 @@ abstract class Parser
         if ($expression) $item->setPattern($expression);
 
         $this->addLinksItem($item);
+
         return $item;
     }
 
@@ -257,8 +262,9 @@ abstract class Parser
     {
         $item = new Item();
         if ($expression) $item->setPattern($expression);
-        
+
         $this->addValueItem($name, $item);
+
         return $item;
     }
 
@@ -272,6 +278,7 @@ abstract class Parser
         $group = new Group();
 
         $this->addValueGroup($name, $group);
+
         return $group;
     }
 

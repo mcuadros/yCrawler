@@ -1,7 +1,9 @@
 <?php
-namespace yCrawler\Tests;
-use yCrawler\Request;
-use yCrawler\Request\Exceptions;
+
+namespace yCrawler\Tests\Crawler;
+
+use yCrawler\Crawler\Request;
+use yCrawler\Crawler\Request\Exceptions;
 
 class RequestTest extends  \PHPUnit_Framework_TestCase
 {
@@ -56,7 +58,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException yCrawler\Request\Exceptions\NetworkError
+     * @expectedException yCrawler\Crawler\Request\Exceptions\NetworkError
      * @expectedExceptionCode 28
      */
     public function testSetMaxExecutionTime()
@@ -120,7 +122,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException yCrawler\Request\Exceptions\HTTPError
+     * @expectedException yCrawler\Crawler\Request\Exceptions\HTTPError
      * @expectedExceptionCode 418
      */
     public function testHTTPError()

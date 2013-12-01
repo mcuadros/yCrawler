@@ -11,7 +11,8 @@
         "pimple/pimple": "v1.0.1",
         "neitanod/forceutf8": "dev-master",
         "symfony/css-selector": "~2.0",
-        "aza/thread": "~1.0"
+        "aza/thread": "~1.0",
+        "react/react": "0.3.*"
     },
     "require-dev": {
         "mockery/mockery": "*",

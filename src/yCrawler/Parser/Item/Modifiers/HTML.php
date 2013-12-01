@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Parser\Item\Modifiers;
+
 use yCrawler\Misc\URL;
 use yCrawler\Document;
 

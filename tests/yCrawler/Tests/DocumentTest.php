@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests;
+
 use yCrawler\Document;
 use Mockery as m;
 

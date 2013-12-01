@@ -1,10 +1,13 @@
 <?php
+
 namespace yCrawler\Crawler\Runner\ThreadedRunner;
+
 use yCrawler\Document;
 use Stackable;
 use Exception;
 
-class Work extends Stackable {
+class Work extends Stackable
+{
     private $originalDocument;
     private $document;
     private $exception;
@@ -12,11 +15,13 @@ class Work extends Stackable {
     private $failed;
     private $read;
 
-    public function __construct(Document $document) {
+    public function __construct(Document $document)
+    {
         $this->originalDocument = $document;
     }
 
-    public function run() {
+    public function run()
+    {
         $this->parseDocument();
     }
 
@@ -35,6 +40,7 @@ class Work extends Stackable {
     private function copyDocument()
     {
         $this->document = clone $this->originalDocument;
+
         return $this->document;
     }
 
@@ -64,7 +70,7 @@ class Work extends Stackable {
         if ($this->isParsed()) {
             $this->read = true;
         }
-        
+
         return !$this->read;
     }
 }

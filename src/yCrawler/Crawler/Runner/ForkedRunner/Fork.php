@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Crawler\Runner\ForkedRunner;
+
 use Aza\Components\Thread\Thread;
 
 class Fork extends Thread
@@ -14,6 +16,7 @@ class Fork extends Thread
         }
 
         $work->run();
+
         return $work;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace yCrawler\Queue;
 
 use yCrawler\Document;
@@ -10,6 +11,7 @@ class History
     public function hasDocument(Document $document)
     {
         $url = $document->getUrl();
+
         return $this->hasURL($url);
     }
 
@@ -21,6 +23,7 @@ class History
     public function getDocumentHits(Document $document)
     {
         $url = $document->getUrl();
+
         return $this->getURLHits($url);
     }
 
@@ -42,7 +45,7 @@ class History
     public function addURL($url)
     {
         if (!$this->hasURL($url)) {
-            $this->storage[$url] = 1;  
+            $this->storage[$url] = 1;
         } else {
             $this->storage[$url]++;
         }

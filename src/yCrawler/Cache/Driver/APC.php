@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Cache\Driver;
+
 use yCrawler\Cache\Driver;
 
 class APC implements Driver

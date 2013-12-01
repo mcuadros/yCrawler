@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Document;
+
 use yCrawler\Misc\URL;
 use yCrawler\Parser;
 
@@ -29,13 +31,14 @@ class LinksStorage implements IteratorAggregate, Countable
     {
         $url = $this->absolutizeURI($uri);
         if ($this->isSuitableURL($url)) {
-            $this->links[$url][] = true; 
+            $this->links[$url][] = true;
         }
     }
 
     public function has($uri)
     {
         $url = $this->absolutizeURI($uri);
+
         return isset($this->links[$url]);
     }
 
@@ -49,7 +52,7 @@ class LinksStorage implements IteratorAggregate, Countable
     {
         return new ArrayIterator($this->links);
     }
-    
+
     public function count()
     {
         return count($this->links);
@@ -59,7 +62,6 @@ class LinksStorage implements IteratorAggregate, Countable
     {
         if (!$url) return false;
         if ($this->parser->matchURL($url)) return true;
-
         return false;
     }
 

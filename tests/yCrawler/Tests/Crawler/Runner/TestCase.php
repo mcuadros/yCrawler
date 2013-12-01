@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests\Crawler\Runner;
+
 use yCrawler\Tests\TestCase as BaseTestCase;
 use Exception;
 

@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler;
+
 /**
  * Ejemplo:
  * <code>

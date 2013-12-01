@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Tests\Parse\Item\Modifiers;
+
 use yCrawler\Parser\Item\Modifiers\Scalar;
 
 class ScalarTest extends  \PHPUnit_Framework_TestCase

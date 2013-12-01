@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Document;
+
 use ArrayIterator;
 use IteratorAggregate;
 use Countable;
@@ -28,7 +30,6 @@ class ValuesStorage implements IteratorAggregate, Countable
         $this->values[$key] = $values;
     }
 
-
     public function add($key, $value)
     {
         $this->values[$key][] = $value;
@@ -54,7 +55,7 @@ class ValuesStorage implements IteratorAggregate, Countable
     {
         return new ArrayIterator($this->values);
     }
-    
+
     public function count()
     {
         return count($this->values);

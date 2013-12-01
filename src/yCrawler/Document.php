@@ -1,5 +1,8 @@
 <?php
+
 namespace yCrawler;
+
+use yCrawler\Crawler\Request;
 use yCrawler\Parser\Item\Modifiers;
 use yCrawler\Misc\URL;
 use yCrawler\Document\ValuesStorage;
@@ -60,7 +63,7 @@ class Document
     public function isIndexable()
     {
         if ($this->isIndexable !== null) return $this->isIndexable;
- 
+
         $this->isIndexable = true;
 
         $followItems = $this->parser->getFollowItems();
@@ -75,7 +78,7 @@ class Document
     public function isVerified()
     {
         if ($this->isVerified !== null) return $this->isVerified;
-        
+
         $this->isVerified = true;
 
         $verifyItems = $this->parser->getVerifyItems();
@@ -94,7 +97,7 @@ class Document
         $item[0]->setModifier(Modifiers\Scalar::boolean($item[1]));
         if (!$item[0]->evaluate($this)) {
             return false;
-        } 
+        }
 
         return true;
     }
@@ -105,7 +108,7 @@ class Document
             $this->linksStorage = false;
         } else {
             $this->linksStorage = new LinksStorage($this->url, $this->parser);
-            $this->fillLinksStorage();    
+            $this->fillLinksStorage();
         }
     }
 
@@ -162,9 +165,9 @@ class Document
     }
 
     public function parse()
-    { 
+    {
         $this->makeRequest();
-        
+
         $this->createValuesStorage();
         $this->createLinksStorage();
         $this->callOnParseCallback();
@@ -209,7 +212,6 @@ class Document
     {
         $status = $this->request->getStatus();
         if ($status != Request::STATUS_NONE) return false;
-
         return true;
     }
 
@@ -222,7 +224,7 @@ class Document
         $response = $this->getHTML();
         $response = $this->applyUTF8HackIfNeeded($response);
 
-        if (!$this->dom->loadHtml($response)) { 
+        if (!$this->dom->loadHtml($response)) {
             throw new Exceptions\UnableToLoadHTML();
         }
     }
@@ -230,7 +232,6 @@ class Document
     protected function applyUTF8HackIfNeeded($html)
     {
         if (!Config::get('utf8_dom_hack')) return $html;
-
         return sprintf(
             '<?xml encoding="UTF-8">%s</xml>',
             str_ireplace('utf-8','', $html)
@@ -240,7 +241,7 @@ class Document
     protected function createXPath()
     {
         $this->xpath = new DOMXPath($this->dom);
-        if (!$this->xpath) { 
+        if (!$this->xpath) {
             throw new Exceptions\UnableToCreateXPath();
         }
     }

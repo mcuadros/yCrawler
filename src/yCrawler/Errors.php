@@ -1,4 +1,5 @@
 <?php
+
 namespace yCrawler;
 
 class Errors

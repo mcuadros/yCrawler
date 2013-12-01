@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Parser\Item\Types;
+
 use yCrawler\Parser\Exceptions;
 use yCrawler\Document;
 
@@ -8,7 +10,7 @@ class XPathType implements Type
     public function evaluate(Document $document, $pattern)
     {
         $result = $this->evaluateXPath($document, $pattern);
-        
+
         $output = Array();
         foreach ($result as $node) {
             $output[] = $this->createResultArrayForNode($document, $node);

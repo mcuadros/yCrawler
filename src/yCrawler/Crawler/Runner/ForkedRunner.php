@@ -1,5 +1,7 @@
 <?php
+
 namespace yCrawler\Crawler\Runner;
+
 use yCrawler\Crawler\Runner;
 use yCrawler\Crawler\Runner\ForkedRunner\Pool;
 use yCrawler\Crawler\Runner\ForkedRunner\Work;
@@ -72,12 +74,13 @@ class ForkedRunner extends Runner
 
         if ($work->isParsed() && !$work->isFailed()) {
             $this->onDone($work->getDocument());
+
             return;
         }
 
         if (!$work->isParsed() && !$work->isFailed()) {
             $exception = $this->createNonParsedDocument();
-        } else if ($work->isFailed()) {
+        } elseif ($work->isFailed()) {
             $exception = $work->getException();
         }
 
@@ -94,6 +97,7 @@ class ForkedRunner extends Runner
         if (isset($this->running[$threadId])) {
             $work = $this->running[$threadId];
             unset($this->running[$threadId]);
+
             return $work;
         }
 
@@ -131,7 +135,7 @@ do {
 */
 /*
         $loops = 0;
-        while(1){ 
+        while (1) {
             try {
                 if ($loops++ > 5) break;
 
@@ -142,8 +146,7 @@ do {
                     }
                 }
 
-                if ($failed) 
-                {
+                if ($failed) {
                     var_dump($failed);
                 }
 

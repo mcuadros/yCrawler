@@ -1,7 +1,10 @@
 <?php
-namespace yCrawler;
-use yCrawler\Request\Exceptions;
+
+namespace yCrawler\Crawler;
+
+use yCrawler\Crawler\Request\Exceptions;
 use yCrawler\Misc\URL;
+use yCrawler\Config;
 use ForceUTF8\Encoding;
 
 class Request
@@ -140,7 +143,7 @@ class Request
     public function getResponseHeaders() { return $this->responseHeaders; }
     public function getStatus() { return $this->status; }
     public function getExecutionTime() { return $this->elapsed; }
-    
+
     public function newRetry()
     {
         if ( ++$this->retries > $this->maxRetries ) return false;
@@ -163,7 +166,6 @@ class Request
         $this->configureInterface();
         $this->configureSSL();
         $this->configurePOST();
-
 
         $response = curl_exec($this->curl);
         if ($this->headers) {
