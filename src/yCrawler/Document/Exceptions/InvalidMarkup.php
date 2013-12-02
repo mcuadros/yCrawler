@@ -4,4 +4,4 @@ namespace yCrawler\Document\Exceptions;
 
 use RuntimeException;
 
-class UnableToLoadHTML extends RuntimeException { }
+class InvalidMarkup extends RuntimeException { }

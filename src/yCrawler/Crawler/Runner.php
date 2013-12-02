@@ -38,7 +38,12 @@ abstract class Runner
 
     public function onFailed(Document $document, Exception $exception)
     {
-        if (!$this->onFailedCallback) return;
+        if (!$this->onFailedCallback) {
+            echo $exception->getMessage();
+            echo $exception->getTraceAsString();
+
+            return;
+        }
 
         $callback = $this->onFailedCallback;
         $callback($document, $exception);
@@ -46,7 +51,9 @@ abstract class Runner
 
     public function onDone(Document $document)
     {
-        if (!$this->onDoneCallback) return;
+        if (!$this->onDoneCallback) {
+            return;
+        }
 
         $callback = $this->onDoneCallback;
         $callback($document);

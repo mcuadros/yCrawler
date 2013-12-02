@@ -35,7 +35,7 @@ class XPathType implements Type
 
         if (!$result) {
             throw new Exceptions\MalformedExpression(sprintf(
-                'Malformed XPath expression %s', $pattern
+                'Malformed XPath expression "%s"', $pattern
             ));
         }
 

@@ -93,7 +93,7 @@ abstract class Parser
         return $this->startup[] = $url;
     }
 
-    public function getStartupDocs()
+    public function getStartupDocuments()
     {
         $this->configure();
 

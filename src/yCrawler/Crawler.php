@@ -11,11 +11,11 @@ class Crawler
 {
     const LOOP_WAIT_TIME = 4;
 
-    private $initialized;
-    private $runner;
-    private $queue;
-
-    private $parsers = Array();
+    protected $initialized;
+    protected $runner;
+    protected $queue;
+    protected $parseCallback;
+    protected $parsers = Array();
 
     public function __construct(Queue $queue, Runner $runner)
     {
@@ -25,10 +25,12 @@ class Crawler
 
     public function initialize()
     {
-        if ($this->initialized) return true;
+        if ($this->initialized) {
+            return true;
+        }
 
         foreach ($this->parsers as $parser) {
-            $this->queueDocs($parser->getStartupDocs());
+            $this->queueDocuments($parser->getStartupDocuments());
         }
 
         return $this->initialized = time();
@@ -39,7 +41,7 @@ class Crawler
         $this->queue->add($document);
     }
 
-    protected function queueDocs(Array $documents)
+    protected function queueDocuments(Array $documents)
     {
         foreach ($documents as $document) {
             $this->addDocument($document);
@@ -48,12 +50,14 @@ class Crawler
 
     public function addParser(Parser $parser)
     {
-        $name = $this->getName();
+        $name = $parser->getName();
         if ($this->hasParser($name)) {
             throw new Exceptions\ParserAlreadyLoaded($parser);
         }
 
-        if ($this->parseCallback) $parser->onParse($this->parseCallback);
+        if ($this->parseCallback) {
+            $parser->onParse($this->parseCallback);
+        }
 
         $this->parsers[$name] = $parser;
 
@@ -80,7 +84,7 @@ class Crawler
     protected function setOnParserCallbackOnParsers()
     {
         foreach ($this->parsers as $parser) {
-            $parser->onParse($this->parseCallback);
+            $parser->setOnParseCallback($this->parseCallback);
         }
     }
 
@@ -90,6 +94,7 @@ class Crawler
 
         while ($this->queue->count() > 0) {
             $this->addDocumentsToRunnerWhileNotIsFull();
+            $this->runner->wait();
             sleep(self::LOOP_WAIT_TIME);
         }
     }
@@ -97,6 +102,7 @@ class Crawler
     protected function addDocumentsToRunnerWhileNotIsFull()
     {
         while (!$this->runner->isFull()) {
+            echo "!isFull" . PHP_EOL;
             $document = $this->queue->get();
             $this->runner->addDocument($document);
         }
@@ -104,6 +110,7 @@ class Crawler
 
     public function jobDone(Document $document)
     {
+        var_dump($document);
         $take = true;
         switch ( $status = $document->getStatus() ) {
             case Request::STATUS_DONE:

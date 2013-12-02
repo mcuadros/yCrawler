@@ -7,6 +7,8 @@ use Exception;
 
 class TestCase extends BaseTestCase
 {
+    const EXAMPLE_URL = 'http://httpbin.org/';
+
     public function testSetAndGetOnDoneCallback()
     {
         $callback = function() {};
@@ -47,16 +49,21 @@ class TestCase extends BaseTestCase
 
         $runner = $this->createRunner();
         $runner->setOnDoneCallback(
-            function($document) 
-            use (&$expectedDocument) {
+            function($document) use (&$expectedDocument) {
                 $expectedDocument = $document;
-        });
+            }
+        );
 
         $document = $this->createDocumentMock();
-        $document->shouldReceive('parse')
-            ->withNoArgs()
-            ->once()
+        $document
+            ->shouldReceive('parse')->withNoArgs()->once()
             ->andReturn(null);
+        $document
+            ->shouldReceive('setMarkup')->once()
+            ->andReturn(null);
+        $document
+            ->shouldReceive('getURL')->withNoArgs()->once()
+            ->andReturn(self::EXAMPLE_URL);
 
         $runner->addDocument($document);
         $runner->wait();
@@ -80,11 +87,15 @@ class TestCase extends BaseTestCase
         $exception = new Exception();
 
         $document = $this->createDocumentMock();
-        $document->shouldReceive('parse')
-            ->withNoArgs()
-            ->once()
+        $document
+            ->shouldReceive('parse')->withNoArgs()->once()
             ->andThrow($exception);
-
+        $document
+            ->shouldReceive('setMarkup')->once()
+            ->andReturn(null);
+        $document
+            ->shouldReceive('getURL')->withNoArgs()->once()
+            ->andReturn(self::EXAMPLE_URL);
 
         $runner->addDocument($document);
         $runner->wait();

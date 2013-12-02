@@ -29,7 +29,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/post');
         $request->setPost($test);
-        $request->call();
+        $request->execute();
 
         $response = json_decode($request->getResponse(), true);
         $this->assertEquals($test, $response['form']);
@@ -41,7 +41,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/user-agent');
         $request->setUserAgent($test);
-        $request->call();
+        $request->execute();
 
         $response = json_decode($request->getResponse(), true);
         $this->assertEquals('Uno cualquiera', $response['user-agent']);
@@ -52,7 +52,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/user-agent');
         $request->setHeaders(true);
-        $request->call();
+        $request->execute();
 
         $this->assertTrue(strlen($request->getResponseHeaders()) > 1);
     }
@@ -66,7 +66,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/delay/2');
         $request->setMaxExecutionTime(1);
-        $request->call();
+        $request->execute();
     }
 
     public function testSetCookie()
@@ -75,7 +75,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/cookies/set?supercali=fristicoespialidoso');
         $request->setCookie($test);
-        $request->call();
+        $request->execute();
 
         //Se hace unset para que se escriba la cookie al sistema.
         unset($request);
@@ -89,7 +89,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
     {
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/status/200');
-        $request->call();
+        $request->execute();
 
         $this->assertEquals(200, $request->getResponseCode());
     }
@@ -101,7 +101,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
         $request->setMaxExecutionTime(1);
 
         try {
-            $request->call();
+            $request->execute();
         } catch (Exceptions\NetworkError $e) {
             $this->assertSame(28, $request->getResponseCode());
             $this->assertSame(Request::STATUS_RETRY, $request->getStatus());
@@ -114,7 +114,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
         $request->setURL('http://httpbin.org/status/418');
 
         try {
-            $request->call();
+            $request->execute();
         } catch (Exceptions\HTTPError $e) {
             $this->assertSame(418, $request->getResponseCode());
             $this->assertSame(Request::STATUS_FAILED, $request->getStatus());
@@ -129,14 +129,14 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
     {
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/status/418');
-        $request->call();
+        $request->execute();
     }
 
     public function testGetExecutionTime()
     {
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/status/200');
-        $request->call();
+        $request->execute();
 
         $this->assertTrue($request->getExecutionTime() != null);
     }

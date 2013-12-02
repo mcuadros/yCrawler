@@ -8,6 +8,7 @@ use Mockery as m;
 class DocumentTest extends TestCase
 {
     const EXAMPLE_URL = 'http://httpbin.org/';
+    const EXAMPLE_MARKUP = '<html><body><pre><a href="foo">bar</a></pre></body></html>';
 
     public function createDocument($url)
     {
@@ -27,23 +28,21 @@ class DocumentTest extends TestCase
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
 
-        $this->assertInstanceOf(
-            'yCrawler\Mocks\ParserMock',
-            $doc->getParser()
-        );
+        $this->assertInstanceOf('yCrawler\Mocks\ParserMock', $doc->getParser());
     }
 
-    public function testGetHTML()
+    public function testGetMarkup()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
-        $doc->parse();
 
-        $this->assertTrue(strlen($doc->getHTML()) > 0);
+        $doc->setMarkup('foo');
+        $this->assertSame('foo', $doc->getMarkup());
     }
 
     public function testGetDOM()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
         $doc->parse();
 
         $this->assertInstanceOf('DOMDocument', $doc->getDOM());
@@ -53,6 +52,7 @@ class DocumentTest extends TestCase
     public function testGetXPath()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
         $doc->parse();
 
         $this->assertInstanceOf('DOMXPath', $doc->getXPath());
@@ -61,6 +61,7 @@ class DocumentTest extends TestCase
     public function testIsVerified()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
         $doc->parse();
 
         $this->assertTrue($doc->isVerified());
@@ -69,30 +70,34 @@ class DocumentTest extends TestCase
     public function testIsIndexable()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
         $doc->parse();
 
         $this->assertTrue($doc->isIndexable());
     }
 
-    public function testGetLinksStorage()
+    public function testGetLinks()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
         $doc->parse();
 
-        $this->assertCount(25, $doc->getLinksStorage()->all());
+        $this->assertCount(1, $doc->getLinks()->all());
     }
 
     public function testGetValuesStorage()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
         $doc->parse();
 
-        $this->assertCount(4, $doc->getValuesStorage()->get('pre'));
+        $this->assertCount(1, $doc->getValues()->get('pre'));
     }
 
     public function testParseAndIsParsed()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
 
         $this->assertNull($doc->isParsed());
 
@@ -103,6 +108,7 @@ class DocumentTest extends TestCase
     public function testCallOnParseCallback()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
 
         $parser = $doc->getParser();
         $called = false;

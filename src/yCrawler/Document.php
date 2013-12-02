@@ -15,11 +15,11 @@ use Closure;
 
 class Document
 {
-    private $url;
-    private $request;
-    private $valuesStorage;
-    private $linksStorage;
+    protected $url;
+    protected $values;
+    protected $links;
 
+    protected $markup;
     protected $parser;
     protected $dom;
     protected $xpath;
@@ -32,7 +32,6 @@ class Document
     {
         $this->url = $url;
         $this->parser = $parser;
-        $this->request = new Request($url);
     }
 
     public function getURL()
@@ -45,9 +44,14 @@ class Document
         return $this->parser;
     }
 
-    public function getHTML()
+    public function setMarkup($markup)
     {
-        return $this->request->getResponse();
+        $this->markup = $markup;
+    }
+
+    public function getMarkup()
+    {
+        return $this->markup;
     }
 
     public function getDOM()
@@ -102,22 +106,22 @@ class Document
         return true;
     }
 
-    protected function createLinksStorage()
+    public function getLinks()
+    {
+        return $this->links;
+    }
+
+    protected function collectLinks()
     {
         if (!$this->isIndexable()) {
-            $this->linksStorage = false;
+            $this->links = false;
         } else {
-            $this->linksStorage = new LinksStorage($this->url, $this->parser);
-            $this->fillLinksStorage();
+            $this->links = new LinksStorage($this->url, $this->parser);
+            $this->evaluateLinkRulesFromParser();
         }
     }
 
-    public function getLinksStorage()
-    {
-        return $this->linksStorage;
-    }
-
-    protected function fillLinksStorage()
+    protected function evaluateLinkRulesFromParser()
     {
         if (!$this->parser->getLinksItems() ) {
             $this->parser->createLinksItem('//a/@href');
@@ -132,26 +136,26 @@ class Document
     protected function saveLinksResult($result)
     {
         foreach ($result as $data) {
-            $this->linksStorage->add($data['value']);
+            $this->links->add($data['value']);
         }
     }
 
-    public function createValuesStorage()
+    public function getValues()
+    {
+        return $this->values;
+    }
+
+    protected function collectValues()
     {
         if (!$this->isVerified()) {
-            $this->valuesStorage = false;
+            $this->values = false;
         } else {
-            $this->valuesStorage = new ValuesStorage();
-            $this->fillValuesStorage();
+            $this->values = new ValuesStorage();
+            $this->evaluateValueRulesFromParser();
         }
     }
 
-    public function getValuesStorage()
-    {
-        return $this->valuesStorage;
-    }
-
-    protected function fillValuesStorage()
+    protected function evaluateValueRulesFromParser()
     {
         foreach ($this->parser->getValueItems() as $key => $item) {
             $result = $item->evaluate($this);
@@ -161,16 +165,16 @@ class Document
 
     protected function saveEvaluationResult($key, $result)
     {
-        $this->valuesStorage->set($key, $result);
+        $this->values->set($key, $result);
     }
 
     public function parse()
     {
-        $this->makeRequest();
+        $this->initialize();
 
-        $this->createValuesStorage();
-        $this->createLinksStorage();
-        $this->callOnParseCallback();
+        $this->collectValues();
+        $this->collectLinks();
+        $this->executeOnParseCallback();
 
         $this->isParsed = true;
     }
@@ -180,69 +184,67 @@ class Document
         return $this->isParsed;
     }
 
-    protected function makeRequest()
+    protected function initialize()
     {
-        if ($this->isNeededExecuteRequest()) {
-            $this->initizalizeParser();
-            $this->executeRequest();
-            $this->createDOM();
-            $this->createXPath();
-        }
+        $this->initializeDOM();
+        $this->initializeXPath();
+        $this->initializeParser();
     }
 
-    protected function initizalizeParser()
+    protected function initializeParser()
     {
         $this->parser->configure();
     }
 
-    protected function executeRequest()
+    protected function initializeDOM()
     {
-        $this->request->call();
-    }
+        $this->ifEmptyMarkupThrowException();
 
-    protected function callOnParseCallback()
-    {
-        $cb = $this->parser->getOnParseCallback();
-        if ($cb instanceOf Closure) {
-            $cb($this);
-        }
-    }
-
-    protected function isNeededExecuteRequest()
-    {
-        $status = $this->request->getStatus();
-        if ($status != Request::STATUS_NONE) return false;
-        return true;
-    }
-
-    protected function createDOM()
-    {
         libxml_use_internal_errors(true);
         libxml_clear_errors();
 
-        $this->dom = new DOMDocument();
-        $response = $this->getHTML();
-        $response = $this->applyUTF8HackIfNeeded($response);
+        $dom = new DOMDocument();
+        $markup = $this->applyUTF8HackIfNeeded($this->markup);
 
-        if (!$this->dom->loadHtml($response)) {
-            throw new Exceptions\UnableToLoadHTML();
+        if (!$dom->loadHtml($markup)) {
+            throw new Exceptions\UnableToLoadMarkup();
+        }
+
+        $this->dom = $dom;
+    }
+
+    protected function ifEmptyMarkupThrowException()
+    {
+        if (!$this->markup) {
+            throw new Exceptions\InvalidMarkup();
         }
     }
 
-    protected function applyUTF8HackIfNeeded($html)
+    protected function applyUTF8HackIfNeeded($markup)
     {
-        if (!Config::get('utf8_dom_hack')) return $html;
+        if (!Config::get('utf8_dom_hack')) {
+            return $markup;
+        }
+
         return sprintf(
             '<?xml encoding="UTF-8">%s</xml>',
-            str_ireplace('utf-8','', $html)
+            str_ireplace('utf-8', '', $markup)
         );
     }
 
-    protected function createXPath()
+    protected function initializeXPath()
     {
         $this->xpath = new DOMXPath($this->dom);
         if (!$this->xpath) {
             throw new Exceptions\UnableToCreateXPath();
+        }
+    }
+
+    protected function executeOnParseCallback()
+    {
+        $cb = $this->parser->getOnParseCallback();
+        if ($cb instanceOf Closure) {
+            $cb($this);
         }
     }
 }

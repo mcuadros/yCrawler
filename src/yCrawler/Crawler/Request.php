@@ -152,7 +152,7 @@ class Request
         return $this->retries;
     }
 
-    public function call()
+    public function execute()
     {
         if ( $cache = $this->getFromCache() ) return $cache;
 
