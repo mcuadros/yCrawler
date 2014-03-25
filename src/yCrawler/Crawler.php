@@ -33,14 +33,14 @@ class Crawler
         $this->parseCallback = $callable;
     }
 
-    public function run()
+    public function run($loopWaitTime = self::LOOP_WAIT_TIME)
     {
         $this->initialize();
 
         while ($this->queue->count() > 0) {
             $this->addDocumentsToRunner();
             $this->runner->wait();
-            sleep(self::LOOP_WAIT_TIME);
+            sleep($loopWaitTime);
         }
     }
 
