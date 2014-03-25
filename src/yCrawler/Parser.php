@@ -41,6 +41,11 @@ abstract class Parser
     private $parseCallback;
     private $name;
 
+    public function __construct($name)
+    {
+        $this->name;
+    }
+
     abstract public function initialize();
 
     public function configure()
@@ -51,58 +56,14 @@ abstract class Parser
         }
     }
 
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
     public function getName()
     {
-        if ($this->name) {
-            return $this->name;
-        }
-
-        return get_class($this);
+        return $this->name;
     }
 
     public function isInitialized()
     {
         return $this->initialized;
-    }
-
-    public function getStartupURLs()
-    {
-        return $this->startup;
-    }
-
-    public function clearStartupURLs()
-    {
-        $this->startup = [];
-    }
-
-    public function setStartupURL($url, $clean = false)
-    {
-        if ($clean) {
-            $this->clearStartupURLs();
-        }
-
-        if (!URL::validate($url)) {
-            throw new Exceptions\InvalidStartupURL();
-        }
-
-        return $this->startup[] = $url;
-    }
-
-    public function getStartupDocuments()
-    {
-        $this->configure();
-
-        $documents = [];
-        foreach ($this->startup as $url) {
-            $documents[] = new Document($url, $this);
-        }
-
-        return $documents;
     }
 
     public function getURLPatterns()
@@ -135,7 +96,9 @@ abstract class Parser
         }
 
         foreach ($this->urlPatterns as $regexp) {
-            if (preg_match($regexp, $url) === 1) return true;
+            if (preg_match($regexp, $url) === 1) {
+                return true;
+            }
         }
 
         return false;
@@ -153,7 +116,7 @@ abstract class Parser
 
     public function clearFollowItems()
     {
-        $this->items['follow'] = Array();
+        $this->items['follow'] = [];
     }
 
     public function createLinkFollowItem($expression = false, $sign = true)
@@ -178,7 +141,7 @@ abstract class Parser
 
     public function clearVerifyItems()
     {
-        $this->items['verify'] = Array();
+        $this->items['verify'] = [];
     }
 
     public function createVerifyItem($expression = false, $sign = true)
@@ -203,7 +166,7 @@ abstract class Parser
 
     public function clearLinksItems()
     {
-        $this->items['links'] = Array();
+        $this->items['links'] = [];
     }
 
     public function createLinksItem($expression = false)
@@ -228,7 +191,7 @@ abstract class Parser
 
     public function clearValueItems()
     {
-        $this->items['values'] = Array();
+        $this->items['values'] = [];
     }
 
     public function createValueItem($name, $expression = false)
@@ -291,6 +254,4 @@ abstract class Parser
 
         return sprintf(self::URL_PATTERN_BASED_ON_DOMAIN, $domainWithEscapedDots);
     }
-
-
 }

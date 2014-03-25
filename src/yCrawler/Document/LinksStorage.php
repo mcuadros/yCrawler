@@ -13,7 +13,6 @@ class LinksStorage implements IteratorAggregate, Countable
 {
     private $originURL;
     private $parser;
-
     private $links;
 
     public function __construct($originURL, Parser $parser)
@@ -60,9 +59,11 @@ class LinksStorage implements IteratorAggregate, Countable
 
     private function isSuitableURL($url)
     {
-        if (!$url) return false;
-        if ($this->parser->matchURL($url)) return true;
-        return false;
+        if (!$url) {
+            return false;
+        }
+
+        return $this->parser->matchURL($url);
     }
 
     private function absolutizeURI($uri)
