@@ -9,6 +9,12 @@ abstract class Runner
 {
     private $onFailedCallback;
     private $onDoneCallback;
+    protected $request;
+
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
 
     abstract public function isFull();
 

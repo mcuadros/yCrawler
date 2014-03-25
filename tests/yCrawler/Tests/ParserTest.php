@@ -90,7 +90,6 @@ class ParserTest extends TestCase
         $parser->setURLPattern(self::EXAMPLE_PATTERN_MALFORMED);
     }
 
-
     public function testMatchURL()
     {
         $parser = $this->createParserMock();

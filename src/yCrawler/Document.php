@@ -97,7 +97,6 @@ class Document
         return $this->isVerified;
     }
 
-
     public function getLinks()
     {
         return $this->links;
