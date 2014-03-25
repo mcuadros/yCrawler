@@ -32,14 +32,14 @@ abstract class Parser
     const URL_PATTERN_BASED_ON_DOMAIN = '~^https?://%s~';
 
     protected $initialized = false;
-    private $startup = Array();
-    private $urlPatterns = Array();
+    protected $items = [
+        'follow' => [], 'links' => [],
+        'verify' => [], 'values' => []
+    ];
+    private $startup = [];
+    private $urlPatterns = [];
     private $parseCallback;
     private $name;
-    protected $items = Array(
-        'follow' => array(), 'links' => array(),
-        'verify' => array(), 'values' => array()
-    );
 
     abstract public function initialize();
 
@@ -77,7 +77,7 @@ abstract class Parser
 
     public function clearStartupURLs()
     {
-        $this->startup = array();
+        $this->startup = [];
     }
 
     public function setStartupURL($url, $clean = false)
@@ -97,7 +97,7 @@ abstract class Parser
     {
         $this->configure();
 
-        $documents = array();
+        $documents = [];
         foreach ($this->startup as $url) {
             $documents[] = new Document($url, $this);
         }
@@ -112,7 +112,7 @@ abstract class Parser
 
     public function clearURLPatterns()
     {
-        $this->urlPatterns = array();
+        $this->urlPatterns = [];
     }
 
     public function setURLPattern($regexp, $clean = false)
@@ -128,15 +128,6 @@ abstract class Parser
         return $this->urlPatterns[] = $regexp;
     }
 
-    private function validateRegExp($regexp)
-    {
-        if (@preg_match($regexp, '') === false) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function matchURL($url)
     {
         if (count($this->urlPatterns) == 0) {
@@ -148,24 +139,6 @@ abstract class Parser
         }
 
         return false;
-    }
-
-    private function createDefaultURLPatterns()
-    {
-        $tmp = Array();
-        foreach ($this->startup as $url) {
-            $tmp[] = $this->createURLPatternBasedOnURL($url);
-        }
-
-        $this->urlPatterns = array_unique($tmp);
-    }
-
-    private function createURLPatternBasedOnURL($url)
-    {
-        $domain = parse_url($url, PHP_URL_HOST);
-        $domainWithEscapedDots = str_replace('.', '\.', $domain);
-
-        return sprintf(self::URL_PATTERN_BASED_ON_DOMAIN, $domainWithEscapedDots);
     }
 
     public function getFollowItems()
@@ -291,4 +264,33 @@ abstract class Parser
     {
         return $this->parseCallback;
     }
+
+    private function validateRegExp($regexp)
+    {
+        if (@preg_match($regexp, '') === false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function createDefaultURLPatterns()
+    {
+        $tmp = [];
+        foreach ($this->startup as $url) {
+            $tmp[] = $this->createURLPatternBasedOnURL($url);
+        }
+
+        $this->urlPatterns = array_unique($tmp);
+    }
+
+    private function createURLPatternBasedOnURL($url)
+    {
+        $domain = parse_url($url, PHP_URL_HOST);
+        $domainWithEscapedDots = str_replace('.', '\.', $domain);
+
+        return sprintf(self::URL_PATTERN_BASED_ON_DOMAIN, $domainWithEscapedDots);
+    }
+
+
 }

@@ -9,12 +9,12 @@ class CSSType extends XPathType
 {
     public function evaluate(Document $document, $pattern)
     {
-        $xpathPattern = $this->convertCSSPaternToXpath($pattern);
+        $xpathPattern = $this->convertCSSPatternToXpath($pattern);
 
         return parent::evaluate($document, $xpathPattern);
     }
 
-    private function convertCSSPaternToXpath($cssPattern)
+    private function convertCSSPatternToXpath($cssPattern)
     {
         $xpathPattern = CssSelector::toXPath($cssPattern);
 

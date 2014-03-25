@@ -17,9 +17,7 @@ class Item
 
     private $pattern;
     private $type = self::TYPE_XPATH;
-    private $attribute;
-    private $modifiers;
-    private $callback;
+    private $modifiers = [];
 
     public function setType($type)
     {
@@ -75,7 +73,9 @@ class Item
         $type = new $this->type();
         $result = $type->evaluate($document, $this->pattern);
 
-        if (!$result) $result = array();
+        if (!$result) {
+            $result = [];
+        }
         $this->applyModifiers($result, $document);
 
         return $result;
@@ -83,10 +83,9 @@ class Item
 
     private function applyModifiers(&$result, Document $document)
     {
-        if (!$this->modifiers) return true;
-        foreach( $this->modifiers as $modifier) $modifier($result, $document);
-
-        return true;
+        foreach($this->modifiers as $modifier) {
+            $modifier($result, $document);
+        }
     }
 
     public function __toString()

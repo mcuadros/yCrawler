@@ -2,13 +2,10 @@
 
 namespace yCrawler;
 
-use yCrawler\Crawler\Request;
 use yCrawler\Parser\Item\Modifiers;
-use yCrawler\Misc\URL;
 use yCrawler\Document\ValuesStorage;
 use yCrawler\Document\LinksStorage;
 use yCrawler\Document\Exceptions;
-
 use DOMDocument;
 use DOMXPath;
 use Closure;
@@ -18,12 +15,10 @@ class Document
     protected $url;
     protected $values;
     protected $links;
-
     protected $markup;
     protected $parser;
     protected $dom;
     protected $xpath;
-
     protected $isVerified;
     protected $isIndexable;
     protected $isParsed;
@@ -66,14 +61,18 @@ class Document
 
     public function isIndexable()
     {
-        if ($this->isIndexable !== null) return $this->isIndexable;
+        if ($this->isIndexable !== null) {
+            return $this->isIndexable;
+        }
 
         $this->isIndexable = true;
 
         $followItems = $this->parser->getFollowItems();
         foreach ($followItems as &$item) {
-           $this->isIndexable = $this->evaluteItemAsScalar($item);
-            if (!$this->isIndexable) break;
+           $this->isIndexable = $this->evaluateItemAsScalar($item);
+            if (!$this->isIndexable) {
+                break;
+            }
         }
 
         return $this->isIndexable;
@@ -81,13 +80,15 @@ class Document
 
     public function isVerified()
     {
-        if ($this->isVerified !== null) return $this->isVerified;
+        if ($this->isVerified !== null) {
+            return $this->isVerified;
+        }
 
         $this->isVerified = true;
 
         $verifyItems = $this->parser->getVerifyItems();
         foreach ($verifyItems as &$item) {
-            $this->isVerified = $this->evaluteItemAsScalar($item);
+            $this->isVerified = $this->evaluateItemAsScalar($item);
             if (!$this->isVerified) {
                 break;
             }
@@ -96,26 +97,37 @@ class Document
         return $this->isVerified;
     }
 
-    protected function evaluteItemAsScalar(array &$item)
-    {
-        $item[0]->setModifier(Modifiers\Scalar::boolean($item[1]));
-        if (!$item[0]->evaluate($this)) {
-            return false;
-        }
-
-        return true;
-    }
 
     public function getLinks()
     {
         return $this->links;
     }
 
+    public function getValues()
+    {
+        return $this->values;
+    }
+
+    public function parse()
+    {
+        $this->initialize();
+
+        $this->collectValues();
+        $this->collectLinks();
+        $this->executeOnParseCallback();
+
+        $this->isParsed = true;
+    }
+
+    public function isParsed()
+    {
+        return $this->isParsed;
+    }
+
     protected function collectLinks()
     {
-        if (!$this->isIndexable()) {
-            $this->links = false;
-        } else {
+        $this->links = null;
+        if ($this->isIndexable()) {
             $this->links = new LinksStorage($this->url, $this->parser);
             $this->evaluateLinkRulesFromParser();
         }
@@ -140,16 +152,11 @@ class Document
         }
     }
 
-    public function getValues()
-    {
-        return $this->values;
-    }
-
     protected function collectValues()
     {
-        if (!$this->isVerified()) {
-            $this->values = false;
-        } else {
+        $this->values = false;
+
+        if ($this->isVerified()) {
             $this->values = new ValuesStorage();
             $this->evaluateValueRulesFromParser();
         }
@@ -168,21 +175,6 @@ class Document
         $this->values->set($key, $result);
     }
 
-    public function parse()
-    {
-        $this->initialize();
-
-        $this->collectValues();
-        $this->collectLinks();
-        $this->executeOnParseCallback();
-
-        $this->isParsed = true;
-    }
-
-    public function isParsed()
-    {
-        return $this->isParsed;
-    }
 
     protected function initialize()
     {
@@ -198,7 +190,7 @@ class Document
 
     protected function initializeDOM()
     {
-        $this->ifEmptyMarkupThrowException();
+        $this->isValidMarkup();
 
         libxml_use_internal_errors(true);
         libxml_clear_errors();
@@ -213,7 +205,7 @@ class Document
         $this->dom = $dom;
     }
 
-    protected function ifEmptyMarkupThrowException()
+    protected function isValidMarkup()
     {
         if (!$this->markup) {
             throw new Exceptions\InvalidMarkup();
@@ -246,5 +238,15 @@ class Document
         if ($cb instanceOf Closure) {
             $cb($this);
         }
+    }
+
+    protected function evaluateItemAsScalar(array &$item)
+    {
+        $item[0]->setModifier(Modifiers\Scalar::boolean($item[1]));
+        if (!$item[0]->evaluate($this)) {
+            return false;
+        }
+
+        return true;
     }
 }

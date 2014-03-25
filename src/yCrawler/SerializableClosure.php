@@ -5,19 +5,21 @@ namespace yCrawler;
 use Closure;
 use ReflectionFunction;
 use SplFileObject;
+use InvalidArgumentException;
 
 #http://www.htmlist.com/development/extending-php-5-3-closures-with-serialization-and-reflection/
 class SerializableClosure
 {
-    protected $closure = NULL;
-    protected $reflection = NULL;
-    protected $code = NULL;
-    protected $used_variables = array();
+    protected $closure = null;
+    protected $reflection = null;
+    protected $code = null;
+    protected $used_variables = [];
 
     public function __construct($function)
     {
-        if (!$function instanceOf Closure)
+        if (!$function instanceOf Closure) {
             throw new InvalidArgumentException();
+        }
 
         $this->closure = $function;
         $this->reflection = new ReflectionFunction($function);

@@ -11,14 +11,14 @@ class RegExpType implements Type
     {
         $result = $this->evaluateRegExp($document, $pattern);
 
-        $output = Array();
+        $output = [];
         foreach (end($result) as $index => $value) {
-            $output[] = Array(
+            $output[] = [
                 'value' =>  $value,
                 'full' =>  $result[0][$index],
                 'node' => null,
                 'dom' => $document->getDOM()
-            );
+            ];
         }
 
         return $output;

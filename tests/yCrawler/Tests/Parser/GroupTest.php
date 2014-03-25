@@ -46,10 +46,14 @@ class GroupTest extends TestCase
         $group->createItem(1)->setType(Item::TYPE_LITERAL);
         $group->createItem(4)->setType(Item::TYPE_LITERAL);
 
-        $group->setModifier(function(&$result) {
-            $result[0]['value'] += 3;
-            $result[1]['value'] += 2;
-        });
+        $group->setModifier(
+            function($result)
+            {
+                $result[0]['value'] += 3;
+                $result[1]['value'] += 2;
+                return $result;
+            }
+        );
 
         $result = $group->evaluate($doc);
 

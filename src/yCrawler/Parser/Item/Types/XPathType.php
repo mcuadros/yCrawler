@@ -11,7 +11,7 @@ class XPathType implements Type
     {
         $result = $this->evaluateXPath($document, $pattern);
 
-        $output = Array();
+        $output = [];
         foreach ($result as $node) {
             $output[] = $this->createResultArrayForNode($document, $node);
         }
@@ -34,9 +34,7 @@ class XPathType implements Type
         $result = $xpath->evaluate($pattern);
 
         if (!$result) {
-            throw new Exceptions\MalformedExpression(sprintf(
-                'Malformed XPath expression "%s"', $pattern
-            ));
+            throw new Exceptions\MalformedExpression(sprintf('Malformed XPath expression "%s"', $pattern));
         }
 
         return $result;

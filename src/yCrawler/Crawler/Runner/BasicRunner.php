@@ -46,8 +46,6 @@ class BasicRunner extends Runner
 
         $this->document->setMarkup($request->getResponse());
         $this->document->parse();
-
-        echo "--";
     }
 
     protected function freeDocument()

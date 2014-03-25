@@ -9,13 +9,15 @@ use Closure;
 
 class Group
 {
-    private $items = Array();
-    private $modifiers;
+    private $items = [];
+    private $modifiers = [];
 
     public function createItem($expression = false)
     {
         $item = new Item();
-        if ($expression) $item->setPattern($expression);
+        if ($expression) {
+            $item->setPattern($expression);
+        }
         $this->items[] = $item;
 
         return $item;
@@ -23,17 +25,21 @@ class Group
 
     public function evaluate(Document $document)
     {
-        $output = Array();
+        $output = [];
         foreach ($this->items as $item) {
-            foreach($item->evaluate($document) as $data) $output[] = $data;
+            foreach($item->evaluate($document) as $data) {
+                $output[] = $data;
+            }
         }
 
-        $this->applyModifiers($output, $document);
-
-        return $output;
+        return $this->applyModifiers($output, $document);
     }
 
-    public function getModifiers() { return $this->modifiers; }
+    public function getModifiers()
+    {
+        return $this->modifiers;
+    }
+
     public function setModifier(Closure $modifier)
     {
         $this->modifiers[] = new SerializableClosure($modifier);
@@ -41,16 +47,17 @@ class Group
         return $this;
     }
 
-    private function applyModifiers(&$result, Document &$document)
-    {
-        if (!$this->modifiers) return true;
-        foreach( $this->modifiers as $modifier) $modifier($result, $document);
-
-        return true;
-    }
-
     public function __toString()
     {
         return (string) var_export($this);
+    }
+
+    private function applyModifiers($result, Document $document)
+    {
+        foreach($this->modifiers as $modifier) {
+            $result = $modifier($result, $document);
+        }
+
+        return $result;
     }
 }
