@@ -61,6 +61,18 @@ class Crawler
             return true;
         }
 
+        $this->runner->setOnDoneCallback(
+            function ($document) {
+                if (!$document->isIndexable()) {
+                    return;
+                }
+                foreach($document->getLinks() as $url => $pass) {
+                    $this->queue->add(new Document($url, $document->getParser()));
+                }
+
+            }
+        );
+
         return $this->initialized = time();
     }
 

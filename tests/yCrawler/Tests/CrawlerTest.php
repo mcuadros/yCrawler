@@ -15,19 +15,56 @@ class CrawlerTest extends  \PHPUnit_Framework_TestCase
 
     public function testRun()
     {
+        $parser = new ParserMock('mock');
+        $doc = new Document('http://aurl', $parser);
+        $crawler = $this->getCrawler($doc);
+        $crawler->run(0);
+        $this->assertTrue($doc->isParsed());
+    }
+
+    public function testOverrideOnParse()
+    {
+        $parser = new ParserMock('mock');
+        $doc = new Document('http://aurl', $parser);
+        $override = false;
+        $crawler = $this->getCrawler($doc);
+        $crawler->overrideOnParse(
+            function ($document) use (&$override){
+                $override = true;
+            }
+        );
+        $crawler->run(0);
+        $this->assertTrue($override);
+    }
+
+    public function testRequeueLinkableDocs()
+    {
+        $passes = 0;
+        $parser = new ParserMock('mock');
+        $doc = new Document('http://aurl', $parser);
+        $crawler = $this->getCrawler($doc);
+        $crawler->overrideOnParse(
+            function ($document) use (&$passes){
+                $passes++;
+            }
+        );
+        $crawler->run(0);
+        $this->assertEquals(2, $passes);
+
+    }
+
+    protected function getCrawler($doc)
+    {
         $request = m::mock('yCrawler\Crawler\Request');
         $request->shouldReceive('execute');
         $request->shouldReceive('setUrl');
-        $request->shouldReceive('getResponse')->andReturn(self::EXAMPLE_MARKUP);
+        $request->shouldReceive('getResponse')->andReturnValues([self::EXAMPLE_MARKUP, '<html></html>']);
 
-        $parser = new ParserMock();
-        $doc = new Document('http://aurl', $parser);
         $runner = new BasicRunner($request);
         $queue = new SimpleQueue();
         $queue->add($doc);
 
         $crawler = new Crawler($queue, $runner);
-        $crawler->run(0);
-        $this->assertTrue($doc->isParsed());
+        return $crawler;
     }
 }

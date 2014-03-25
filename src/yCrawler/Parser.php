@@ -3,30 +3,11 @@
 namespace yCrawler;
 
 use yCrawler\Document;
-use yCrawler\Misc\URL;
 use yCrawler\Parser\Item;
 use yCrawler\Parser\Group;
 
 use yCrawler\Parser\Exceptions;
 
-/**
- * Parser_Base es una clase abstracta que ha de ser extendida por una clase final a modo de
- * configuración, donde se definirán todos los permenores para cada parser.
- *
- * <code>
- * namespace Config;
- * use yCrawler;
- *
- * class Localhost extends yCrawler\Parser_Base {
- *      public function initialize() {
- *          $this->setURLPattern('/localhost/');
- *
- *          //config...
- *      }
- * }
- * </code>
- *
- */
 abstract class Parser
 {
     const URL_PATTERN_BASED_ON_DOMAIN = '~^https?://%s~';
