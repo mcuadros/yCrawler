@@ -148,7 +148,7 @@ abstract class Parser
 
     public function addLinkFollowItem(Item $item, $sign)
     {
-        $this->items['follow'][] = Array($item, $sign);
+        $this->items['follow'][] = [$item, $sign];
     }
 
     public function clearFollowItems()

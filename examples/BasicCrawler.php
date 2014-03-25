@@ -20,7 +20,10 @@ class BasicParser extends Parser
     }
 }
 
-$queue = new SimpleQueue(); 
+$parser = new BasicParser();
+$parser->setOnParseCallback(function($document){});
+
+$queue = new SimpleQueue(['http://initialurl.com' => $parser]);
 $runner = new BasicRunner();
 
 $crawler = new Crawler($queue, $runner);

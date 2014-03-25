@@ -166,15 +166,9 @@ class Document
     {
         foreach ($this->parser->getValueItems() as $key => $item) {
             $result = $item->evaluate($this);
-            $this->saveEvaluationResult($key, $result);
+            $this->values->set($key, $result);
         }
     }
-
-    protected function saveEvaluationResult($key, $result)
-    {
-        $this->values->set($key, $result);
-    }
-
 
     protected function initialize()
     {
