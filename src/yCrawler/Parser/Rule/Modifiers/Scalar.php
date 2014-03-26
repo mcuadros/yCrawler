@@ -10,6 +10,10 @@ final class Scalar
     public static function boolean($sign = self::BOOLEAN_POSITIVE)
     {
         return function(array &$results) use ($sign) {
+            if (empty($results)) {
+                $results[]['value'] = !(boolean) $sign;
+                return $results;
+            }
             foreach ($results as &$result) {
                 if ((boolean) $result['value']) {
                     $result['value'] = (boolean) $sign;
@@ -17,8 +21,8 @@ final class Scalar
                 else {
                     $result['value'] = !(boolean) $sign;
                 }
-
             }
+            return $results;
         };
     }
 

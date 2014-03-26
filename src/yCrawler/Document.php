@@ -88,6 +88,7 @@ class Document
         $this->isVerified = true;
 
         $verifyRules = $this->parser->getVerifyRules();
+        var_dump(count($verifyRules));
         foreach ($verifyRules as &$rule) {
             $this->isVerified = $this->evaluateItemAsScalar($rule);
             if (!$this->isVerified) {
