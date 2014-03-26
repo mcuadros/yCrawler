@@ -1,6 +1,6 @@
 <?php
 
-namespace yCrawler\Parser\Item\Modifiers;
+namespace yCrawler\Parser\Rule\Modifiers;
 
 final class DateTime
 {

@@ -10,7 +10,7 @@ class TestCase extends PHPUnit_Framework_TestCase
 {
     protected function createParserMock()
     {
-        $parser = new Mocks\ParserMock();
+        $parser = new Mocks\ParserMock('mock');
 
         return $parser;
     }

@@ -3,10 +3,10 @@
 namespace yCrawler;
 
 use yCrawler\Document;
-use yCrawler\Parser\Item;
 use yCrawler\Parser\Group;
 
 use yCrawler\Parser\Exceptions;
+use yCrawler\Parser\Rule;
 
 abstract class Parser
 {
@@ -24,6 +24,7 @@ abstract class Parser
 
     public function __construct($name)
     {
+        $this->createDefaultURLPatterns();
         $this->name;
     }
 
@@ -85,104 +86,64 @@ abstract class Parser
         return false;
     }
 
-    public function getFollowItems()
+    public function getFollowRules()
     {
         return $this->items['follow'];
     }
 
-    public function addLinkFollowItem(Item $item, $sign)
+    public function addLinkFollowRule(Rule $rule, $sign)
     {
-        $this->items['follow'][] = [$item, $sign];
+        $this->items['follow'][] = [$rule, $sign];
     }
 
-    public function clearFollowItems()
+    public function clearFollowRules()
     {
         $this->items['follow'] = [];
     }
 
-    public function createLinkFollowItem($expression = false, $sign = true)
-    {
-        $item = new Item();
-        if ($expression) $item->setPattern($expression);
-
-        $this->addLinkFollowItem($item, $sign);
-
-        return $item;
-    }
-
-    public function getVerifyItems()
+    public function getVerifyRules()
     {
         return $this->items['verify'];
     }
 
-    public function addVerifyItem(Item $item, $sign)
+    public function addVerifyRule(Rule $rule, $sign)
     {
-        $this->items['verify'][] = Array($item, $sign);
+        $this->items['verify'][] = [$rule, $sign];
     }
 
-    public function clearVerifyItems()
+    public function clearVerifyRules()
     {
         $this->items['verify'] = [];
     }
 
-    public function createVerifyItem($expression = false, $sign = true)
-    {
-        $item = new Item();
-        if ($expression) $item->setPattern($expression);
-
-        $this->addVerifyItem($item, $sign);
-
-        return $item;
-    }
-
-    public function getLinksItems()
+    public function getLinkRules()
     {
         return $this->items['links'];
     }
 
-    public function addLinksItem(Item $item)
+    public function addLinkRule(Rule $rule)
     {
-        $this->items['links'][] = $item;
+        $this->items['links'][] = $rule;
     }
 
-    public function clearLinksItems()
+    public function clearLinkRules()
     {
         $this->items['links'] = [];
     }
 
-    public function createLinksItem($expression = false)
-    {
-        $item = new Item();
-        if ($expression) $item->setPattern($expression);
-
-        $this->addLinksItem($item);
-
-        return $item;
-    }
-
-    public function getValueItems()
+    public function getValueRules()
     {
         return $this->items['values'];
     }
 
-    public function addValueItem($name, Item $item)
+    public function addValueRule(Rule $rule, $name)
     {
-        $this->items['values'][$name] = $item;
+        $this->items['values'][$name] = $rule;
     }
 
-    public function clearValueItems()
+    public function clearValueRules()
     {
         $this->items['values'] = [];
-    }
-
-    public function createValueItem($name, $expression = false)
-    {
-        $item = new Item();
-        if ($expression) $item->setPattern($expression);
-
-        $this->addValueItem($name, $item);
-
-        return $item;
     }
 
     public function addValueGroup($name, Group $group)

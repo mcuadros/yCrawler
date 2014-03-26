@@ -1,15 +1,14 @@
 <?php
 
-namespace yCrawler\Tests\Parser\Item\Types;
+namespace yCrawler\Tests\Parser\Rule\Types;
 
-use yCrawler\Parser\Item\Types;
-use yCrawler\Tests\Testcase;
+use yCrawler\Tests\Parser\Rule\RuleTestCase;
 
-class RegExpTypeTest extends Type
+class RegExpTest extends RuleTestCase
 {   
     protected $emptyNode = true;
 
-    const TESTED_CLASS = 'yCrawler\Parser\Item\Types\RegExpType';
+    const TESTED_CLASS = 'yCrawler\Parser\Rule\RegExp';
 
     const EXAMPLE_PATTERN_INPUT = '/f([a-z]*)/';
     const EXAMPLE_PATTERN_OUTPUT = null;
@@ -24,9 +23,9 @@ class RegExpTypeTest extends Type
         $document = $this->createDocumentMock();
 
         $class = static::TESTED_CLASS;
-        $type = new $class();
+        $type = new $class(static::EXAMPLE_PATTERN_INPUT);
 
-        $result = $type->evaluate($document, static::EXAMPLE_PATTERN_INPUT);
+        $result = $type->evaluate($document);
 
         $this->assertNull($result[0]['node']);
         $this->assertSame(static::EXAMPLE_RESULT, $result[0]['value']);
@@ -37,8 +36,6 @@ class RegExpTypeTest extends Type
 
     protected function createDocumentMock()
     {
-        $node = (object) ['nodeValue' => static::EXAMPLE_RESULT];
-
         $document = parent::createDocumentMock();
         $document->shouldReceive('getDOM')
             ->withNoArgs()

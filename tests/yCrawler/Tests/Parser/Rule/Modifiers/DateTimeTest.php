@@ -1,8 +1,8 @@
 <?php
 
-namespace yCrawler\Tests\Parse\Item\Modifiers;
+namespace yCrawler\Tests\Parse\Rule\Modifiers;
 
-use yCrawler\Parser\Item\Modifiers\DateTime;
+use yCrawler\Parser\Rule\Modifiers\DateTime;
 
 class DateTimeTest extends  \PHPUnit_Framework_TestCase
 {

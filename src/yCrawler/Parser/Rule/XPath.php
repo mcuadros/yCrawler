@@ -1,15 +1,16 @@
 <?php
 
-namespace yCrawler\Parser\Item\Types;
+namespace yCrawler\Parser\Rule;
 
 use yCrawler\Parser\Exceptions;
 use yCrawler\Document;
+use yCrawler\Parser\Rule;
 
-class XPathType implements Type
+class XPath extends Rule
 {
-    public function evaluate(Document $document, $pattern)
+    protected function doEvaluate(Document $document)
     {
-        $result = $this->evaluateXPath($document, $pattern);
+        $result = $this->evaluateXPath($document);
 
         $output = [];
         foreach ($result as $node) {
@@ -21,17 +22,17 @@ class XPathType implements Type
 
     private function createResultArrayForNode(Document $document, $node)
     {
-        return Array(
+        return [
             'value' => $node->nodeValue,
             'node' => $node,
             'dom' => $document->getDOM()
-        );
+        ];
     }
 
-    private function evaluateXPath(Document $document, $pattern)
+    private function evaluateXPath(Document $document)
     {
         $xpath = $document->getXPath();
-        $result = $xpath->evaluate($pattern);
+        $result = $xpath->evaluate($this->pattern);
 
         if (!$result) {
             throw new Exceptions\MalformedExpression(sprintf('Malformed XPath expression "%s"', $pattern));

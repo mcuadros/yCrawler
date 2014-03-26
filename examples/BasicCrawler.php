@@ -11,7 +11,6 @@ class BasicParser extends Parser
 {
     public function initialize()
     {
-        $this->setStartupURL('http://httpbin.org/');
 
         $item = new Item();
         $item->setPattern('//h2');
@@ -20,14 +19,20 @@ class BasicParser extends Parser
     }
 }
 
-$parser = new BasicParser();
+$parser = new BasicParser('name');
 $parser->setOnParseCallback(function($document){});
 
-$queue = new SimpleQueue(['http://initialurl.com' => $parser]);
-$runner = new BasicRunner();
+$queue = new SimpleQueue();
+$queue->add(new \yCrawler\Document('url', $parser));
+$queue->add(new \yCrawler\Document('url', $parser));
+$queue->add(new \yCrawler\Document('url', $parser));
+$queue->add(new \yCrawler\Document('url', $parser));
+$queue->add(new \yCrawler\Document('url', $parser));
+$queue->add(new \yCrawler\Document('url', $parser));
+
+$runner = new BasicRunner(new Crawler\Request());
 
 $crawler = new Crawler($queue, $runner);
-$crawler->addParser(new BasicParser());
 $crawler->onParse(function($document) {
     var_dump($document->getValues());
 });

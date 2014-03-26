@@ -3,17 +3,17 @@
 //Archivo de configuración de las reglas del "yCrawler"
 //-- Configurado para cada partner
 //
-// [-Item-]
+// [-Rule-]
 //      Una directiva de este tipo, tiene el formato:
 //          $this->createNOMBREDIRECTIVAItem([ String nombre_captura ,] String regla);
 //      con estas directivas se obtendrá un array de ocurrencias que cumplan con la 'regla'
-//      la directiva devolverá una referencia al propio [-Item-], con lo que podrán modificarse con "method chaining"
+//      la directiva devolverá una referencia al propio [-Rule-], con lo que podrán modificarse con "method chaining"
 //
 //      'String nombre_captura' : [opcional] Nombre bajo el que se guardará el resultado de la aplicación de la directiva
 //      'String regla'  : Regla bajo la que se hacen las búsquedas, pueden ser:
 //          { xpath | regExp | texto_plano }
 //
-//      @TIPOS de [-Item-]
+//      @TIPOS de [-Rule-]
 //      El tipo de 'String regla', de una directiva cualquiera -$item-, se indica con:
 //          $item->setType('xpath'); [por defecto]
 //              El resultado se obtiene parseando el DOM mediante una regla xPath tomada de 'String regla'.
@@ -22,7 +22,7 @@
 //          $item->setType('literal');
 //              El resultado se obtiene directamente del texto de la 'String regla'
 //
-//      @MODIFICADORES de [-Item-]
+//      @MODIFICADORES de [-Rule-]
 //      Los resultados arrojados por la directiva pueden modificarse, o desencadenar otras acciones:
 //          $item->setModifier(String nombre_modificador [, Mixed params ]* );
 //      Se pueden aplicar, en cadena, muchos modificadores, que se irán ejecutando por orden de introducción.
@@ -75,7 +75,7 @@
 //          $this->createValueItem(String nombre_captura, String regla);
 //
 // [-Group-]
-//      Un grupo es un conjunto de [-Item-], identificados bajo una misma clave (la clave_del_grupo)
+//      Un grupo es un conjunto de [-Rule-], identificados bajo una misma clave (la clave_del_grupo)
 //      Una directiva de este tipo, tiene el formato:
 //          $grup = $this->createValueGroup(String clave_del_grupo);
 //          $grup->createItem(String nombre_subItem_1, String regla_1);
@@ -87,7 +87,7 @@
 //      'String clave_del_grupo' : [opcional] Clave bajo la que se guardará el resultado de la interpretación del grupo
 
 //      @MODIFICADORES de [-Group-]
-//      Un grupo acepta los mismos modificadores que [-Item-], arriba descritos.
+//      Un grupo acepta los mismos modificadores que [-Rule-], arriba descritos.
 //          $grup->setModifier(String nombre_modificador [, Mixed params ]* );
 //      Se pueden aplicar, en cadena, muchos modificadores, que se irán ejecutando por orden de introducción.
 //      Cada modificador, se aplica sobre todos los elementos devueltos por el resultados final de la interpretación del [-Group-]
@@ -125,11 +125,11 @@ class conf-template extends Yunait\Parser
         //-- Array('user','page') : preservará sólo 'user' y 'page'
         $this->createLinksFilter(false|true|Array('param_to_preserve1','param_to_preserve2'));
 
-        //[-Item-] Links que se indexarán
+        //[-Rule-] Links que se indexarán
         //debe de devolver un Array de URIs válidos, no de elementos DOM
         $this->createLinksItem('regla_de_links_a_indexar')->setAttribute('href');
 
-        //[-Item-] Reglas que determinan si el Documento es indexable (Document:isIndexable),
+        //[-Rule-] Reglas que determinan si el Documento es indexable (Document:isIndexable),
         //Si no se encuentra ninguna positiva, se ignorarán todos los enlaces de la página
         //Si se encuentra alguna negativa, se ignorarán todos los enlaces de la página
         //-- default: no especificado >> se seguirán los enlaces de la página
@@ -138,11 +138,11 @@ class conf-template extends Yunait\Parser
 
     // Parámetros de lectura de oferta
 
-        //[-Item-] Reglas que determinan si se debe parsear la oferta buscando
+        //[-Rule-] Reglas que determinan si se debe parsear la oferta buscando
         $this->createVerifyItem('regla_positiva');
         $this->createVerifyItem('regla_negativa',false);
 
-        //[-Item-] Reglas para la captura de los campos de la oferta
+        //[-Rule-] Reglas para la captura de los campos de la oferta
         $this->createValueItem('referencia_empresa', 'regla');   //ID de la oferta en ese partner
         $this->createValueItem('url',                'regla');   //url estática
         $this->createValueItem('titulo',             'regla');   //Título
@@ -178,7 +178,7 @@ class conf-template extends Yunait\Parser
         $this->createValueItem('incluye_vuelo',      'regla');   //Longitud de la oferta
         $this->createValueItem('incluye_envio',      'regla');   //Longitud de la oferta
 
-        //[-Group-] Grupo de reglas 'Item'
+        //[-Group-] Grupo de reglas 'Rule'
         $grup = $this->createValueGroup('nombre_grupo');
         $grup->createItem('subItem_1', 'regla1');
         $grup->createItem('subItem_2', 'regla2');
@@ -188,7 +188,7 @@ class conf-template extends Yunait\Parser
 
     private function callbackFunction(&$result,$document)
     {
-        //en $result se obtiene referencia al Array que captura el [-Item-]
+        //en $result se obtiene referencia al Array que captura el [-Rule-]
         //en $document se obtiene el propio [-Document-] en proceso
     }
 }

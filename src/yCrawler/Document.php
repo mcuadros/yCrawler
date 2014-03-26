@@ -2,13 +2,14 @@
 
 namespace yCrawler;
 
-use yCrawler\Parser\Item\Modifiers;
+use yCrawler\Parser\Rule\Modifiers;
 use yCrawler\Document\ValuesStorage;
 use yCrawler\Document\LinksStorage;
 use yCrawler\Document\Exceptions;
 use DOMDocument;
 use DOMXPath;
 use Closure;
+use yCrawler\Parser\Rule\XPath;
 
 class Document
 {
@@ -67,9 +68,9 @@ class Document
 
         $this->isIndexable = true;
 
-        $followItems = $this->parser->getFollowItems();
-        foreach ($followItems as &$item) {
-           $this->isIndexable = $this->evaluateItemAsScalar($item);
+        $followRules = $this->parser->getFollowRules();
+        foreach ($followRules as &$rule) {
+           $this->isIndexable = $this->evaluateItemAsScalar($rule);
             if (!$this->isIndexable) {
                 break;
             }
@@ -86,9 +87,9 @@ class Document
 
         $this->isVerified = true;
 
-        $verifyItems = $this->parser->getVerifyItems();
-        foreach ($verifyItems as &$item) {
-            $this->isVerified = $this->evaluateItemAsScalar($item);
+        $verifyRules = $this->parser->getVerifyRules();
+        foreach ($verifyRules as &$rule) {
+            $this->isVerified = $this->evaluateItemAsScalar($rule);
             if (!$this->isVerified) {
                 break;
             }
@@ -134,12 +135,12 @@ class Document
 
     protected function evaluateLinkRulesFromParser()
     {
-        if (!$this->parser->getLinksItems() ) {
-            $this->parser->createLinksItem('//a/@href');
+        if (!$this->parser->getLinkRules() ) {
+            $this->parser->addLinkRule(new XPath('//a/@href'));
         }
 
-        foreach ($this->parser->getLinksItems() as $item) {
-            $result = $item->evaluate($this);
+        foreach ($this->parser->getLinkRules() as $rule) {
+            $result = $rule->evaluate($this);
             $this->saveLinksResult($result);
         }
     }
@@ -163,8 +164,8 @@ class Document
 
     protected function evaluateValueRulesFromParser()
     {
-        foreach ($this->parser->getValueItems() as $key => $item) {
-            $result = $item->evaluate($this);
+        foreach ($this->parser->getValueRules() as $key => $rule) {
+            $result = $rule->evaluate($this);
             $this->values->set($key, $result);
         }
     }
@@ -233,10 +234,10 @@ class Document
         }
     }
 
-    protected function evaluateItemAsScalar(array &$item)
+    protected function evaluateItemAsScalar(array &$rule)
     {
-        $item[0]->setModifier(Modifiers\Scalar::boolean($item[1]));
-        if (!$item[0]->evaluate($this)) {
+        $rule[0]->addModifier(Modifiers\Scalar::boolean($rule[1]));
+        if (!$rule[0]->evaluate($this)) {
             return false;
         }
 

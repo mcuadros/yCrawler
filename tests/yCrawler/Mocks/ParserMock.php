@@ -3,16 +3,17 @@
 namespace yCrawler\Mocks;
 
 use yCrawler\Parser;
+use yCrawler\Parser\Rule;
 
 class ParserMock extends Parser
 {
     public function initialize()
     {
-        $this->createLinkFollowItem('//a');
-        $this->createVerifyItem('//a');
+        $this->addLinkFollowRule(new Rule\XPath('//a'), true);
+        $this->addVerifyRule(new Rule\XPath('//a'), true);
 
-        $this->createValueItem('no-exists', '//no-exists-tag');
-        $this->createValueItem('pre', '//pre');
+        $this->addValueRule(new Rule\XPath('//no-exists-tag'), 'no-exists');
+        $this->addValueRule(new Rule\XPath('//pre'), 'pre');
     }
 
     public function matchUrl($url)

@@ -1,13 +1,12 @@
 <?php
 
-namespace yCrawler\Tests\Parser\Item\Types;
+namespace yCrawler\Tests\Parser\Rule;
 
-use yCrawler\Parser\Item\Types;
-use yCrawler\Tests\Testcase;
+use yCrawler\Tests\Parser\Rule\RuleTestCase;
 
-class XPathTypeTest extends Type
+class XPathTest extends RuleTestCase
 {
-    const TESTED_CLASS = 'yCrawler\Parser\Item\Types\XPathType';
+    const TESTED_CLASS = 'yCrawler\Parser\Rule\XPath';
 
     const EXAMPLE_PATTERN_INPUT = '/foo/';
     const EXAMPLE_PATTERN_OUTPUT = '/foo/';

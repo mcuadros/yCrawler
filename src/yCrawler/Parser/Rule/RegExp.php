@@ -1,15 +1,16 @@
 <?php
 
-namespace yCrawler\Parser\Item\Types;
+namespace yCrawler\Parser\Rule;
 
 use yCrawler\Parser\Exceptions;
 use yCrawler\Document;
+use yCrawler\Parser\Rule;
 
-class RegExpType implements Type
+class RegExp extends Rule
 {
-    public function evaluate(Document $document, $pattern)
+    protected function doEvaluate(Document $document)
     {
-        $result = $this->evaluateRegExp($document, $pattern);
+        $result = $this->evaluateRegExp($document);
 
         $output = [];
         foreach (end($result) as $index => $value) {
@@ -24,14 +25,12 @@ class RegExpType implements Type
         return $output;
     }
 
-    private function evaluateRegExp(Document $document, $pattern)
+    private function evaluateRegExp(Document $document)
     {
         $html = $document->getHTML();
 
-        if (!preg_match_all($pattern, $html, $matches)) {
-            throw new Exceptions\MalformedExpression(sprintf(
-                'Malformed RegExp expression %s', $pattern
-            ));
+        if (!preg_match_all($this->pattern, $html, $matches)) {
+            throw new Exceptions\MalformedExpression(sprintf('Malformed RegExp expression %s', $this->pattern));
         }
 
         return $matches;

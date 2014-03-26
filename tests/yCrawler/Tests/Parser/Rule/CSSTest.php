@@ -1,13 +1,12 @@
 <?php
 
-namespace yCrawler\Tests\Parser\Item\Types;
+namespace yCrawler\Tests\Parser\Rule\Types;
 
-use yCrawler\Parser\Item\Types;
-use yCrawler\Tests\Testcase;
+use yCrawler\Tests\Parser\Rule\RuleTestCase;
 
-class CSSTypeTest extends Type
+class CSSTest extends RuleTestCase
 {
-    const TESTED_CLASS = 'yCrawler\Parser\Item\Types\CSSType';
+    const TESTED_CLASS = 'yCrawler\Parser\Rule\CSS';
 
     const EXAMPLE_PATTERN_INPUT = 'div.item > h4 > a';
     const EXAMPLE_PATTERN_OUTPUT = "descendant-or-self::div[@class and contains(concat(' ', normalize-space(@class), ' '), ' item ')]/h4/a";

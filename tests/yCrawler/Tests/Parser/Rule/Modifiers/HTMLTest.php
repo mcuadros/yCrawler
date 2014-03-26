@@ -1,8 +1,8 @@
 <?php
 
-namespace yCrawler\Tests\Parse\Item\Modifiers;
+namespace yCrawler\Tests\Parse\Rule\Modifiers;
 
-use yCrawler\Parser\Item\Modifiers\HTML;
+use yCrawler\Parser\Rule\Modifiers\HTML;
 use yCrawler\Tests\Testcase;
 use yCrawler\Document;
 

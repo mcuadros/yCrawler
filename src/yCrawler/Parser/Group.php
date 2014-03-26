@@ -9,25 +9,21 @@ use Closure;
 
 class Group
 {
-    private $items = [];
+    private $rules = [];
     private $modifiers = [];
 
-    public function createItem($expression = false)
+    public function addRule(Rule $rule)
     {
-        $item = new Item();
-        if ($expression) {
-            $item->setPattern($expression);
-        }
-        $this->items[] = $item;
+        $this->rules[] = $rule;
 
-        return $item;
+        return $this;
     }
 
     public function evaluate(Document $document)
     {
         $output = [];
-        foreach ($this->items as $item) {
-            foreach($item->evaluate($document) as $data) {
+        foreach ($this->rules as $rule) {
+            foreach($rule->evaluate($document) as $data) {
                 $output[] = $data;
             }
         }
@@ -40,7 +36,7 @@ class Group
         return $this->modifiers;
     }
 
-    public function setModifier(Closure $modifier)
+    public function addModifier(Closure $modifier)
     {
         $this->modifiers[] = new SerializableClosure($modifier);
 
