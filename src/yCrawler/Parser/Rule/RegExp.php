@@ -18,7 +18,7 @@ class RegExp extends Rule
                 'value' =>  $value,
                 'full' =>  $result[0][$index],
                 'node' => null,
-                'dom' => $document->getDOM()
+                //'dom' => $document->getDOM()
             ];
         }
 
@@ -27,7 +27,7 @@ class RegExp extends Rule
 
     private function evaluateRegExp(Document $document)
     {
-        $html = $document->getHTML();
+        $html = $document->getMarkup();
 
         if (!preg_match_all($this->pattern, $html, $matches)) {
             throw new Exceptions\MalformedExpression(sprintf('Malformed RegExp expression %s', $this->pattern));

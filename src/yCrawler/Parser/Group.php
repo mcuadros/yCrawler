@@ -7,10 +7,15 @@ use yCrawler\Document;
 use yCrawler\SerializableClosure;
 use Closure;
 
-class Group
+class Group extends Rule
 {
     private $rules = [];
     private $modifiers = [];
+
+    public function __construct()
+    {
+
+    }
 
     public function addRule(Rule $rule)
     {
@@ -46,6 +51,10 @@ class Group
     public function __toString()
     {
         return (string) var_export($this);
+    }
+
+    protected function doEvaluate(Document $document)
+    {
     }
 
     private function applyModifiers($result, Document $document)

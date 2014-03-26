@@ -11,8 +11,13 @@ final class Scalar
     {
         return function(array &$results) use ($sign) {
             foreach ($results as &$result) {
-                if ( (boolean) $result['value'] ) $result['value'] = (boolean) $sign;
-                else $result['value'] =! (boolean) $sign;
+                if ((boolean) $result['value']) {
+                    $result['value'] = (boolean) $sign;
+                }
+                else {
+                    $result['value'] = !(boolean) $sign;
+                }
+
             }
         };
     }

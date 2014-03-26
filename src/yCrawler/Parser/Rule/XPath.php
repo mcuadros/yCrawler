@@ -25,7 +25,7 @@ class XPath extends Rule
         return [
             'value' => $node->nodeValue,
             'node' => $node,
-            'dom' => $document->getDOM()
+            //'dom' => $document->getDOM()
         ];
     }
 
@@ -35,7 +35,7 @@ class XPath extends Rule
         $result = $xpath->evaluate($this->pattern);
 
         if (!$result) {
-            throw new Exceptions\MalformedExpression(sprintf('Malformed XPath expression "%s"', $pattern));
+            throw new Exceptions\MalformedExpression(sprintf('Malformed XPath expression "%s"', $this->pattern));
         }
 
         return $result;
