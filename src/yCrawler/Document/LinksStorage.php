@@ -13,7 +13,7 @@ class LinksStorage implements IteratorAggregate, Countable
 {
     private $originURL;
     private $parser;
-    private $links;
+    private $links = [];
 
     public function __construct($originURL, Parser $parser)
     {
