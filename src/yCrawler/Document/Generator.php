@@ -16,7 +16,7 @@ class Generator
     {
         $documents = [];
         $urls = $this->findUrls($file);
-        foreach($urls as $url => $pass) {
+        foreach ($urls as $url => $pass) {
             $documents[] = new Document($url, $parser);
         }
 

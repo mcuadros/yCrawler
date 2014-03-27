@@ -28,6 +28,10 @@ class SimpleQueue implements Queue
     public function addMultiple(array $documents)
     {
         foreach($documents as $document) {
+            if (!is_array($document)) {
+                $document = [$document];
+            }
+
             if (! $document[0] instanceof Document) {
                 continue;
             }
