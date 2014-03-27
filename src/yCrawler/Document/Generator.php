@@ -7,26 +7,17 @@ use yCrawler\Parser;
 
 class Generator
 {
-    const URL_PATTERN = '~^https?://.+~m';
+    const URL_PATTERN = '~https?://(?![^" ]*(?:jpg|png|gif))[^" ]+~m';
 
-    protected $parser;
-    protected $file;
-    protected $urls = [];
     protected $startup = [];
     protected $urlPatterns = [self::URL_PATTERN];
 
-    public function __construct(Parser $parser, $file)
-    {
-        $this->parser = $parser;
-        $this->file = $file;
-    }
-
-    public function getDocuments()
+    public function getDocuments($file, Parser $parser)
     {
         $documents = [];
-        $this->findUrls();
-        foreach($this->urls as $url => $pass) {
-            $documents[] = new Document($url, $this->parser);
+        $urls = $this->findUrls($file);
+        foreach($urls as $url => $pass) {
+            $documents[] = new Document($url, $parser);
         }
 
         return $documents;
@@ -38,14 +29,17 @@ class Generator
     }
 
 
-    protected function findUrls()
+    protected function findUrls($file)
     {
-        $content = file_get_contents($this->file);
+        $urls = [];
+        $content = file_get_contents($file);
         foreach ($this->urlPatterns as $regexp) {
             if (preg_match_all($regexp, $content, $matches)) {
-                $this->urls = array_flip($matches[0]);
+                $urls = array_flip($matches[0]);
             }
         }
+
+        return $urls;
     }
 
     private function createDefaultURLPatterns()

@@ -10,8 +10,8 @@ class GeneratorTest extends \PHPUnit_Framework_TestCase
     public function testGenerateDocuments()
     {
         $parser = m::mock('yCrawler\Parser');
-        $generator = new Generator($parser, __DIR__ . '/../../../Resources/urls.csv');
-        $docs = $generator->getDocuments();
+        $generator = new Generator();
+        $docs = $generator->getDocuments(__DIR__ . '/../../../Resources/urls.csv', $parser);
         $this->assertCount(4, $docs);
 
         foreach($docs as $doc) {
@@ -23,9 +23,9 @@ class GeneratorTest extends \PHPUnit_Framework_TestCase
     public function testAddPatterns()
     {
         $parser = m::mock('yCrawler\Parser');
-        $generator = new Generator($parser, __DIR__ . '/../../../Resources/urls.csv');
+        $generator = new Generator();
         $generator->setPatterns(['~^https?://httpbin\d\..+~m']);
-        $docs = $generator->getDocuments();
+        $docs = $generator->getDocuments(__DIR__ . '/../../../Resources/urls.csv', $parser);
         $this->assertCount(3, $docs);
     }
 }
