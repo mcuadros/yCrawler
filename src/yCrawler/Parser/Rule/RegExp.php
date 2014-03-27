@@ -18,7 +18,7 @@ class RegExp extends Rule
                 'value' =>  $value,
                 'full' =>  $result[0][$index],
                 'node' => null,
-                //'dom' => $document->getDOM()
+                'dom' => $document->getDOM()
             ];
         }
 

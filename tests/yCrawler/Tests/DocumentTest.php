@@ -4,11 +4,13 @@ namespace yCrawler\Tests;
 
 use yCrawler\Document;
 use Mockery as m;
+use yCrawler\Parser\Rule\XPath;
 
 class DocumentTest extends TestCase
 {
     const EXAMPLE_URL = 'http://httpbin.org/';
     const EXAMPLE_MARKUP = '<html><body><pre><a href="foo">bar</a></pre></body></html>';
+    const TWO_LINKS_MARKUP = '<html><body><pre><a href="foo">bar</a><a href="foo">cad</a></pre></body></html>';
 
     public function createDocument($url)
     {
@@ -65,6 +67,18 @@ class DocumentTest extends TestCase
         $doc->parse();
 
         $this->assertTrue($doc->isVerified());
+    }
+
+    public function testIsNotVerified()
+    {
+        $parser = $this->createParserMock();
+        $parser->addVerifyRule(new XPath("//a[contains(./text(), 'cad')]"), false);
+
+        $doc = new Document(self::EXAMPLE_URL, $parser);
+        $doc->setMarkup(self::TWO_LINKS_MARKUP);
+        $doc->parse();
+
+        $this->assertFalse($doc->isVerified());
     }
 
     public function testIsIndexable()

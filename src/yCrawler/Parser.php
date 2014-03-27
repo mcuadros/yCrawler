@@ -10,7 +10,7 @@ use yCrawler\Parser\Rule;
 
 abstract class Parser
 {
-    const URL_PATTERN_BASED_ON_DOMAIN = '~^https?://.+~';
+    const URL_PATTERN_BASED_ON_DOMAIN = '~^https?://%s~';
 
     protected $initialized = false;
     protected $items = [
@@ -18,7 +18,7 @@ abstract class Parser
         'verify' => [], 'values' => []
     ];
     protected $startup = [];
-    protected $urlPatterns = [self::URL_PATTERN_BASED_ON_DOMAIN];
+    protected $urlPatterns = [];
     protected $parseCallback;
     protected $name;
 
