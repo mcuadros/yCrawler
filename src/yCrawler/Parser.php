@@ -8,7 +8,7 @@ use yCrawler\Parser\Group;
 use yCrawler\Parser\Exceptions;
 use yCrawler\Parser\Rule;
 
-abstract class Parser
+class Parser
 {
     const URL_PATTERN_BASED_ON_DOMAIN = '~^https?://%s~';
 
@@ -27,12 +27,9 @@ abstract class Parser
         $this->name;
     }
 
-    abstract public function initialize();
-
     public function configure()
     {
         if (!$this->isInitialized()) {
-            $this->initialize();
             $this->initialized = true;
         }
     }

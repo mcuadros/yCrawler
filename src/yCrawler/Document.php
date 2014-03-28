@@ -10,6 +10,7 @@ use DOMDocument;
 use DOMXPath;
 use Closure;
 use yCrawler\Parser\Rule\XPath;
+use yCrawler\Crawler\Request\Config as RConfig;
 
 class Document
 {
@@ -208,7 +209,7 @@ class Document
 
     protected function applyUTF8HackIfNeeded($markup)
     {
-        if (!Config::get('utf8_dom_hack')) {
+        if (!RConfig::get('utf8_dom_hack')) {
             return $markup;
         }
 

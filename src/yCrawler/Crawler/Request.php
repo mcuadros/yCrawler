@@ -4,7 +4,7 @@ namespace yCrawler\Crawler;
 
 use yCrawler\Crawler\Request\Exceptions;
 use yCrawler\Misc\URL;
-use yCrawler\Config;
+use yCrawler\Crawler\Request\Config;
 use ForceUTF8\Encoding;
 
 class Request
