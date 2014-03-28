@@ -26,7 +26,7 @@ class BasicRunner extends Runner
         return false;
     }
 
-    public function wait()
+    protected function onWait()
     {
         do {
             try {
@@ -36,7 +36,7 @@ class BasicRunner extends Runner
                 $this->incRetries($this->document);
                 $this->onFailed($this->document, $exception);
             }
-        } while ($this->getRetries($this->document) > 0 && $this->getRetries($this->document) < 3);
+        } while ($this->getRetries($this->document) > 0 && $this->getRetries($this->document) <= $this->maxRetries);
         $this->freeDocument();
     }
 
