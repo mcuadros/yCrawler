@@ -71,7 +71,7 @@ class Document
 
         $followRules = $this->parser->getFollowRules();
         foreach ($followRules as &$rule) {
-           $this->isIndexable = $this->evaluateItemAsScalar($rule);
+            $this->isIndexable = $this->evaluateItemAsScalar($rule);
             if (!$this->isIndexable) {
                 break;
             }
@@ -136,7 +136,7 @@ class Document
 
     protected function evaluateLinkRulesFromParser()
     {
-        if (!$this->parser->getLinkRules() ) {
+        if (!$this->parser->getLinkRules()) {
             $this->parser->addLinkRule(new XPath('//a/@href'));
         }
 
@@ -230,7 +230,7 @@ class Document
     protected function executeOnParseCallback()
     {
         $cb = $this->parser->getOnParseCallback();
-        if ($cb instanceOf Closure) {
+        if ($cb instanceof Closure) {
             $cb($this);
         }
     }
@@ -238,10 +238,6 @@ class Document
     protected function evaluateItemAsScalar(array &$rule)
     {
         $rule[0]->addModifier(Modifiers\Scalar::boolean($rule[1]));
-        if (!$rule[0]->evaluate($this)) {
-            return false;
-        }
-
-        return true;
+        return $rule[0]->evaluate($this);
     }
 }

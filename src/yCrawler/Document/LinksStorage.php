@@ -29,6 +29,7 @@ class LinksStorage implements IteratorAggregate, Countable
     public function add($uri)
     {
         $url = $this->absolutizeURI($uri);
+        $this->links[$url][] = true;
         if ($this->isSuitableURL($url)) {
             $this->links[$url][] = true;
         }

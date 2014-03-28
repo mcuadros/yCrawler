@@ -1,24 +1,39 @@
 {
-    "name": "yunait/ycrawler",
-    "homepage": "http://github.com/yunait/ycrawler",
+    "name": "yunait/daily-cli",
+    "homepage": "http://github.com/yunait/daily-cli",
     "type": "library",
+    "repositories": [
+        {"type": "vcs", "url": "git@github.com:yunait/core.git"},
+        {"type": "vcs", "url": "git@github.com:yunait/core-delivery.git"},
+        {"type": "vcs", "url": "git@github.com:yunait/core-business.git"},
+        {"type": "vcs", "url": "git@github.com:yunait/core-daily.git"},
+        {"type": "vcs", "url": "git@github.com:yunait/string-forge.git"}
+    ],
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.3.0",
-        "ext-curl": "*",
-        "ext-pcntl": "*",
-        "ext-apc": "*",
-        "monolog/monolog": "1.4.0",
-        "neitanod/forceutf8": "dev-master",
-        "symfony/css-selector": "~2.0",
-        "aza/thread": "~1.0"
+        "ext-mongo": "*",
+        "ext-yaml": "*",
+        "ext-redis": "*",
+        "ext-stats": "*",
+        "yunait/core": "dev-master",
+        "yunait/core-daily": "dev-master",
+        "yunait/core-business": "dev-master",
+        "aws/aws-sdk-php": "2.*",
+        "kherge/box": "~2.0"
+
     },
     "require-dev": {
-        "mockery/mockery": "*"
+        "mockery/mockery": "dev-master@dev"
     },
     "autoload": {
         "psr-0": {
-            "yCrawler": "src/"
+            "Daily\\CLI\\": "src/",
+            "Daily\\CLI\\Commands\\": "src/"
         }
+    },
+    "scripts": {
+        "post-update-cmd": "vendor/yunait/core/bin/console core:models",
+        "post-install-cmd": "vendor/yunait/core/bin/console core:models"
     }
 }

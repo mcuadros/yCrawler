@@ -53,7 +53,7 @@ class ParserTest extends TestCase
 
     public function testAddLinkFollowRule()
     {
-        $parser = $this->createParserMock();
+        $parser = new Parser('test');
 
         $rule = new Rule\XPath('');
 
@@ -79,7 +79,7 @@ class ParserTest extends TestCase
     {
         $rule = new Rule\XPath('//a');
 
-        $parser = $this->createParserMock();
+        $parser = new Parser('test');
         $parser->addLinkFollowRule($rule, false);
         $parser->addLinkFollowRule($rule, true);
         $parser->addLinkFollowRule($rule, true);
@@ -95,7 +95,7 @@ class ParserTest extends TestCase
 
     public function testAddVerifyRule()
     {
-        $parser = $this->createParserMock();
+        $parser = new Parser('test');
 
         $rule = new Rule\XPath('//a');
 
@@ -115,7 +115,7 @@ class ParserTest extends TestCase
         $pattern = '//a';
         $rule = new Rule\XPath($pattern);
 
-        $parser = $this->createParserMock();
+        $parser = new Parser('test');
         $parser->addVerifyRule($rule, false);
         $parser->addVerifyRule($rule, true);
         $parser->addVerifyRule($rule, true);
@@ -165,7 +165,7 @@ class ParserTest extends TestCase
 
     public function testAddValueRule()
     {
-        $parser = $this->createParserMock();
+        $parser = new Parser('test');
 
         $rule = new Rule\XPath('');
 
@@ -182,7 +182,7 @@ class ParserTest extends TestCase
 
     public function testAddGroupRule()
     {
-        $parser = $this->createParserMock();
+        $parser = new Parser('test');
 
         $group = new Group();
 
@@ -199,7 +199,7 @@ class ParserTest extends TestCase
 
     public function testSetOnParseCallback()
     {
-        $closure = function($document) {
+        $closure = function ($document) {
             return get_class($document);
         };
 

@@ -7,7 +7,7 @@ use yCrawler\Parser;
 
 class Generator
 {
-    const URL_PATTERN = '~https?://(?![^" ]*(?:jpg|png|gif))[^" ]+~m';
+    const URL_PATTERN = '~https?://(?![^" ]*(?:jpg|png|gif)).+~m';
 
     protected $startup = [];
     protected $urlPatterns = [self::URL_PATTERN];

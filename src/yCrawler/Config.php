@@ -9,4 +9,8 @@ interface Config
     public function getRootUrl();
 
     public function getParser();
+
+    public function getRunnerOptions();
+
+    public function getRequestOptions();
 }

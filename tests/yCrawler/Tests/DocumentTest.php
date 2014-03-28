@@ -4,7 +4,8 @@ namespace yCrawler\Tests;
 
 use yCrawler\Document;
 use Mockery as m;
-use yCrawler\Parser\Rule\XPath;
+use yCrawler\Parser;
+use yCrawler\Parser\Rule;
 
 class DocumentTest extends TestCase
 {
@@ -30,7 +31,7 @@ class DocumentTest extends TestCase
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
 
-        $this->assertInstanceOf('yCrawler\Mocks\ParserMock', $doc->getParser());
+        $this->assertInstanceOf('yCrawler\Parser', $doc->getParser());
     }
 
     public function testGetMarkup()
@@ -71,8 +72,12 @@ class DocumentTest extends TestCase
 
     public function testIsNotVerified()
     {
-        $parser = $this->createParserMock();
-        $parser->addVerifyRule(new XPath("//a[contains(./text(), 'cad')]"), false);
+        $parser = new Parser('test');
+        //$parser->addLinkFollowRule(new Rule\XPath('//a'), true);
+        $parser->addValueRule(new Rule\XPath('//no-exists-tag'), 'no-exists');
+        $parser->addValueRule(new Rule\XPath('//pre'), 'pre');
+        $parser->addVerifyRule(new Rule\XPath('//a'), true);
+        $parser->addVerifyRule(new Rule\XPath("//a[contains(./text(), 'cad')]"), false);
 
         $doc = new Document(self::EXAMPLE_URL, $parser);
         $doc->setMarkup(self::TWO_LINKS_MARKUP);
@@ -92,7 +97,9 @@ class DocumentTest extends TestCase
 
     public function testGetLinks()
     {
-        $doc = $this->createDocument(self::EXAMPLE_URL);
+        $parser = new Parser('test');
+
+        $doc = new Document(self::EXAMPLE_URL, $parser);
         $doc->setMarkup(self::EXAMPLE_MARKUP);
         $doc->parse();
 

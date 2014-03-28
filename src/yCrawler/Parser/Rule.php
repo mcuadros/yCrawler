@@ -49,7 +49,7 @@ abstract class Rule
 
     private function applyModifiers(&$result, Document $document)
     {
-        foreach($this->modifiers as $modifier) {
+        foreach ($this->modifiers as $modifier) {
             $result = $modifier($result, $document);
         }
     }

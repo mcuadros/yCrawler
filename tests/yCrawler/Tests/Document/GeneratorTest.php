@@ -14,7 +14,7 @@ class GeneratorTest extends \PHPUnit_Framework_TestCase
         $docs = $generator->getDocuments(__DIR__ . '/../../../Resources/urls.csv', $parser);
         $this->assertCount(4, $docs);
 
-        foreach($docs as $doc) {
+        foreach ($docs as $doc) {
             $this->assertInstanceOf('yCrawler\Document', $doc);
             $this->assertSame($parser, $doc->getParser());
         }

@@ -9,20 +9,21 @@ final class Scalar
 
     public static function boolean($sign = self::BOOLEAN_POSITIVE)
     {
-        return function(array &$results) use ($sign) {
+        return function (array &$results) use ($sign) {
             if (empty($results)) {
-                $results[]['value'] = !(boolean) $sign;
-                return $results;
+                return (boolean) $sign;
             }
+
+            $result = true;
+
             foreach ($results as &$result) {
                 if ((boolean) $result['value']) {
-                    $result['value'] = (boolean) $sign;
-                }
-                else {
-                    $result['value'] = !(boolean) $sign;
+                    $result = $result && (boolean) $sign;
+                } else {
+                    $result = $result && !(boolean) $sign;
                 }
             }
-            return $results;
+            return $result;
         };
     }
 
