@@ -14,6 +14,7 @@ class BasicRunner extends Runner
     public function addDocument(Document $document)
     {
         $this->document = $document;
+        $this->retries[$document->getURL()] = 0;
     }
 
     public function isFull()
@@ -27,13 +28,15 @@ class BasicRunner extends Runner
 
     public function wait()
     {
-        try {
-            $this->parseDocument();
-            $this->onDone($this->document);
-        } catch (Exception $exception) {
-            $this->onFailed($this->document, $exception);
-        }
-
+        do {
+            try {
+                $this->parseDocument();
+                $this->onDone($this->document);
+            } catch (Exception $exception) {
+                $this->incRetries($this->document);
+                $this->onFailed($this->document, $exception);
+            }
+        } while ($this->getRetries($this->document) > 0 && $this->getRetries($this->document) < 3);
         $this->freeDocument();
     }
 
@@ -50,6 +53,7 @@ class BasicRunner extends Runner
 
     protected function freeDocument()
     {
+        unset($this->retries[$this->document->getURL()]);
         $this->document = null;
     }
 }

@@ -9,7 +9,7 @@ use yCrawler\Crawler\Queue\SimpleQueue;
 use yCrawler\Document;
 use \Mockery as m;
 
-class CrawlerTest extends  \PHPUnit_Framework_TestCase
+class CrawlerTest extends \PHPUnit_Framework_TestCase
 {
     const EXAMPLE_MARKUP = '<html><body><pre><a href="foo">bar</a></pre></body></html>';
 
@@ -44,7 +44,7 @@ class CrawlerTest extends  \PHPUnit_Framework_TestCase
         $doc = new Document('http://aurl', $parser);
         $crawler = $this->getCrawler($doc);
         $crawler->overrideOnParse(
-            function ($document) use (&$passes){
+            function ($document) use (&$passes) {
                 $passes++;
             }
         );

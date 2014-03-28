@@ -33,7 +33,7 @@ class Config
             self::set($setting, $value);
         }
 
-        return $this->getConfig();
+        return self::getConfig();
     }
 
     public static function getConfig()

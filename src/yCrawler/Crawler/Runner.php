@@ -10,6 +10,7 @@ abstract class Runner
     private $onFailedCallback;
     private $onDoneCallback;
     protected $request;
+    protected $retries = [];
 
     public function __construct(Request $request)
     {
@@ -22,37 +23,34 @@ abstract class Runner
 
     abstract public function addDocument(Document $document);
 
-    public function setOnDoneCallback(Callable $callback)
+    public function setOnDoneCallback(callable $callback)
     {
         $this->onDoneCallback = $callback;
     }
 
-    public function getOnDoneCallback()
-    {
-        return $this->onDoneCallback;
-    }
-
-    public function setOnFailedCallback(Callable $callback)
+    public function setOnFailedCallback(callable $callback)
     {
         $this->onFailedCallback = $callback;
     }
 
-    public function getOnFailedCallback()
+    public function getRetries(Document $document)
     {
-        return $this->onFailedCallback;
+        return $this->retries[$document->getURL()];
+    }
+
+    public function incRetries(Document $document)
+    {
+        $this->retries[$document->getURL()]++;
     }
 
     public function onFailed(Document $document, Exception $exception)
     {
         if (!$this->onFailedCallback) {
-            echo $exception->getMessage();
-            echo $exception->getTraceAsString();
-
             return;
         }
 
         $callback = $this->onFailedCallback;
-        $callback($document, $exception);
+        $callback($document, $exception, $this->retries);
     }
 
     public function onDone(Document $document)

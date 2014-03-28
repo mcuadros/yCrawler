@@ -17,7 +17,7 @@ class CrawlerFactory
         $queue = new SimpleQueue();
         $runner = new BasicRunner(new Request());
 
-        foreach($configurations as $config) {
+        foreach ($configurations as $config) {
             if (!$config instanceof Config) {
                 throw new \InvalidArgumentException('Only instances of yCrawler\Config allowed');
             }

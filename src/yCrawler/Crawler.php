@@ -2,6 +2,7 @@
 
 namespace yCrawler;
 
+use yCrawler\Crawler\Request\Exceptions\NetworkError;
 use yCrawler\Parser;
 use yCrawler\Crawler\Runner;
 use yCrawler\Crawler\Queue;
@@ -28,7 +29,7 @@ class Crawler
         $this->queue->add($document);
     }
 
-    public function overrideOnParse(Callable $callable)
+    public function overrideOnParse(callable $callable)
     {
         $this->parseCallback = $callable;
     }
@@ -66,10 +67,18 @@ class Crawler
                 if (!$document->isIndexable()) {
                     return;
                 }
-                foreach($document->getLinks() as $url => $pass) {
+                foreach ($document->getLinks() as $url => $pass) {
                     $this->queue->add(new Document($url, $document->getParser()));
                 }
 
+            }
+        );
+
+        $this->runner->setOnFailedCallback(
+            function ($document, $exception) {
+                if ($this->runner->getRetries($document) < 3) {
+                    $this->runner->incRetries($document);
+                }
             }
         );
 

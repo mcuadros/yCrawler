@@ -7,9 +7,9 @@ use yCrawler\Crawler\Runner\BasicRunner;
 
 class BasicRunnerTest extends TestCase
 { 
-    protected function createRunner()
+    protected function createRunner(Request $request)
     {
-        return new BasicRunner(new Request());
+        return new BasicRunner($request);
     }
 
     protected function getPoolSize()
