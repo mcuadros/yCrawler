@@ -71,7 +71,7 @@ class Document
 
         $followRules = $this->parser->getFollowRules();
         foreach ($followRules as &$rule) {
-            $this->isIndexable = $this->evaluateItemAsScalar($rule);
+            $this->isIndexable = $this->evaluateItemAsScalar($rule)['value'];
             if (!$this->isIndexable) {
                 break;
             }
@@ -90,7 +90,7 @@ class Document
 
         $verifyRules = $this->parser->getVerifyRules();
         foreach ($verifyRules as &$rule) {
-            $this->isVerified = $this->evaluateItemAsScalar($rule);
+            $this->isVerified = $this->evaluateItemAsScalar($rule)['value'];
             if (!$this->isVerified) {
                 break;
             }
@@ -238,6 +238,6 @@ class Document
     protected function evaluateItemAsScalar(array &$rule)
     {
         $rule[0]->addModifier(Modifiers\Scalar::boolean($rule[1]));
-        return $rule[0]->evaluate($this);
+        return $rule[0]->evaluate($this)[0];
     }
 }

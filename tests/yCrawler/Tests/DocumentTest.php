@@ -73,7 +73,7 @@ class DocumentTest extends TestCase
     public function testIsNotVerified()
     {
         $parser = new Parser('test');
-        //$parser->addLinkFollowRule(new Rule\XPath('//a'), true);
+        $parser->addLinkFollowRule(new Rule\XPath('//a'), true);
         $parser->addValueRule(new Rule\XPath('//no-exists-tag'), 'no-exists');
         $parser->addValueRule(new Rule\XPath('//pre'), 'pre');
         $parser->addVerifyRule(new Rule\XPath('//a'), true);

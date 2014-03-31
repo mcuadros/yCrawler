@@ -20,13 +20,13 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase
         );
 
         $closure($result);
-        $this->assertFalse($result[0]);
-        $this->assertFalse($result[1]);
-        $this->assertFalse($result[2]);
-        $this->assertFalse($result[3]);
-        $this->assertTrue($result[4]);
-        $this->assertTrue($result[5]);
-        $this->assertTrue($result[6]);
+        $this->assertFalse($result[0]['value']);
+        $this->assertFalse($result[1]['value']);
+        $this->assertFalse($result[2]['value']);
+        $this->assertFalse($result[3]['value']);
+        $this->assertTrue($result[4]['value']);
+        $this->assertTrue($result[5]['value']);
+        $this->assertTrue($result[6]['value']);
     }
 
     public function testBooleanNegative()
@@ -43,13 +43,13 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase
         );
 
         $closure($result);
-        $this->assertTrue($result[0]);
-        $this->assertTrue($result[1]);
-        $this->assertTrue($result[2]);
-        $this->assertTrue($result[3]);
-        $this->assertFalse($result[4]);
-        $this->assertFalse($result[5]);
-        $this->assertFalse($result[6]);
+        $this->assertTrue($result[0]['value']);
+        $this->assertTrue($result[1]['value']);
+        $this->assertTrue($result[2]['value']);
+        $this->assertTrue($result[3]['value']);
+        $this->assertFalse($result[4]['value']);
+        $this->assertFalse($result[5]['value']);
+        $this->assertFalse($result[6]['value']);
     }
 
     public function testIntDefaultRegExp()
