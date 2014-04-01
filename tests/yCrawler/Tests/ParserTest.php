@@ -197,15 +197,15 @@ class ParserTest extends TestCase
         $this->assertSame(['bar' => $group], $parser->getValueRules());
     }
 
-//    public function testAddOnParseCallback()
-//    {
-//        $closure = function ($document) {
-//            return get_class($document);
-//        };
-//
-//        $parser = $this->createParserMock();
-//        $parser->addOnParseCallback($closure);
-//
-//        $this->assertSame([$closure], $parser->getOnParseCallbacks());
-//    }
+    public function testSetOnParseCallback()
+    {
+        $closure = function ($document) {
+            return get_class($document);
+        };
+
+        $parser = $this->createParserMock();
+        $parser->setOnParseCallback($closure);
+
+        $this->assertSame($closure, $parser->getOnParseCallback());
+    }
 }

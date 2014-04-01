@@ -14,8 +14,7 @@ class Pool extends ThreadPool
         $pName = null,
         $name = null,
         $debug = false
-    )
-    {
+    ) {
         parent::__construct(self::THREAD_CLASS, $maxThreads, $pName, $name, $debug);
     }
 }

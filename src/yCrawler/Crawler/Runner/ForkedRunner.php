@@ -45,7 +45,7 @@ class ForkedRunner extends Runner
         return !$this->pool->hasWaiting();
     }
 
-    public function wait()
+    protected function onWait()
     {
         if ($results = $this->pool->wait($failed)) {
             foreach ($results as $threadId => $work) {
@@ -58,6 +58,12 @@ class ForkedRunner extends Runner
                 $this->onWorkFailed($threadId, $error);
             }
         }
+    }
+
+    protected function freeDocument()
+    {
+        unset($this->retries[$this->document->getURL()]);
+        $this->document = null;
     }
 
     private function onWorkFailed($threadId, Array $error)

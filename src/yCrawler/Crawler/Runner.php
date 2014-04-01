@@ -51,8 +51,9 @@ abstract class Runner
         $this->retries[$document->getURL()]++;
     }
 
-    public function onFailed(Document $document, Exception $exception)
+    protected function onFailed(Document $document, Exception $exception)
     {
+        $this->freeDocument();
         if (!$this->onFailedCallback) {
             return;
         }
@@ -61,8 +62,9 @@ abstract class Runner
         $callback($document, $exception, $this->retries);
     }
 
-    public function onDone(Document $document)
+    protected function onDone(Document $document)
     {
+        $this->freeDocument();
         if (!$this->onDoneCallback) {
             return;
         }
