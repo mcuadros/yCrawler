@@ -47,8 +47,7 @@ class Crawler
 
     protected function addDocumentsToRunner()
     {
-        while (!$this->runner->isFull()) {
-            $document = $this->queue->get();
+        while (!$this->runner->isFull() && $document = $this->queue->get()) {
             if ($this->parseCallback) {
                 $document->getParser()->setOnParseCallback($this->parseCallback);
             }
@@ -84,5 +83,4 @@ class Crawler
 
         return $this->initialized = time();
     }
-
 }

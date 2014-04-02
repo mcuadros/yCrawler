@@ -154,7 +154,9 @@ class Request
 
     public function execute()
     {
-        if ( $cache = $this->getFromCache() ) return $cache;
+        if ($cache = $this->getFromCache()) {
+            return $cache;
+        }
 
         $start = microtime(true);
 

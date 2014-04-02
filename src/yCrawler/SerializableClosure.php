@@ -17,7 +17,7 @@ class SerializableClosure
 
     public function __construct($function)
     {
-        if (!$function instanceOf Closure) {
+        if (!$function instanceof Closure) {
             throw new InvalidArgumentException();
         }
 

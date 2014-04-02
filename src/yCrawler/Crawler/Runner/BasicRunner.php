@@ -37,12 +37,12 @@ class BasicRunner extends Runner
                 $this->onFailed($this->document, $exception);
             }
         } while ($this->getRetries($this->document) > 0 && $this->getRetries($this->document) <= $this->maxRetries);
-        $this->freeDocument();
+        $this->freeDocument($this->document);
     }
 
     protected function parseDocument()
     {
-        $url = $this->document->getUrl();
+        $url = $this->document->getURL();
 
         $this->request->setUrl($url);
         $this->request->execute();
@@ -51,9 +51,9 @@ class BasicRunner extends Runner
         $this->document->parse();
     }
 
-    protected function freeDocument()
+    protected function freeDocument(Document $document)
     {
-        unset($this->retries[$this->document->getURL()]);
+        unset($this->retries[$document->getURL()]);
         $this->document = null;
     }
 }
