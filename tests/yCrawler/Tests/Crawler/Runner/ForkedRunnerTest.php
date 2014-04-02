@@ -2,34 +2,24 @@
 
 namespace yCrawler\Tests\Crawler\Runner;
 
-use yCrawler\Crawler\Queue\SimpleQueue;
 use yCrawler\Crawler\Request;
 use yCrawler\Crawler\Runner\ForkedRunner;
 use Mockery as m;
 use yCrawler\Crawler;
 use yCrawler\Document;
 use yCrawler\Mocks\DocumentMock;
-use yCrawler\Mocks\ParserMock;
 use yCrawler\Parser;
 
 class ForkedRunnerTest extends \PHPUnit_Framework_TestCase
 {
     public function testIsFull()
     {
-        $this->markTestIncomplete('this is not testing anything');
         $request = m::mock('yCrawler\Crawler\Request');
-        $request->shouldReceive('setUrl');
-        $request->shouldReceive('execute');
-        $request->shouldReceive('getResponse');
 
-        $document = m::mock('yCrawler\Document');
-        $document->shouldReceive('getURL');
-        $document->shouldReceive('parse');
-        $document->shouldReceive('setMarkup');
-        $document->shouldReceive('isParsed')->andReturn(true);
+        $pool = m::mock('yCrawler\Crawler\Runner\Pool');
+        $pool->shouldReceive('hasWaiting')->andReturn(false);
 
-        $runner = new ForkedRunner($request);
-        $runner->addDocument($document);
+        $runner = new ForkedRunner($request, $pool);
 
         $this->assertTrue($runner->isFull());
     }
@@ -37,28 +27,21 @@ class ForkedRunnerTest extends \PHPUnit_Framework_TestCase
     public function testIsNotFull()
     {
         $request = m::mock('yCrawler\Crawler\Request');
+        $pool = m::mock('yCrawler\Crawler\Runner\Pool');
+        $pool->shouldReceive('hasWaiting')->andReturn(true);
 
-        $runner = new ForkedRunner($request);
+        $runner = new ForkedRunner($request, $pool);
         $this->assertFalse($runner->isFull());
     }
 
     public function testRunnerRunsSuccessfully()
     {
-        $this->markTestIncomplete('this is not testing anything');
         $request = m::mock('yCrawler\Crawler\Request');
         $request->shouldReceive('execute');
         $request->shouldReceive('setUrl');
         $request->shouldReceive('getResponse');
+        $pool = m::mock('yCrawler\Crawler\Runner\Pool');
 
-        $document = new DocumentMock('yunait.com', new Parser('test'));
-        $document->isParsed = true;
-        $document2 = new DocumentMock('yunait.es', new Parser('test'));
-        $document2->isParsed = true;
-
-        $runner = new ForkedRunner($request);
-
-        $runner->addDocument($document);
-        $runner->addDocument($document);
-        $runner->wait();
+        $runner = new ForkedRunner($request, $pool);
     }
 }

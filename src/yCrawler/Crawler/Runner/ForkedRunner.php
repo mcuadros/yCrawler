@@ -4,7 +4,7 @@ namespace yCrawler\Crawler\Runner;
 
 use yCrawler\Crawler\Request;
 use yCrawler\Crawler\Runner;
-use yCrawler\Crawler\Runner\ForkedRunner\Pool;
+//use yCrawler\Crawler\Runner\ForkedRunner\Pool;
 use yCrawler\Crawler\Runner\ForkedRunner\Work;
 use yCrawler\Crawler\Runner\ForkedRunner\Exceptions;
 use yCrawler\Document;
@@ -14,17 +14,14 @@ class ForkedRunner extends Runner
     private $pool;
     private $running;
 
-    public function __construct(Request $request)
+    public function __construct(Request $request, Pool $pool)
     {
-        $this->pool = new Pool();
+        $this->pool = $pool;
         parent::__construct($request);
     }
 
     public function addDocument(Document $document)
     {
-        $closure = new SerializableClosure($document->getOnParseCallback());
-        $document->getParser()->setOnParseCallback($closure);
-
         $this->retries[$document->getURL()] = 0;
         $work = new Work($document, $this->request);
         $this->runWorkInPool($work);
@@ -33,6 +30,11 @@ class ForkedRunner extends Runner
     public function isFull()
     {
         return !$this->pool->hasWaiting();
+    }
+
+    public function clean()
+    {
+        $this->pool->cleanup();
     }
 
     protected function onWait()
@@ -69,6 +71,7 @@ class ForkedRunner extends Runner
 
         if ($work->isParsed() && !$work->isFailed()) {
             $this->onDone($work->getDocument());
+            $this->freeDocument($work->getDocument());
             return;
         }
 
@@ -78,7 +81,14 @@ class ForkedRunner extends Runner
             $exception = $work->getException();
         }
 
-        $this->onFailed($work->getDocument(), $exception);
+        echo $this->getRetries($work->getDocument());
+        if ($this->getRetries($work->getDocument()) >= 2) {
+            $this->onFailed($work->getDocument(), $exception);
+            return;
+        }
+        $this->incRetries($work->getDocument());
+        $this->runWorkInPool($work);
+
     }
 
     private function createNonParsedDocument()
@@ -100,8 +110,7 @@ class ForkedRunner extends Runner
     private function runWorkInPool(Work $work)
     {
         if (!$this->pool->hasWaiting()) {
-            //throw new \RuntimeException('no free threads');
-            return;
+            throw new \RuntimeException('no free threads');
         }
         $threadId = $this->pool->run($work);
         $this->running[$threadId] = $work;

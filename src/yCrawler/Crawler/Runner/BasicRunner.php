@@ -26,6 +26,10 @@ class BasicRunner extends Runner
         return false;
     }
 
+    public function clean()
+    {
+    }
+
     protected function onWait()
     {
         do {

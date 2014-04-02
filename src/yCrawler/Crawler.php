@@ -10,7 +10,7 @@ use yCrawler\Crawler\Exceptions;
 
 class Crawler
 {
-    const LOOP_WAIT_TIME = 4;
+    const LOOP_WAIT_TIME = 0;
 
     protected $initialized;
     protected $runner;
@@ -43,6 +43,7 @@ class Crawler
             $this->runner->wait();
             sleep($loopWaitTime);
         }
+        $this->runner->clean();
     }
 
     protected function addDocumentsToRunner()
@@ -69,15 +70,11 @@ class Crawler
                 foreach ($document->getLinks() as $url => $pass) {
                     $this->queue->add(new Document($url, $document->getParser()));
                 }
-
             }
         );
 
         $this->runner->setOnFailedCallback(
             function ($document, $exception) {
-                if ($this->runner->getRetries($document) < 3) {
-                    $this->runner->incRetries($document);
-                }
             }
         );
 

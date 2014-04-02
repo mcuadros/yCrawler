@@ -26,6 +26,8 @@ abstract class Runner
 
     abstract protected function freeDocument(Document $document);
 
+    abstract public function clean();
+
     public function setOnDoneCallback(callable $callback)
     {
         $this->onDoneCallback = $callback;
@@ -53,18 +55,17 @@ abstract class Runner
 
     protected function onFailed(Document $document, Exception $exception)
     {
-        $this->freeDocument($document);
+
         if (!$this->onFailedCallback) {
             return;
         }
 
         $callback = $this->onFailedCallback;
-        $callback($document, $exception, $this->retries);
+        $callback($document, $exception);
     }
 
     protected function onDone(Document $document)
     {
-        $this->freeDocument($document);
 
         if (!$this->onDoneCallback) {
             return;
