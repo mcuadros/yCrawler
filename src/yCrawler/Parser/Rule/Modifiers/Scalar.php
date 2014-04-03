@@ -15,13 +15,16 @@ final class Scalar
                 return $results;
             }
 
+            $final = true;
             foreach ($results as &$result) {
                 if ((boolean) $result['value']) {
                     $result['value'] = (boolean) $sign;
                 } else {
                     $result['value'] = !(boolean) $sign;
                 }
+                $final = $final && $result['value'];
             }
+            $results['value'] = $final;
             return $results;
         };
     }

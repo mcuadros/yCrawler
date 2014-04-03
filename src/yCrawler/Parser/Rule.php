@@ -40,7 +40,7 @@ abstract class Rule
         $result = $this->doEvaluate($document);
 
         if (!$result) {
-            $result = [];
+            $result[]['value'] = false;
         }
         $this->applyModifiers($result, $document);
 

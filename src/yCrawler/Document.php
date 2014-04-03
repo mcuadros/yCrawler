@@ -89,8 +89,8 @@ class Document
         $this->isVerified = true;
 
         $verifyRules = $this->parser->getVerifyRules();
-        foreach ($verifyRules as &$rule) {
-            $this->isVerified = $this->evaluateItemAsScalar($rule)['value'];
+        foreach ($verifyRules as $rule) {
+            $this->isVerified = $rule[0]->evaluate($this)['value'];
             if (!$this->isVerified) {
                 break;
             }
@@ -115,9 +115,10 @@ class Document
 
         $this->collectValues();
         $this->collectLinks();
-        $this->executeOnParseCallback();
-
-        $this->isParsed = true;
+        if ($this->isVerified) {
+            $this->executeOnParseCallback();
+            $this->isParsed = true;
+        }
     }
 
     public function isParsed()
