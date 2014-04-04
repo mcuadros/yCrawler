@@ -4,6 +4,7 @@ namespace yCrawler\Crawler;
 
 use yCrawler\Document;
 use Exception;
+use yCrawler\SerializableClosure;
 
 abstract class Runner
 {
@@ -28,14 +29,14 @@ abstract class Runner
 
     abstract public function clean();
 
-    public function setOnDoneCallback(callable $callback)
+    public function setOnDoneCallback(\Closure $callback)
     {
-        $this->onDoneCallback = $callback;
+        $this->onDoneCallback = new SerializableClosure($callback);
     }
 
-    public function setOnFailedCallback(callable $callback)
+    public function setOnFailedCallback(\Closure $callback)
     {
-        $this->onFailedCallback = $callback;
+        $this->onFailedCallback = new SerializableClosure($callback);
     }
 
     public function wait()

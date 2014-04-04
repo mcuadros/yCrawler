@@ -8,7 +8,6 @@ use yCrawler\Document\LinksStorage;
 use yCrawler\Document\Exceptions;
 use DOMDocument;
 use DOMXPath;
-use Closure;
 use yCrawler\Parser\Rule\XPath;
 use yCrawler\Crawler\Request\Config as RConfig;
 
@@ -115,6 +114,7 @@ class Document
 
         $this->collectValues();
         $this->collectLinks();
+
         if ($this->isVerified) {
             $this->executeOnParseCallback();
             $this->isParsed = true;
@@ -231,9 +231,7 @@ class Document
     protected function executeOnParseCallback()
     {
         $cb = $this->parser->getOnParseCallback();
-        if ($cb instanceof Closure) {
-            $cb($this);
-        }
+        $cb($this);
     }
 
     protected function evaluateItemAsScalar(array &$rule)

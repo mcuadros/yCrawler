@@ -4,7 +4,7 @@ namespace yCrawler\Crawler\Runner;
 
 use yCrawler\Crawler\Request;
 use yCrawler\Crawler\Runner;
-//use yCrawler\Crawler\Runner\ForkedRunner\Pool;
+use yCrawler\Crawler\Runner\ForkedRunner\Pool;
 use yCrawler\Crawler\Runner\ForkedRunner\Work;
 use yCrawler\Crawler\Runner\ForkedRunner\Exceptions;
 use yCrawler\Document;

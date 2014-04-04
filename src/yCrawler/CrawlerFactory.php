@@ -6,8 +6,8 @@ use yCrawler\Config;
 use yCrawler\Crawler\Queue\SimpleQueue;
 use yCrawler\Crawler\Request;
 use yCrawler\Crawler\Runner\BasicRunner;
+use yCrawler\Crawler\Runner\ForkedRunner;
 use yCrawler\Crawler\Runner\ForkedRunner\Pool;
-use yCrawler\Crawler\Runner\ThreadedRunner;
 use yCrawler\Document\Generator;
 
 class CrawlerFactory
@@ -33,7 +33,7 @@ class CrawlerFactory
             $threads = $queue->count() - 1;
         }
 
-        $runner = new ThreadedRunner(new Request(), new Pool($threads));
+        $runner = new ForkedRunner(new Request(), new Pool($threads));
 
         return new Crawler($queue, $runner);
     }

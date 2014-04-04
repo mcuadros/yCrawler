@@ -158,7 +158,7 @@ class Parser
 
     public function setOnParseCallback(\Closure $closure)
     {
-        $this->parseCallback = $closure;
+        $this->parseCallback = new SerializableClosure($closure);
     }
 
     public function getOnParseCallback()
