@@ -2,7 +2,6 @@
 
 namespace yCrawler;
 
-use yCrawler\Crawler\Request\Exceptions\NetworkError;
 use yCrawler\Parser;
 use yCrawler\Crawler\Runner;
 use yCrawler\Crawler\Queue;
@@ -10,7 +9,7 @@ use yCrawler\Crawler\Exceptions;
 
 class Crawler
 {
-    const LOOP_WAIT_TIME = 0;
+    const LOOP_WAIT_TIME = 4;
 
     protected $initialized;
     protected $runner;
@@ -43,7 +42,6 @@ class Crawler
             $this->runner->wait();
             sleep($loopWaitTime);
         }
-        $this->runner->clean();
     }
 
     protected function addDocumentsToRunner()
@@ -75,6 +73,9 @@ class Crawler
 
         $this->runner->setOnFailedCallback(
             function ($document, $exception) {
+                if ($this->runner->getRetries($document) < 3) {
+                    $this->runner->incRetries($document);
+                }
             }
         );
 
