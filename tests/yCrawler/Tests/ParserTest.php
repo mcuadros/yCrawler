@@ -58,21 +58,15 @@ class ParserTest extends TestCase
         $rule = new Rule\XPath('');
 
         $parser->addLinkFollowRule($rule, false);
-        $this->assertSame([
-            [$rule, false]
-        ], $parser->getFollowRules());
+        $this->assertNotSame([[$rule, false] ], $parser->getFollowRules());
+        $this->assertInstanceOf('yCrawler\SerializableClosure', $parser->getFollowRules()[0][0]->getModifiers()[0]);
 
         $parser->addLinkFollowRule($rule, true);
-        $this->assertSame([
-            [$rule, false],
-            [$rule, true]
-        ], $parser->getFollowRules());
+        $this->assertCount(2, $parser->getFollowRules());
 
         $parser->clearFollowRules();
         $parser->addLinkFollowRule($rule, true);
-        $this->assertSame([
-            [$rule, true]
-        ], $parser->getFollowRules());
+        $this->assertCount(1, $parser->getFollowRules());
     }
 
     public function testCreateLinkFollowRule()
@@ -100,14 +94,16 @@ class ParserTest extends TestCase
         $rule = new Rule\XPath('//a');
 
         $parser->addVerifyRule($rule, false);
-        $this->assertSame([[$rule, false]], $parser->getVerifyRules());
+        $this->assertNotSame([[$rule, false]], $parser->getVerifyRules());
+        $this->assertCount(1, $parser->getVerifyRules());
+        $this->assertInstanceOf('yCrawler\SerializableClosure', $parser->getVerifyRules()[0][0]->getModifiers()[0]);
 
         $parser->addVerifyRule($rule, true);
-        $this->assertSame([[$rule, false], [$rule, true]], $parser->getVerifyRules());
+        $this->assertCount(2, $parser->getVerifyRules());
 
         $parser->clearVerifyRules();
         $parser->addVerifyRule($rule, true);
-        $this->assertSame([[$rule, true]], $parser->getVerifyRules());
+        $this->assertCount(1, $parser->getVerifyRules());
     }
 
     public function testCreateVerifyRule()
@@ -206,6 +202,7 @@ class ParserTest extends TestCase
         $parser = $this->createParserMock();
         $parser->setOnParseCallback($closure);
 
-        $this->assertSame($closure, $parser->getOnParseCallback());
+        $this->assertInstanceOf('yCrawler\SerializableClosure', $parser->getOnParseCallback());
+        $this->assertSame($closure, $parser->getOnParseCallback()->getClosure());
     }
 }

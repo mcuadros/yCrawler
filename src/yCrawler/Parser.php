@@ -4,9 +4,9 @@ namespace yCrawler;
 
 use yCrawler\Document;
 use yCrawler\Parser\Group;
-
 use yCrawler\Parser\Exceptions;
 use yCrawler\Parser\Rule;
+use yCrawler\Parser\Rule\Modifiers;
 
 class Parser
 {
@@ -89,7 +89,9 @@ class Parser
 
     public function addLinkFollowRule(Rule $rule, $sign)
     {
-        $this->items['follow'][] = [$rule, $sign];
+        $followRule = clone $rule;
+        $followRule->addModifier(Modifiers\Scalar::boolean($sign));
+        $this->items['follow'][] = [$followRule, $sign];
     }
 
     public function clearFollowRules()
@@ -104,7 +106,9 @@ class Parser
 
     public function addVerifyRule(Rule $rule, $sign)
     {
-        $this->items['verify'][] = [$rule, $sign];
+        $verifyRule = clone $rule;
+        $verifyRule->addModifier(Modifiers\Scalar::boolean($sign));
+        $this->items['verify'][] = [$verifyRule, $sign];
     }
 
     public function clearVerifyRules()

@@ -16,14 +16,12 @@ abstract class RuleTestCase extends TestCase
 
         $result = $rule->evaluate($document);
 
+        $this->assertValue($result);
         $this->assertSame(static::EXAMPLE_RESULT, $result[0]['value']);
-
-        $this->assertNode($result);
-        $this->assertInstanceOf('DOMDocument', $result[0]['dom']);
     }
 
-    protected function assertNode($result)
+    protected function assertValue($result)
     {
-        $this->assertInstanceOf('StdClass', $result[0]['node']);
+        $this->assertArrayHasKey('value', $result[0]);
     }
 }

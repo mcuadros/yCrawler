@@ -89,7 +89,7 @@ class SerializableClosure
         // Only keep the variables that appeared in both sets
         $used_vars = [];
         foreach ($vars as $var) {
-            $var = trim($var, ' $');
+            $var = trim($var, ' &$');
             $used_vars[$var] = $static_vars[$var];
         }
 

@@ -60,21 +60,23 @@ class Crawler
             return true;
         }
 
+        $queue = $this->queue;
         $this->runner->setOnDoneCallback(
-            function ($document) {
+            function ($document) use ($queue) {
                 if (!$document->isIndexable()) {
                     return;
                 }
                 foreach ($document->getLinks() as $url => $pass) {
-                    $this->queue->add(new Document($url, $document->getParser()));
+                    $queue->add(new Document($url, $document->getParser()));
                 }
             }
         );
 
+        $runner = $this->runner;
         $this->runner->setOnFailedCallback(
-            function ($document, $exception) {
-                if ($this->runner->getRetries($document) < 3) {
-                    $this->runner->incRetries($document);
+            function ($document, $exception) use ($runner) {
+                if ($runner->getRetries($document) < 3) {
+                    $runner->incRetries($document);
                 }
             }
         );

@@ -28,11 +28,6 @@ class XPathTest extends RuleTestCase
             ->once()
             ->andReturn($xpath);
 
-        $document->shouldReceive('getDOM')
-            ->withNoArgs()
-            ->once()
-            ->andReturn(new \DOMDocument());
-
         return $document;
     }
 }

@@ -4,7 +4,7 @@ namespace yCrawler\Crawler\Runner;
 
 use yCrawler\Crawler\Request;
 use yCrawler\Crawler\Runner;
-use yCrawler\Crawler\Runner\ForkedRunner\Pool;
+use yCrawler\Crawler\Runner\ForkedRunner\Pool as FPool;
 use yCrawler\Crawler\Runner\ForkedRunner\Work;
 use yCrawler\Crawler\Runner\ForkedRunner\Exceptions;
 use yCrawler\Document;
@@ -14,7 +14,7 @@ class ForkedRunner extends Runner
     private $pool;
     private $running;
 
-    public function __construct(Request $request, Pool $pool)
+    public function __construct(Request $request, FPool $pool)
     {
         $this->pool = $pool;
         parent::__construct($request);

@@ -66,11 +66,11 @@ class Document
             return $this->isIndexable;
         }
 
-        $this->isIndexable = true;
+        $this->isIndexable = false;
 
         $followRules = $this->parser->getFollowRules();
-        foreach ($followRules as &$rule) {
-            $this->isIndexable = $this->evaluateItemAsScalar($rule)['value'];
+        foreach ($followRules as $rule) {
+            $this->isIndexable = $rule[0]->evaluate($this)['value'];
             if (!$this->isIndexable) {
                 break;
             }
@@ -231,12 +231,8 @@ class Document
     protected function executeOnParseCallback()
     {
         $cb = $this->parser->getOnParseCallback();
-        $cb($this);
-    }
-
-    protected function evaluateItemAsScalar(array &$rule)
-    {
-        $rule[0]->addModifier(Modifiers\Scalar::boolean($rule[1]));
-        return $rule[0]->evaluate($this)[0];
+        if ($cb) {
+            $cb($this);
+        }
     }
 }

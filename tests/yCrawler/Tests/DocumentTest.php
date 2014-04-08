@@ -101,6 +101,8 @@ class DocumentTest extends TestCase
 
         $doc = new Document(self::EXAMPLE_URL, $parser);
         $doc->setMarkup(self::EXAMPLE_MARKUP);
+        $parser = $doc->getParser();
+        $parser->addLinkFollowRule(new Rule\XPath('//a'), true);
         $doc->parse();
 
         $this->assertCount(1, $doc->getLinks()->all());

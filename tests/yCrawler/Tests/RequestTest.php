@@ -25,7 +25,7 @@ class RequestTest extends  \PHPUnit_Framework_TestCase
 
     public function testSetPost()
     {
-        $test = Array('test' => 'element');
+        $test = ['test' => 'element'];
         $request = $this->createRequest();
         $request->setURL('http://httpbin.org/post');
         $request->setPost($test);

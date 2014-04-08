@@ -16,8 +16,9 @@ class ForkedRunnerTest extends \PHPUnit_Framework_TestCase
     {
         $request = m::mock('yCrawler\Crawler\Request');
 
-        $pool = m::mock('yCrawler\Crawler\Runner\Pool');
+        $pool = m::mock('yCrawler\Crawler\Runner\ForkedRunner\Pool');
         $pool->shouldReceive('hasWaiting')->andReturn(false);
+        $pool->shouldReceive('cleanup')->andReturn(true);
 
         $runner = new ForkedRunner($request, $pool);
 
@@ -27,8 +28,9 @@ class ForkedRunnerTest extends \PHPUnit_Framework_TestCase
     public function testIsNotFull()
     {
         $request = m::mock('yCrawler\Crawler\Request');
-        $pool = m::mock('yCrawler\Crawler\Runner\Pool');
+        $pool = m::mock('yCrawler\Crawler\Runner\ForkedRunner\Pool');
         $pool->shouldReceive('hasWaiting')->andReturn(true);
+        $pool->shouldReceive('cleanup')->andReturn(true);
 
         $runner = new ForkedRunner($request, $pool);
         $this->assertFalse($runner->isFull());
@@ -40,7 +42,9 @@ class ForkedRunnerTest extends \PHPUnit_Framework_TestCase
         $request->shouldReceive('execute');
         $request->shouldReceive('setUrl');
         $request->shouldReceive('getResponse');
-        $pool = m::mock('yCrawler\Crawler\Runner\Pool');
+        $pool = m::mock('yCrawler\Crawler\Runner\ForkedRunner\Pool');
+        $pool->shouldReceive('hasWaiting')->andReturn(true);
+        $pool->shouldReceive('cleanup')->andReturn(true);
 
         $runner = new ForkedRunner($request, $pool);
     }

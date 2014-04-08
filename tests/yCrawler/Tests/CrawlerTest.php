@@ -49,8 +49,7 @@ class CrawlerTest extends \PHPUnit_Framework_TestCase
             }
         );
         $crawler->run(0);
-        $this->assertEquals(2, $passes);
-
+        $this->assertEquals(1, $passes);
     }
 
     protected function getCrawler($doc)
