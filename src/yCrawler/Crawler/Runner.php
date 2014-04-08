@@ -67,7 +67,6 @@ abstract class Runner
 
     protected function onDone(Document $document)
     {
-
         if (!$this->onDoneCallback) {
             return;
         }

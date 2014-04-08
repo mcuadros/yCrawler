@@ -17,4 +17,3 @@ class BasicRunnerTest extends TestCase
         return 1;
     }
 }
-

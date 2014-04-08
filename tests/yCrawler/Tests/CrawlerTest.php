@@ -8,6 +8,7 @@ use yCrawler\Crawler\Runner\BasicRunner;
 use yCrawler\Crawler\Queue\SimpleQueue;
 use yCrawler\Document;
 use \Mockery as m;
+use yCrawler\Parser\Rule\XPath;
 
 class CrawlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -41,7 +42,9 @@ class CrawlerTest extends \PHPUnit_Framework_TestCase
     {
         $passes = 0;
         $parser = new ParserMock('mock');
+        $parser->addLinkFollowRule(new XPath('//a'), true);
         $doc = new Document('http://aurl', $parser);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
         $crawler = $this->getCrawler($doc);
         $crawler->overrideOnParse(
             function ($document) use (&$passes) {
@@ -49,7 +52,7 @@ class CrawlerTest extends \PHPUnit_Framework_TestCase
             }
         );
         $crawler->run(0);
-        $this->assertEquals(1, $passes);
+        $this->assertEquals(2, $passes);
     }
 
     protected function getCrawler($doc)
