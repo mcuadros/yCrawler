@@ -16,13 +16,13 @@ final class Scalar
             }
 
             $final = true;
-            foreach ($results as &$result) {
+            foreach ($results as $result) {
                 if ((boolean) $result['value']) {
-                    $result['value'] = (boolean) $sign;
+                    $results['value'] = (boolean) $sign;
                 } else {
-                    $result['value'] = !(boolean) $sign;
+                    $results['value'] = !(boolean) $sign;
                 }
-                $final = $final && $result['value'];
+                $final = $final && $results['value'];
             }
             $results['value'] = $final;
             return $results;
@@ -40,7 +40,7 @@ final class Scalar
 
     public static function float($regexp = '/[^0-9,.]/', $decimalSep = ',')
     {
-        return function(array &$results) use ($regexp, $decimalSep) {
+        return function (array &$results) use ($regexp, $decimalSep) {
             foreach ($results as &$result) {
                 $result['value'] = (float) str_replace(
                     $decimalSep,
@@ -48,27 +48,20 @@ final class Scalar
                     preg_replace($regexp, '', $result['value'])
                 );
             }
+            return $results;
         };
     }
 
     public static function join($glue = '')
     {
-        return function(array &$results) use ($glue) {
+        return function (array &$results) use ($glue) {
             $output = array();
-            foreach($results as &$result) $output[] = $result['value'];
+            foreach ($results as &$result) {
+                $output[] = $result['value'];
+            }
 
-            $results = Array(
-                Array('value' => implode($glue, $output))
-            );
+            $results = [['value' => implode($glue, $output)]];
+            return $results;
         };
-
-        if (!$value) return false;
-        $output=Array();
-        foreach($value as &$data) $output[] = $data['value'];
-        $value = Array(Array(
-            'value' => implode($glue, $output)
-        ));
-
-        return true;
     }
 }
