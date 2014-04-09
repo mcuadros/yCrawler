@@ -10,9 +10,8 @@ final class HTML
     public static function markup()
     {
         return function (array &$results) {
-            $dom = new \DOMDocument();
             foreach ($results as &$result) {
-                $result['value'] = $dom->saveXML($result['node']);
+                $result['value'] = $result['raw'];
             }
 
             return $results;
@@ -22,9 +21,8 @@ final class HTML
     public static function br2nl($tags = array('<br>','<br/>','<br />'))
     {
         return function (array &$results) use ($tags) {
-            $dom = new \DOMDocument();
             foreach ($results as &$result) {
-                $result['value'] = strip_tags(str_ireplace($tags, PHP_EOL, $dom->saveXML($result['node'])));
+                $result['value'] = strip_tags(str_ireplace($tags, PHP_EOL, $result['raw']));
             }
 
             return $results;

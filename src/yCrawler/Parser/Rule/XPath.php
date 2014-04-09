@@ -24,7 +24,8 @@ class XPath extends Rule
     {
         return [
             'value' => $node->nodeValue,
-            'node' => $node
+            'node' => $node,
+            'raw' => $document->getDOM()->saveXML($node)
         ];
     }
 

@@ -10,6 +10,8 @@ abstract class RuleTestCase extends TestCase
     public function testEvaluate()
     {
         $document = $this->createDocumentMock();
+        $document->shouldReceive('getDOM')->andReturn($document);
+        $document->shouldReceive('saveXML');
 
         $class = static::TESTED_CLASS;
         $rule = new $class(static::EXAMPLE_PATTERN_INPUT);

@@ -18,13 +18,13 @@ final class Scalar
             }
 
             $final = true;
-            foreach ($results as $result) {
+            foreach ($results as &$result) {
                 if ((boolean) $result['value']) {
-                    $results['value'] = (boolean) $sign;
+                    $result['value'] = (boolean) $sign;
                 } else {
-                    $results['value'] = !(boolean) $sign;
+                    $result['value'] = !(boolean) $sign;
                 }
-                $final = $final && $results['value'];
+                $final = $final && $result['value'];
             }
             $results['value'] = $final;
             return $results;
