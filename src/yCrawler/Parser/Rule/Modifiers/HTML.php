@@ -14,6 +14,8 @@ final class HTML
             foreach ($results as &$result) {
                 $result['value'] = $dom->saveXML($result['node']);
             }
+
+            return $results;
         };
     }
 
@@ -24,6 +26,8 @@ final class HTML
             foreach ($results as &$result) {
                 $result['value'] = strip_tags(str_ireplace($tags, PHP_EOL, $dom->saveXML($result['node'])));
             }
+
+            return $results;
         };
     }
 
@@ -45,6 +49,8 @@ final class HTML
                 }
                 $result['value'] = URL::absolutize($img, $document->getURL());
             }
+
+            return $results;
         };
     }
 }
