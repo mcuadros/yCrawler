@@ -2,6 +2,8 @@
 
 namespace yCrawler\Parser\Rule\Modifiers;
 
+use yCrawler\Parser;
+
 final class Scalar
 {
     const BOOLEAN_POSITIVE = true;
@@ -40,7 +42,7 @@ final class Scalar
 
     public static function float($regexp = '/[^0-9,.]/', $decimalSep = ',')
     {
-        return function(array &$results) use ($regexp, $decimalSep) {
+        return function (array &$results) use ($regexp, $decimalSep) {
             foreach ($results as &$result) {
                 $result['value'] = (float) str_replace(
                     $decimalSep,
@@ -53,22 +55,13 @@ final class Scalar
 
     public static function join($glue = '')
     {
-        return function(array &$results) use ($glue) {
+        return function (array &$results) use ($glue) {
             $output = array();
-            foreach($results as &$result) $output[] = $result['value'];
+            foreach ($results as &$result) {
+                $output[] = $result['value'];
+            }
 
-            $results = Array(
-                Array('value' => implode($glue, $output))
-            );
+            $results = [['value' => implode($glue, $output)]];
         };
-
-        if (!$value) return false;
-        $output=Array();
-        foreach($value as &$data) $output[] = $data['value'];
-        $value = Array(Array(
-            'value' => implode($glue, $output)
-        ));
-
-        return true;
     }
 }

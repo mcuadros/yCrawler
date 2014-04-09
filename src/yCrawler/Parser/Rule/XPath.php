@@ -24,6 +24,7 @@ class XPath extends Rule
     {
         return [
             'value' => $node->nodeValue,
+            'node' => $node
         ];
     }
 

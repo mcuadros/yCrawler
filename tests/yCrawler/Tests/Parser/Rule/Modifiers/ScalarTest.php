@@ -4,7 +4,7 @@ namespace yCrawler\Tests\Parse\Rule\Modifiers;
 
 use yCrawler\Parser\Rule\Modifiers\Scalar;
 
-class ScalarTest extends  \PHPUnit_Framework_TestCase
+class ScalarTest extends \PHPUnit_Framework_TestCase
 {
     public function testBooleanPositive()
     {
