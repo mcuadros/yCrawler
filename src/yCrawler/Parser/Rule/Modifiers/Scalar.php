@@ -18,13 +18,13 @@ final class Scalar
             }
 
             $final = true;
-            foreach ($results as &$result) {
+            foreach ($results as $result) {
                 if ((boolean) $result['value']) {
-                    $result['value'] = (boolean) $sign;
+                    $results['value'] = (boolean) $sign;
                 } else {
-                    $result['value'] = !(boolean) $sign;
+                    $results['value'] = !(boolean) $sign;
                 }
-                $final = $final && $result['value'];
+                $final = $final && $results['value'];
             }
             $results['value'] = $final;
             return $results;
@@ -33,7 +33,7 @@ final class Scalar
 
     public static function int($regexp = '/[^0-9,.]/')
     {
-        return function(array &$results) use ($regexp) {
+        return function (array &$results) use ($regexp) {
             foreach ($results as &$result) {
                 $result['value'] = (int) preg_replace($regexp, '', $result['value']);
             }
@@ -50,6 +50,7 @@ final class Scalar
                     preg_replace($regexp, '', $result['value'])
                 );
             }
+            return $results;
         };
     }
 
@@ -62,6 +63,7 @@ final class Scalar
             }
 
             $results = [['value' => implode($glue, $output)]];
+            return $results;
         };
     }
 }
