@@ -22,7 +22,7 @@ class CrawlerFactory
         return new Crawler($queue, $runner);
     }
 
-    public static function createThreaded(array $configurations)
+    public static function createForked(array $configurations)
     {
         $queue = new SimpleQueue();
 
@@ -51,8 +51,10 @@ class CrawlerFactory
                 $documents = $generator->getDocuments($file, $config->getParser());
             }
 
-            if ($root = $config->getRootUrl()) {
-                $documents[] = new Document($root, $config->getParser());
+            if (is_array($roots = $config->getRootUrl())) {
+                foreach ($roots as $root) {
+                    $documents[] = new Document($root, $config->getParser());
+                }
             }
 
             $queue->addMultiple($documents);
