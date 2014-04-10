@@ -64,7 +64,9 @@ class SimpleQueue implements Queue
 
     public function get()
     {
-        if (!$this->queue->valid()) return false;
+        if (!$this->queue->valid()) {
+            return false;
+        }
         return $this->queue->extract();
     }
 

@@ -81,7 +81,6 @@ class ForkedRunner extends Runner
             $exception = $work->getException();
         }
 
-        echo $this->getRetries($work->getDocument());
         if ($this->getRetries($work->getDocument()) >= 2) {
             $this->onFailed($work->getDocument(), $exception);
             return;

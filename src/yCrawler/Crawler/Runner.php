@@ -56,7 +56,6 @@ abstract class Runner
 
     protected function onFailed(Document $document, Exception $exception)
     {
-
         if (!$this->onFailedCallback) {
             return;
         }

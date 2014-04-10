@@ -40,14 +40,14 @@ abstract class Rule
         $result = $this->doEvaluate($document);
 
         if (!$result) {
-            $result[]['value'] = false;
+            return $result[]['value'] = false;
         }
         $this->applyModifiers($result, $document);
 
         return $result;
     }
 
-    private function applyModifiers(&$result, Document $document)
+    private function applyModifiers(&$result, \yCrawler\Document $document)
     {
         foreach ($this->modifiers as $modifier) {
             $result = $modifier($result, $document);

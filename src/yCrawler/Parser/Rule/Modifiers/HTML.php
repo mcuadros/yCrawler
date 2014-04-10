@@ -2,7 +2,6 @@
 
 namespace yCrawler\Parser\Rule\Modifiers;
 
-use yCrawler\Misc\URL;
 use yCrawler\Document;
 
 final class HTML
@@ -31,21 +30,21 @@ final class HTML
 
     public static function image()
     {
-        return function (array &$results, Document $document) {
+        return function (array &$results, \yCrawler\Document $document) {
             foreach ($results as &$result) {
                 $img = $result['node']->getAttribute('src');
-                if (!URL::isImage($img)) {
+                if (!\yCrawler\Misc\URL::isImage($img)) {
                     $img = $result['node']->getAttribute('href');
                 }
-                if (!URL::isImage($img)) {
+                if (!\yCrawler\Misc\URL::isImage($img)) {
                     $img = $result['node']->getAttribute('style');
                     $img = URL::fromStyle($img);
                 }
 
-                if (!URL::isImage($img)) {
+                if (!\yCrawler\Misc\URL::isImage($img)) {
                     break;
                 }
-                $result['value'] = URL::absolutize($img, $document->getURL());
+                $result['value'] = \yCrawler\Misc\URL::absolutize($img, $document->getURL());
             }
 
             return $results;
