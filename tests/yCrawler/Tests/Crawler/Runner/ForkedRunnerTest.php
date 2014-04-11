@@ -2,7 +2,6 @@
 
 namespace yCrawler\Tests\Crawler\Runner;
 
-use yCrawler\Crawler\Request;
 use yCrawler\Crawler\Runner\ForkedRunner;
 use Mockery as m;
 use yCrawler\Crawler;
@@ -14,38 +13,37 @@ class ForkedRunnerTest extends \PHPUnit_Framework_TestCase
 {
     public function testIsFull()
     {
-        $request = m::mock('yCrawler\Crawler\Request');
+        $client = m::mock('GuzzleHttp\Client');
 
         $pool = m::mock('yCrawler\Crawler\Runner\ForkedRunner\Pool');
         $pool->shouldReceive('hasWaiting')->andReturn(false);
         $pool->shouldReceive('cleanup')->andReturn(true);
 
-        $runner = new ForkedRunner($request, $pool);
+        $runner = new ForkedRunner($client, $pool);
 
         $this->assertTrue($runner->isFull());
     }
 
     public function testIsNotFull()
     {
-        $request = m::mock('yCrawler\Crawler\Request');
+        $client = m::mock('GuzzleHttp\Client');
         $pool = m::mock('yCrawler\Crawler\Runner\ForkedRunner\Pool');
         $pool->shouldReceive('hasWaiting')->andReturn(true);
         $pool->shouldReceive('cleanup')->andReturn(true);
 
-        $runner = new ForkedRunner($request, $pool);
+        $runner = new ForkedRunner($client, $pool);
         $this->assertFalse($runner->isFull());
     }
 
     public function testRunnerRunsSuccessfully()
     {
-        $request = m::mock('yCrawler\Crawler\Request');
-        $request->shouldReceive('execute');
-        $request->shouldReceive('setUrl');
-        $request->shouldReceive('getResponse');
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->andReturn(m::self());
+        $client->shouldReceive('getBody');
         $pool = m::mock('yCrawler\Crawler\Runner\ForkedRunner\Pool');
         $pool->shouldReceive('hasWaiting')->andReturn(true);
         $pool->shouldReceive('cleanup')->andReturn(true);
 
-        $runner = new ForkedRunner($request, $pool);
+        $runner = new ForkedRunner($client, $pool);
     }
 }

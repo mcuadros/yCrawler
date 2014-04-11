@@ -2,7 +2,7 @@
 
 namespace yCrawler\Crawler\Runner;
 
-use yCrawler\Crawler\Request;
+use GuzzleHttp\Client;
 use yCrawler\Crawler\Runner;
 use yCrawler\Crawler\Runner\ForkedRunner\Pool as FPool;
 use yCrawler\Crawler\Runner\ForkedRunner\Work;
@@ -14,16 +14,16 @@ class ForkedRunner extends Runner
     private $pool;
     private $running;
 
-    public function __construct(Request $request, FPool $pool)
+    public function __construct(Client $client, FPool $pool)
     {
         $this->pool = $pool;
-        parent::__construct($request);
+        parent::__construct($client);
     }
 
     public function addDocument(Document $document)
     {
         $this->retries[$document->getURL()] = 0;
-        $work = new Work($document, $this->request);
+        $work = new Work($document, $this->client);
         $this->runWorkInPool($work);
     }
 
