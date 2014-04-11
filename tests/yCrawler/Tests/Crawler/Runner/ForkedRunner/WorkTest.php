@@ -2,8 +2,8 @@
 
 namespace yCrawler\Tests\Crawler\Runner\ForkedRunner;
 
+use GuzzleHttp\Client;
 use yCrawler\Tests\TestCase;
-use yCrawler\Crawler\Request;
 use yCrawler\Crawler\Runner\ForkedRunner\Work;
 use yCrawler\Document;
 use Exception;
@@ -19,16 +19,15 @@ class WorkTest extends TestCase
             ->once()
             ->andReturn(true);
 
-        $work = new Work($document, new Request());
+        $work = new Work($document, new Client());
         $this->assertTrue($work->isParsed());
     }
 
     public function testIsFailed()
     {
-        $request = m::mock('yCrawler\Crawler\Request');
-        $request->shouldReceive('setUrl');
-        $request->shouldReceive('execute');
-        $request->shouldReceive('getResponse');
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->once()->andReturn(m::self());
+        $client->shouldReceive('getBody')->once();
 
         $document = $this->createDocumentMock();
         $document->shouldReceive('parse')
@@ -38,7 +37,7 @@ class WorkTest extends TestCase
         $document->shouldReceive('getURL');
         $document->shouldReceive('setMarkup');
 
-        $work = new Work($document, $request);
+        $work = new Work($document, $client);
         $work->run();
 
         $this->assertTrue($work->isFailed());
@@ -46,10 +45,9 @@ class WorkTest extends TestCase
 
     public function testGetException()
     {
-        $request = m::mock('yCrawler\Crawler\Request');
-        $request->shouldReceive('setUrl');
-        $request->shouldReceive('execute');
-        $request->shouldReceive('getResponse');
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->once()->andReturn(m::self());
+        $client->shouldReceive('getBody')->once();
 
         $exception = new Exception();
         $document = $this->createDocumentMock();
@@ -60,7 +58,7 @@ class WorkTest extends TestCase
         $document->shouldReceive('getURL');
         $document->shouldReceive('setMarkup');
 
-        $work = new Work($document, $request);
+        $work = new Work($document, $client);
         $work->run();
 
         $this->assertSame($exception, $work->getException());
@@ -68,9 +66,9 @@ class WorkTest extends TestCase
 
     public function testGetDocument()
     {
-        $request = m::mock('yCrawler\Crawler\Request');
+        $client = m::mock('GuzzleHttp\Client');
         $document = $this->createDocumentMock();
-        $work = new Work($document, $request);
+        $work = new Work($document, $client);
 
         $this->assertSame($document, $work->getDocument());
     }

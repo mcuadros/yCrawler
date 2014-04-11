@@ -2,20 +2,21 @@
 
 namespace yCrawler\Crawler\Runner\ForkedRunner;
 
-use yCrawler\Crawler\Request;
+use GuzzleHttp\Client;
 use yCrawler\Document;
 use Exception;
 
 class Work
 {
     private $document;
+    private $client;
     private $exception;
     private $isFailed;
 
-    public function __construct(Document $document, Request $request)
+    public function __construct(Document $document, Client $client)
     {
         $this->document = $document;
-        $this->request = $request;
+        $this->client = $client;
     }
 
     public function run()
@@ -26,12 +27,9 @@ class Work
     private function parseDocument()
     {
         $url = $this->document->getURL();
-        $this->request->setUrl($url);
 
         try {
-            $this->request->execute();
-
-            $this->document->setMarkup($this->request->getResponse());
+            $this->document->setMarkup($this->client->get($url)->getBody());
             $this->document->parse();
         } catch (Exception $exception) {
             $this->exception = $exception;
