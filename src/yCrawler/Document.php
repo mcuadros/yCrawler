@@ -168,7 +168,9 @@ class Document
     {
         foreach ($this->parser->getValueRules() as $key => $rule) {
             $result = $rule->evaluate($this);
-            $this->values->set($key, $result);
+            if ($result) {
+                $this->values->set($key, $result);
+            }
         }
     }
 
@@ -192,9 +194,9 @@ class Document
         libxml_clear_errors();
 
         $dom = new DOMDocument();
-        $markup = $this->applyUTF8HackIfNeeded($this->markup);
+//        $markup = $this->applyUTF8HackIfNeeded($this->markup);
 
-        if (!$dom->loadHtml($markup)) {
+        if (!$dom->loadHtml($this->markup)) {
             throw new Exceptions\UnableToLoadMarkup();
         }
 

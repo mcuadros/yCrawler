@@ -9,6 +9,7 @@ use yCrawler\Crawler\Queue\SimpleQueue;
 use yCrawler\Document;
 use \Mockery as m;
 use yCrawler\Parser\Rule\XPath;
+use yCrawler\Parser;
 
 class CrawlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -30,7 +31,7 @@ class CrawlerTest extends \PHPUnit_Framework_TestCase
         $override = false;
         $crawler = $this->getCrawler($doc);
         $crawler->overrideOnParse(
-            function ($document) use (&$override){
+            function ($document) use (&$override) {
                 $override = true;
             }
         );
@@ -41,8 +42,11 @@ class CrawlerTest extends \PHPUnit_Framework_TestCase
     public function testRequeueLinkableDocs()
     {
         $passes = 0;
-        $parser = new ParserMock('mock');
+        $parser = new Parser('mock');
         $parser->addLinkFollowRule(new XPath('//a'), true);
+        $parser->addValueRule(new XPath('//no-exists-tag'), 'no-exists');
+        $parser->addValueRule(new XPath('//pre'), 'pre');
+
         $doc = new Document('http://aurl', $parser);
         $doc->setMarkup(self::EXAMPLE_MARKUP);
         $crawler = $this->getCrawler($doc);
@@ -57,12 +61,11 @@ class CrawlerTest extends \PHPUnit_Framework_TestCase
 
     protected function getCrawler($doc)
     {
-        $request = m::mock('yCrawler\Crawler\Request');
-        $request->shouldReceive('execute');
-        $request->shouldReceive('setUrl');
-        $request->shouldReceive('getResponse')->andReturnValues([self::EXAMPLE_MARKUP, '<html></html>']);
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->andReturn(m::self());
+        $client->shouldReceive('getBody')->andReturnValues([self::EXAMPLE_MARKUP, '<html></html>']);
 
-        $runner = new BasicRunner($request);
+        $runner = new BasicRunner($client);
         $queue = new SimpleQueue();
         $queue->add($doc);
 

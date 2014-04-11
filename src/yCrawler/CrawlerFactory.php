@@ -2,6 +2,7 @@
 
 namespace yCrawler;
 
+use GuzzleHttp\Client;
 use yCrawler\Config;
 use yCrawler\Crawler\Queue\SimpleQueue;
 use yCrawler\Crawler\Request;
@@ -15,7 +16,7 @@ class CrawlerFactory
     public static function createSimple(array $configurations)
     {
         $queue = new SimpleQueue();
-        $runner = new BasicRunner(new Request());
+        $runner = new BasicRunner(new Client());
 
         self::populate($queue, $configurations);
 
@@ -33,7 +34,7 @@ class CrawlerFactory
             $threads = $queue->count() - 1;
         }
 
-        $runner = new ForkedRunner(new Request(), new Pool($threads));
+        $runner = new ForkedRunner(new Client(), new Pool($threads));
 
         return new Crawler($queue, $runner);
     }

@@ -7,7 +7,7 @@ use yCrawler\Parser\Rule;
 
 class ParserMock extends Parser
 {
-    public function initialize()
+    public function __construct()
     {
         $this->addLinkFollowRule(new Rule\XPath('//a'), true);
         $this->addVerifyRule(new Rule\XPath('//a'), true);
