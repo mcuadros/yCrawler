@@ -20,7 +20,8 @@
         "yunait/core-daily": "dev-master",
         "yunait/core-business": "dev-master",
         "aws/aws-sdk-php": "2.*",
-        "aza/thread": "~1.0"
+        "aza/thread": "~1.0",
+        "guzzle/guzzle": "4.*"
 
     },
     "require-dev": {

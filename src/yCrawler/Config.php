@@ -10,7 +10,9 @@ interface Config
 
     public function getParser();
 
-    public function getRunnerOptions();
+    public function getParallelRequests();
 
-    public function getRequestOptions();
+    public function getWaitTimeBetweenRequests();
+
+    public function getRequestTimeOut();
 }
