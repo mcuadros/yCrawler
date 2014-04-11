@@ -29,6 +29,7 @@ class Config
 
     public static function loadConfig(array $config)
     {
+        throw new \RuntimeException('Deprecated');
         foreach ($config as $setting => $value) {
             self::set($setting, $value);
         }
@@ -38,11 +39,13 @@ class Config
 
     public static function getConfig()
     {
+        throw new \RuntimeException('Deprecated');
         return self::$config;
     }
 
     public static function get($setting)
     {
+        throw new \RuntimeException('Deprecated');
         if (isset(self::$config[$setting])) return self::$config[$setting][1];
         if (isset(self::$default[$setting])) return self::$default[$setting][1];
         return null;
@@ -50,6 +53,7 @@ class Config
 
     public static function set($setting, $value)
     {
+        throw new \RuntimeException('Deprecated');
         if (!isset(self::$default[$setting])) {
             throw new \InvalidArgumentException(sprintf('Unknown setting "%s"', $setting));
         }
@@ -59,6 +63,7 @@ class Config
 
     public static function isValid($setting, &$value)
     {
+        throw new \RuntimeException('Deprecated');
         $valid = false;
         $type = self::$default[$setting][0];
         switch ($type) {

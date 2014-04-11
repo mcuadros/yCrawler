@@ -2,21 +2,22 @@
 
 namespace yCrawler\Crawler;
 
+use GuzzleHttp\Client;
 use yCrawler\Document;
 use Exception;
 use yCrawler\SerializableClosure;
 
 abstract class Runner
 {
-    protected $request;
+    protected $client;
     protected $retries = [];
     protected $maxRetries = 2;
     private $onFailedCallback;
     private $onDoneCallback;
 
-    public function __construct(Request $request)
+    public function __construct(Client $client)
     {
-        $this->request = $request;
+        $this->client = $client;
     }
 
     abstract public function isFull();

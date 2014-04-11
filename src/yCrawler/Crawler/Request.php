@@ -42,6 +42,7 @@ class Request
 
     public function __construct($url = null)
     {
+        throw new \RuntimeException('Deprecated');
         $this->maxRetries = Config::get('max_retries');
         $this->sslCertificate = Config::get('ssl_certificate');
         $this->userAgent = Config::get('user_agent');

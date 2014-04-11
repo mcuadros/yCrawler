@@ -2,14 +2,14 @@
 
 namespace yCrawler\Tests\Crawler\Runner;
 
-use yCrawler\Crawler\Request;
+use GuzzleHttp\Client;
 use yCrawler\Crawler\Runner\BasicRunner;
 
 class BasicRunnerTest extends TestCase
 { 
-    protected function createRunner(Request $request)
+    protected function createRunner(Client $client)
     {
-        return new BasicRunner($request);
+        return new BasicRunner($client);
     }
 
     protected function getPoolSize()

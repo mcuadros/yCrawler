@@ -7,6 +7,10 @@ use yCrawler\Crawler\Request\Exceptions;
 
 class RequestTest extends  \PHPUnit_Framework_TestCase
 {
+    public function setUp()
+    {
+        $this->markTestSkipped();
+    }
     private function createRequest()
     {
         return new Request();

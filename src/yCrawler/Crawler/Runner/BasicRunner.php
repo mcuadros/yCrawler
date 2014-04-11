@@ -48,10 +48,7 @@ class BasicRunner extends Runner
     {
         $url = $this->document->getURL();
 
-        $this->request->setUrl($url);
-        $this->request->execute();
-
-        $this->document->setMarkup($this->request->getResponse());
+        $this->document->setMarkup($this->client->get($url)->getBody());
         $this->document->parse();
     }
 

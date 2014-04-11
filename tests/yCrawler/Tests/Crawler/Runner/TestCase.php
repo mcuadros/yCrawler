@@ -2,7 +2,7 @@
 
 namespace yCrawler\Tests\Crawler\Runner;
 
-use yCrawler\Crawler\Request;
+use GuzzleHttp\Client;
 use yCrawler\Tests\TestCase as BaseTestCase;
 use Exception;
 use Mockery as m;
@@ -11,7 +11,7 @@ abstract class TestCase extends BaseTestCase
 {
     const EXAMPLE_URL = 'http://httpbin.org/';
 
-    abstract protected function createRunner(Request $request);
+    abstract protected function createRunner(Client $client);
 
     public function testOnDoneCallback()
     {
@@ -20,12 +20,11 @@ abstract class TestCase extends BaseTestCase
             $uses++;
         };
 
-        $request = m::mock('yCrawler\Crawler\Request');
-        $request->shouldReceive('setUrl');
-        $request->shouldReceive('execute')->times(1);
-        $request->shouldReceive('getResponse')->times(1);
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->once()->andReturn(m::self());
+        $client->shouldReceive('getBody')->once();
 
-        $runner = $this->createRunner($request);
+        $runner = $this->createRunner($client);
         $runner->setOnDoneCallback($callback);
 
         $doc = $this->createDocumentMock();
@@ -46,11 +45,10 @@ abstract class TestCase extends BaseTestCase
             $uses++;
         };
 
-        $request = m::mock('yCrawler\Crawler\Request');
-        $request->shouldReceive('setUrl');
-        $request->shouldReceive('execute')->times(3)->andThrow(new Request\Exceptions\NetworkError());
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->times(3)->andThrow(new Exception());
 
-        $runner = $this->createRunner($request);
+        $runner = $this->createRunner($client);
         $runner->setOnFailedCallback($callback);
 
         $doc = $this->createDocumentMock();
@@ -65,7 +63,7 @@ abstract class TestCase extends BaseTestCase
     {
         $document = $this->createDocumentMock();
         $document->shouldReceive('getURL')->andReturn('http://url');
-        $runner = $this->createRunner(new Request());
+        $runner = $this->createRunner(new Client());
 
         $this->assertFalse($runner->isFull());
 
@@ -80,7 +78,7 @@ abstract class TestCase extends BaseTestCase
     {
         $expectedDocument = null;
 
-        $runner = $this->createRunner(new Request());
+        $runner = $this->createRunner(new Client());
         $runner->setOnDoneCallback(
             function ($document) use (&$expectedDocument) {
 
@@ -110,7 +108,7 @@ abstract class TestCase extends BaseTestCase
         $expectedDocument = null;
         $expectedException = null;
 
-        $runner = $this->createRunner(new Request());
+        $runner = $this->createRunner(new Client());
         $runner->setOnFailedCallback(
             function ($document, $exception) use (&$expectedDocument, &$expectedException) {
                 $expectedDocument = $document;
@@ -141,11 +139,10 @@ abstract class TestCase extends BaseTestCase
     public function testRetries()
     {
 
-        $request = m::mock('yCrawler\Crawler\Request');
-        $request->shouldReceive('setUrl');
-        $request->shouldReceive('execute')->times(3)->andThrow(new Request\Exceptions\NetworkError());
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->times(3)->andThrow(new Exception());
 
-        $runner = $this->createRunner($request);
+        $runner = $this->createRunner($client);
         $doc = $this->createDocumentMock();
         $doc->shouldReceive('getURL')->andReturn('http://url');
         $runner->addDocument($doc);
