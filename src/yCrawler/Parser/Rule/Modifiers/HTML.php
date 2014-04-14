@@ -38,7 +38,7 @@ final class HTML
                 }
                 if (!\yCrawler\Misc\URL::isImage($img)) {
                     $img = $result['node']->getAttribute('style');
-                    $img = URL::fromStyle($img);
+                    $img = \yCrawler\Misc\URL::fromStyle($img);
                 }
 
                 if (!\yCrawler\Misc\URL::isImage($img)) {
