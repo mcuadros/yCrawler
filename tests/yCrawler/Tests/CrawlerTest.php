@@ -3,6 +3,7 @@
 namespace yCrawler\Tests;
 
 use yCrawler\Crawler;
+use yCrawler\Crawler\Web;
 use yCrawler\Mocks\ParserMock;
 use yCrawler\Crawler\Runner\BasicRunner;
 use yCrawler\Crawler\Queue\SimpleQueue;
@@ -69,7 +70,11 @@ class CrawlerTest extends \PHPUnit_Framework_TestCase
         $queue = new SimpleQueue();
         $queue->add($doc);
 
-        $crawler = new Crawler($queue, $runner);
+        $web = new Web();
+        $web->queue = $queue;
+        $web->runner = $runner;
+
+        $crawler = new Crawler([$web]);
         return $crawler;
     }
 }

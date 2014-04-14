@@ -3,62 +3,82 @@
 namespace yCrawler;
 
 use GuzzleHttp\Client;
-use yCrawler\Config;
 use yCrawler\Crawler\Queue\SimpleQueue;
-use yCrawler\Crawler\Request;
 use yCrawler\Crawler\Runner\BasicRunner;
 use yCrawler\Crawler\Runner\ForkedRunner;
 use yCrawler\Crawler\Runner\ForkedRunner\Pool;
+use yCrawler\Crawler\Web;
 use yCrawler\Document\Generator;
+use yCrawler\Document;
 
 class CrawlerFactory
 {
-    public static function createSimple(array $configurations)
+    public function createSimple(array $configurations)
     {
-        $queue = new SimpleQueue();
-        $runner = new BasicRunner(new Client());
-
-        self::populate($queue, $configurations);
-
-        return new Crawler($queue, $runner);
-    }
-
-    public static function createForked(array $configurations)
-    {
-        $queue = new SimpleQueue();
-
-        self::populate($queue, $configurations);
-
-        $threads = Pool::DEFAULT_THREADS;
-        if ($queue->count() <= Pool::DEFAULT_THREADS) {
-            $threads = $queue->count() - 1;
-        }
-
-        $runner = new ForkedRunner(new Client(), new Pool($threads));
-
-        return new Crawler($queue, $runner);
-    }
-
-    protected static function populate($queue, $configurations)
-    {
-        $documents = [];
-        $generator = new Generator();
+        $webs = [];
         foreach ($configurations as $config) {
             if (!$config instanceof Config) {
                 throw new \InvalidArgumentException('Only instances of yCrawler\Config allowed');
             }
+            $queue = new SimpleQueue();
 
-            if ($file = $config->getUrlsFile()) {
-                $documents = $generator->getDocuments($file, $config->getParser());
-            }
+            $this->populate($queue, $config);
 
-            if (is_array($roots = $config->getRootUrl())) {
-                foreach ($roots as $root) {
-                    $documents[] = new Document($root, $config->getParser());
-                }
-            }
-
-            $queue->addMultiple($documents);
+            $runner = new BasicRunner(new Client(['connect_timeout' => $config->getRequestTimeOut()]));
+            $web = new Web();
+            $web->queue = $queue;
+            $web->runner = $runner;
+            $web->parallelRequests = $config->getParallelRequests();
+            $web->waitTime = $config->getWaitTimeBetweenRequests();
+            $webs[] = $web;
         }
+
+        return new Crawler($webs);
+    }
+
+    public function createForked(array $configurations)
+    {
+        $webs = [];
+        $pool = new Pool();
+        foreach ($configurations as $config) {
+            if (!$config instanceof Config) {
+                throw new \InvalidArgumentException('Only instances of yCrawler\Config allowed');
+            }
+            $queue = new SimpleQueue();
+
+            $this->populate($queue, $config);
+
+            $runner = new ForkedRunner(new Client(['connect_timeout' => $config->getRequestTimeOut()]), $pool);
+            $webs[] = $this->createWeb($queue, $runner, $config);
+        }
+
+        return new Crawler($webs);
+    }
+
+    protected function createWeb($queue, $runner, $config)
+    {
+        $web = new Web();
+        $web->queue = $queue;
+        $web->runner = $runner;
+        $web->parallelRequests = $config->getParallelRequests();
+        $web->waitTime = $config->getWaitTimeBetweenRequests();
+
+        return $web;
+    }
+
+    protected function populate($queue, $config)
+    {
+        $documents = [];
+        $generator = new Generator();
+
+        if ($file = $config->getUrlsFile()) {
+            $documents = $generator->getDocuments($file, $config->getParser());
+        }
+
+        if ($root = $config->getRootUrl()) {
+            $documents[] = new Document($root, $config->getParser());
+        }
+
+        $queue->addMultiple($documents);
     }
 }

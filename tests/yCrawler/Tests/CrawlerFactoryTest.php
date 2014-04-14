@@ -10,22 +10,19 @@ class CrawlerFactoryTest extends \PHPUnit_Framework_TestCase
 {
     public function testCreateForked()
     {
-        $config = m::mock('yCrawler\Config');
-        $config->shouldReceive('getUrlsFile')->andReturn([]);
-        $config->shouldReceive('getRootUrl')->andReturn('root1');
-        $config->shouldReceive('getParser')->andReturn(new Parser('test'));
+        $cf = new CrawlerFactory();
+        $config = $this->getConfigMock();
+        $config->shouldReceive('getRootUrl')->andReturn('root');
 
-        $this->assertInstanceOf('yCrawler\Crawler', CrawlerFactory::createForked([$config]));
+        $this->assertInstanceOf('yCrawler\Crawler', $cf->createForked([$config]));
     }
 
     public function testMultiUrlFromRootConfig()
     {
-        $config = m::mock('yCrawler\Config');
-        $config->shouldReceive('getUrlsFile')->andReturn([]);
+        $cf = new CrawlerFactory();
+        $config = $this->getConfigMock();
         $config->shouldReceive('getRootUrl')->andReturn(['root1', 'root2']);
-        $config->shouldReceive('getParser')->andReturn(new Parser('test'));
-
-        $this->assertInstanceOf('yCrawler\Crawler', CrawlerFactory::createSimple([$config]));
+        $this->assertInstanceOf('yCrawler\Crawler', $cf->createSimple([$config]));
     }
 
     /**
@@ -35,6 +32,19 @@ class CrawlerFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $config = m::mock('StdClass');
 
-        CrawlerFactory::createSimple([$config]);
+        $cf = new CrawlerFactory();
+        $cf->createSimple([$config]);
+    }
+
+    protected function getConfigMock()
+    {
+        $config = m::mock('yCrawler\Config');
+        $config->shouldReceive('getUrlsFile')->andReturn([]);
+        $config->shouldReceive('getParser')->andReturn(new Parser('test'));
+        $config->shouldReceive('getRequestTimeOut')->andReturn(0);
+        $config->shouldReceive('getParallelRequests')->andReturn(2);
+        $config->shouldReceive('getWaitTimeBetweenRequests')->andReturn(0);
+
+        return $config;
     }
 }
