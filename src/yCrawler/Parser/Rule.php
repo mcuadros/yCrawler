@@ -42,6 +42,7 @@ abstract class Rule
         if (!$result) {
             return $result[]['value'] = false;
         }
+
         $this->applyModifiers($result, $document);
 
         return $result;

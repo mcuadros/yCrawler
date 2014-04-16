@@ -10,10 +10,14 @@ class XPath extends Rule
 {
     protected function doEvaluate(Document $document)
     {
-        $result = $this->evaluateXPath($document);
+        $nodeList = $this->evaluateXPath($document);
 
         $output = [];
-        foreach ($result as $node) {
+        if ($nodeList->length < 1) {
+            $output[] = $this->createEmptyResult();
+        }
+
+        foreach ($nodeList as $node) {
             $output[] = $this->createResultArrayForNode($document, $node);
         }
 
@@ -26,6 +30,15 @@ class XPath extends Rule
             'value' => $node->nodeValue,
             'node' => $node,
             'raw' => $document->getDOM()->saveXML($node)
+        ];
+    }
+
+    private function createEmptyResult()
+    {
+        return [
+            'value' => '',
+            'node' => new \DOMElement('empty'),
+            'raw' => ''
         ];
     }
 
