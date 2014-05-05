@@ -5,24 +5,26 @@ namespace yCrawler;
 use Closure;
 use ReflectionFunction;
 use SplFileObject;
+use InvalidArgumentException;
 
-#http://www.htmlist.com/development/extending-php-5-3-closures-with-serialization-and-reflection/
+//http://www.htmlist.com/development/extending-php-5-3-closures-with-serialization-and-reflection/
 class SerializableClosure
 {
-    protected $closure = NULL;
-    protected $reflection = NULL;
-    protected $code = NULL;
-    protected $used_variables = array();
+    protected $closure = null;
+    protected $reflection = null;
+    protected $code = null;
+    protected $used_variables = [];
 
     public function __construct($function)
     {
-        if (!$function instanceOf Closure)
+        if (!$function instanceof Closure) {
             throw new InvalidArgumentException();
+        }
 
         $this->closure = $function;
         $this->reflection = new ReflectionFunction($function);
-        $this->code = $this->_fetchCode();
-        $this->used_variables = $this->_fetchUsedVariables();
+        $this->code = $this->fetchCode();
+        $this->used_variables = $this->fetchUsedVariables();
     }
 
     public function __invoke()
@@ -37,7 +39,7 @@ class SerializableClosure
         return $this->closure;
     }
 
-    protected function _fetchCode()
+    protected function fetchCode()
     {
         // Open file and seek to the first line of the closure
         $file = new SplFileObject($this->reflection->getFileName());
@@ -68,12 +70,13 @@ class SerializableClosure
         return $this->reflection->getParameters();
     }
 
-    protected function _fetchUsedVariables()
+    protected function fetchUsedVariables()
     {
         // Make sure the use construct is actually used
         $use_index = stripos($this->code, 'use');
-        if ( ! $use_index)
-            return array();
+        if (!$use_index) {
+            return [];
+        }
 
         // Get the names of the variables inside the use statement
         $begin = strpos($this->code, '(', $use_index) + 1;
@@ -84,9 +87,9 @@ class SerializableClosure
         $static_vars = $this->reflection->getStaticVariables();
 
         // Only keep the variables that appeared in both sets
-        $used_vars = array();
+        $used_vars = [];
         foreach ($vars as $var) {
-            $var = trim($var, ' $&amp;');
+            $var = trim($var, ' &$');
             $used_vars[$var] = $static_vars[$var];
         }
 

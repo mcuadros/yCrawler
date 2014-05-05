@@ -7,50 +7,62 @@ use yCrawler\Document;
 use yCrawler\SerializableClosure;
 use Closure;
 
-class Group
+class Group extends Rule
 {
-    private $items = Array();
-    private $modifiers;
+    private $rules = [];
+    private $modifiers = [];
 
-    public function createItem($expression = false)
+    public function __construct()
     {
-        $item = new Item();
-        if ($expression) $item->setPattern($expression);
-        $this->items[] = $item;
 
-        return $item;
+    }
+
+    public function addRule(Rule $rule)
+    {
+        $this->rules[] = $rule;
+
+        return $this;
     }
 
     public function evaluate(Document $document)
     {
-        $output = Array();
-        foreach ($this->items as $item) {
-            foreach($item->evaluate($document) as $data) $output[] = $data;
+        $output = [];
+        foreach ($this->rules as $rule) {
+            foreach($rule->evaluate($document) as $data) {
+                $output[] = $data;
+            }
         }
 
-        $this->applyModifiers($output, $document);
-
-        return $output;
+        return $this->applyModifiers($output, $document);
     }
 
-    public function getModifiers() { return $this->modifiers; }
-    public function setModifier(Closure $modifier)
+    public function getModifiers()
+    {
+        return $this->modifiers;
+    }
+
+    public function addModifier(Closure $modifier)
     {
         $this->modifiers[] = new SerializableClosure($modifier);
 
         return $this;
     }
 
-    private function applyModifiers(&$result, Document &$document)
-    {
-        if (!$this->modifiers) return true;
-        foreach( $this->modifiers as $modifier) $modifier($result, $document);
-
-        return true;
-    }
-
     public function __toString()
     {
         return (string) var_export($this);
+    }
+
+    protected function doEvaluate(Document $document)
+    {
+    }
+
+    private function applyModifiers($result, Document $document)
+    {
+        foreach($this->modifiers as $modifier) {
+            $result = $modifier($result, $document);
+        }
+
+        return $result;
     }
 }

@@ -4,7 +4,7 @@ namespace yCrawler\Tests;
 
 use yCrawler\Document;
 use yCrawler\Parser;
-use yCrawler\Parser\Item;
+use yCrawler\Parser\Rule;
 use yCrawler\Parser\Group;
 
 class ParserTest extends TestCase
@@ -22,52 +22,6 @@ class ParserTest extends TestCase
         $this->assertFalse($parser->isInitialized());
 
         $parser->configure();
-        $this->assertTrue($parser->isInitialized());
-    }
-    
-    public function testSetStartupURL()
-    {
-        $parser = $this->createParserMock();
-
-        $parser->setStartupURL(self::EXAMPLE_URL_A);
-        $this->assertCount(1, $parser->getStartupURLs());
-        $this->assertSame([self::EXAMPLE_URL_A], $parser->getStartupURLs());
-
-        $parser->setStartupURL(self::EXAMPLE_URL_B);
-        $this->assertCount(2, $parser->getStartupURLs());
-        $this->assertSame(
-            [self::EXAMPLE_URL_A, self::EXAMPLE_URL_B], 
-            $parser->getStartupURLs()
-        );
-    }
-
-    public function testClearStartupURLs()
-    {
-        $parser = $this->createParserMock();
-        $parser->setStartupURL(self::EXAMPLE_URL_A);
-
-        $parser->clearStartupURLs();
-        $this->assertCount(0, $parser->getStartupURLs());
-    }
-
-    /**
-     * @expectedException yCrawler\Parser\Exceptions\InvalidStartupURL
-     */
-    public function testSetStartupURLInvalid()
-    {
-        $parser = $this->createParserMock();
-        $parser->setStartupURL(self::EXAMPLE_URL_MALFORMED);
-    }
-
-    public function testGetStartupDocs()
-    {
-        $parser = $this->createParserMock();
-        $parser->setStartupURL(self::EXAMPLE_URL_A);
-
-        $result = $parser->getStartupDocs();
-        $document = current($result);
-
-        $this->assertSame(self::EXAMPLE_URL_A, $document->getURL());
         $this->assertTrue($parser->isInitialized());
     }
     
@@ -89,240 +43,166 @@ class ParserTest extends TestCase
         $parser->setURLPattern(self::EXAMPLE_PATTERN_MALFORMED);
     }
 
-
     public function testMatchURL()
     {
         $parser = $this->createParserMock();
-
-        $this->assertFalse($parser->matchURL(self::EXAMPLE_URL_A));
 
         $parser->setURLPattern(self::EXAMPLE_PATTERN);
         $this->assertTrue($parser->matchURL(self::EXAMPLE_URL_A));
     }
 
-    public function testMatchURLDefault()
+    public function testAddLinkFollowRule()
     {
-        $parser = $this->createParserMock();
-        $parser->setStartupURL(self::EXAMPLE_URL_A);
-        $this->assertTrue($parser->matchURL(self::EXAMPLE_URL_A));
-        $this->assertFalse($parser->matchURL(self::EXAMPLE_URL_B));
+        $parser = new Parser('test');
 
-        $patterns = $parser->getURLPatterns();
-        $this->assertCount(1, $patterns);
-        $this->assertSame(
-            [self::EXAMPLE_PATTERN_DOMAIN_BASED], 
-            $patterns
-        );
+        $rule = new Rule\XPath('');
+
+        $parser->addLinkFollowRule($rule, false);
+        $this->assertNotSame([[$rule, false] ], $parser->getFollowRules());
+        $this->assertInstanceOf('yCrawler\SerializableClosure', $parser->getFollowRules()[0][0]->getModifiers()[0]);
+
+        $parser->addLinkFollowRule($rule, true);
+        $this->assertCount(2, $parser->getFollowRules());
+
+        $parser->clearFollowRules();
+        $parser->addLinkFollowRule($rule, true);
+        $this->assertCount(1, $parser->getFollowRules());
     }
 
-    public function testAddLinkFollowItem()
+    public function testCreateLinkFollowRule()
     {
-        $parser = $this->createParserMock();
+        $rule = new Rule\XPath('//a');
 
-        $item = new Item();
+        $parser = new Parser('test');
+        $parser->addLinkFollowRule($rule, false);
+        $parser->addLinkFollowRule($rule, true);
+        $parser->addLinkFollowRule($rule, true);
 
-        $parser->addLinkFollowItem($item, false);
-        $this->assertSame([
-            [$item, false]
-        ], $parser->getFollowItems());
+        $this->assertSame('//a', $rule->getPattern());
 
-        $parser->addLinkFollowItem($item, true);
-        $this->assertSame([
-            [$item, false],
-            [$item, true]
-        ], $parser->getFollowItems());
-
-        $parser->clearFollowItems();
-        $parser->addLinkFollowItem($item, true);
-        $this->assertSame([
-            [$item, true]
-        ], $parser->getFollowItems());
+        $rules = $parser->getFollowRules();
+        $this->assertInstanceOf('yCrawler\Parser\Rule', $rules[0][0]);
+        $this->assertFalse($rules[0][1]);
+        $this->assertTrue($rules[1][1]);
+        $this->assertTrue($rules[2][1]);
     }
 
-    public function testCreateLinkFollowItem()
+    public function testAddVerifyRule()
+    {
+        $parser = new Parser('test');
+
+        $rule = new Rule\XPath('//a');
+
+        $parser->addVerifyRule($rule, false);
+        $this->assertNotSame([[$rule, false]], $parser->getVerifyRules());
+        $this->assertCount(1, $parser->getVerifyRules());
+        $this->assertInstanceOf('yCrawler\SerializableClosure', $parser->getVerifyRules()[0][0]->getModifiers()[0]);
+
+        $parser->addVerifyRule($rule, true);
+        $this->assertCount(2, $parser->getVerifyRules());
+
+        $parser->clearVerifyRules();
+        $parser->addVerifyRule($rule, true);
+        $this->assertCount(1, $parser->getVerifyRules());
+    }
+
+    public function testCreateVerifyRule()
     {
         $pattern = '//a';
+        $rule = new Rule\XPath($pattern);
 
-        $parser = $this->createParserMock();
-        $item = $parser->createLinkFollowItem($pattern, false);
-        $item = $parser->createLinkFollowItem($pattern, true);
-        $item = $parser->createLinkFollowItem($pattern);
+        $parser = new Parser('test');
+        $parser->addVerifyRule($rule, false);
+        $parser->addVerifyRule($rule, true);
+        $parser->addVerifyRule($rule, true);
 
-        $this->assertSame($pattern, $item->getPattern());
-        $this->assertInstanceOf('yCrawler\Parser\Item', $item);
+        $this->assertSame($pattern, $rule->getPattern());
+        $this->assertInstanceOf('yCrawler\Parser\Rule', $rule);
 
-        $items = $parser->getFollowItems();
-        $this->assertInstanceOf('yCrawler\Parser\Item', $items[0][0]);
-        $this->assertFalse($items[0][1]);
-        $this->assertTrue($items[1][1]);
-        $this->assertTrue($items[2][1]);
+        $rules = $parser->getVerifyRules();
+        $this->assertInstanceOf('yCrawler\Parser\Rule', $rules[0][0]);
+        $this->assertFalse($rules[0][1]);
+        $this->assertTrue($rules[1][1]);
+        $this->assertTrue($rules[2][1]);
     }
 
-    public function testAddVerifyItem()
+    public function testAddLinkRule()
     {
         $parser = $this->createParserMock();
 
-        $item = new Item();
+        $rule = new Rule\XPath('//a');
 
-        $parser->addVerifyItem($item, false);
-        $this->assertSame([
-            [$item, false]
-        ], $parser->getVerifyItems());
+        $parser->addLinkRule($rule);
+        $this->assertSame([$rule], $parser->getLinkRules());
 
-        $parser->addVerifyItem($item, true);
-        $this->assertSame([
-            [$item, false],
-            [$item, true]
-        ], $parser->getVerifyItems());
+        $parser->addLinkRule($rule);
+        $this->assertSame([$rule, $rule], $parser->getLinkRules());
 
-        $parser->clearVerifyItems();
-        $parser->addVerifyItem($item, true);
-        $this->assertSame([
-            [$item, true]
-        ], $parser->getVerifyItems());
+        $parser->clearLinkRules();
+        $parser->addLinkRule($rule);
+        $this->assertSame([$rule], $parser->getLinkRules());
     }
 
-    public function testCreateVerifyItem()
+    public function testCreateLinksRule()
     {
         $pattern = '//a';
+        $rule = new Rule\XPath($pattern);
 
         $parser = $this->createParserMock();
-        $item = $parser->createVerifyItem($pattern, false);
-        $item = $parser->createVerifyItem($pattern, true);
-        $item = $parser->createVerifyItem($pattern);
+        $parser->addLinkRule($rule);
+        $parser->addLinkRule($rule);
 
-        $this->assertSame($pattern, $item->getPattern());
-        $this->assertInstanceOf('yCrawler\Parser\Item', $item);
+        $this->assertSame($pattern, $rule->getPattern());
 
-        $items = $parser->getVerifyItems();
-        $this->assertInstanceOf('yCrawler\Parser\Item', $items[0][0]);
-        $this->assertFalse($items[0][1]);
-        $this->assertTrue($items[1][1]);
-        $this->assertTrue($items[2][1]);
+        $rules = $parser->getLinkRules();
+        $this->assertInstanceOf('yCrawler\Parser\Rule', $rules[0]);
+        $this->assertSame(2, count($rules));
     }
 
-    public function testAddLinksItem()
+    public function testAddValueRule()
     {
-        $parser = $this->createParserMock();
+        $parser = new Parser('test');
 
-        $item = new Item();
+        $rule = new Rule\XPath('');
 
-        $parser->addLinksItem($item);
-        $this->assertSame([$item], $parser->getLinksItems());
+        $parser->addValueRule($rule, 'foo');
+        $this->assertSame(['foo' => $rule], $parser->getValueRules());
 
-        $parser->addLinksItem($item);
-        $this->assertSame([$item, $item], $parser->getLinksItems());
+        $parser->addValueRule($rule, 'bar');
+        $this->assertSame(['foo' => $rule, 'bar' => $rule], $parser->getValueRules());
 
-        $parser->clearLinksItems();
-        $parser->addLinksItem($item);
-        $this->assertSame([$item], $parser->getLinksItems());
+        $parser->clearValueRules();
+        $parser->addValueRule($rule, 'bar');
+        $this->assertSame(['bar' => $rule], $parser->getValueRules());
     }
 
-    public function testCreateLinksItem()
+    public function testAddGroupRule()
     {
-        $pattern = '//a';
-
-        $parser = $this->createParserMock();
-        $item = $parser->createLinksItem($pattern);
-        $item = $parser->createLinksItem($pattern);
-
-        $this->assertSame($pattern, $item->getPattern());
-        $this->assertInstanceOf('yCrawler\Parser\Item', $item);
-
-        $items = $parser->getLinksItems();
-        $this->assertInstanceOf('yCrawler\Parser\Item', $items[0]);
-        $this->assertSame(2, count($items));
-
-        $item = $parser->createLinksItem($pattern);
-        $items = $parser->getLinksItems();
-        $this->assertSame(3, count($items));
-    }
-
-    public function testAddValueItem()
-    {
-        $parser = $this->createParserMock();
-
-        $item = new Item();
-
-        $parser->addValueItem('foo', $item);
-        $this->assertSame([
-            'foo' => $item
-        ], $parser->getValueItems());
-
-        $parser->addValueItem('bar', $item);
-        $this->assertSame([
-            'foo' => $item,
-            'bar' => $item
-        ], $parser->getValueItems());
-
-        $parser->clearValueItems();
-        $parser->addValueItem('bar', $item);
-        $this->assertSame([
-            'bar' => $item
-        ], $parser->getValueItems());
-    }
-
-    public function testCreateValueItem()
-    {
-        $pattern = '//a';
-
-        $parser = $this->createParserMock();
-        $item = $parser->createValueItem('test', $pattern);
-
-        $this->assertSame($pattern, $item->getPattern());
-        $this->assertInstanceOf('yCrawler\Parser\Item', $item);
-
-        $items = $parser->getValueItems();
-        $this->assertTrue(isset($items['test']));
-        $this->assertInstanceOf('yCrawler\Parser\Item', $items['test']);
-    }
-
-    public function testAddGroupItem()
-    {
-        $parser = $this->createParserMock();
+        $parser = new Parser('test');
 
         $group = new Group();
 
         $parser->addValueGroup('foo', $group);
-        $this->assertSame([
-            'foo' => $group
-        ], $parser->getValueItems());
+        $this->assertSame(['foo' => $group], $parser->getValueRules());
 
         $parser->addValueGroup('bar', $group);
-        $this->assertSame([
-            'foo' => $group,
-            'bar' => $group
-        ], $parser->getValueItems());
+        $this->assertSame(['foo' => $group, 'bar' => $group], $parser->getValueRules());
 
-        $parser->clearValueItems();
+        $parser->clearValueRules();
         $parser->addValueGroup('bar', $group);
-        $this->assertSame([
-            'bar' => $group
-        ], $parser->getValueItems());
-    }
-
-    public function testCreateValueGroup()
-    {
-        $pattern = '//a';
-
-        $parser = $this->createParserMock();
-        $item = $parser->createValueGroup('test');
-        $this->assertInstanceOf('yCrawler\Parser\Group', $item);
-
-        $items = $parser->getValueItems();
-        $this->assertTrue(isset($items['test']));
-        $this->assertInstanceOf('yCrawler\Parser\Group', $items['test']);
+        $this->assertSame(['bar' => $group], $parser->getValueRules());
     }
 
     public function testSetOnParseCallback()
     {
-        $closure = function($document) {
+        $closure = function ($document) {
             return get_class($document);
         };
 
         $parser = $this->createParserMock();
         $parser->setOnParseCallback($closure);
 
-        $this->assertSame($closure, $parser->getOnParseCallback());
+        $this->assertInstanceOf('yCrawler\SerializableClosure', $parser->getOnParseCallback());
+        $this->assertSame($closure, $parser->getOnParseCallback()->getClosure());
     }
 }

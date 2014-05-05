@@ -2,46 +2,62 @@
 
 namespace yCrawler\Crawler;
 
+use GuzzleHttp\Client;
 use yCrawler\Document;
 use Exception;
+use yCrawler\SerializableClosure;
 
 abstract class Runner
 {
+    protected $client;
+    protected $retries = [];
+    protected $maxRetries = 2;
     private $onFailedCallback;
     private $onDoneCallback;
 
-    abstract public function isFull();
+    public function __construct(Client $client)
+    {
+        $this->client = $client;
+    }
 
-    abstract public function wait();
+    abstract public function isFull();
 
     abstract public function addDocument(Document $document);
 
-    public function setOnDoneCallback(Callable $callback)
+    abstract protected function onWait();
+
+    abstract protected function freeDocument(Document $document);
+
+    abstract public function clean();
+
+    public function setOnDoneCallback(\Closure $callback)
     {
-        $this->onDoneCallback = $callback;
+        $this->onDoneCallback = new SerializableClosure($callback);
     }
 
-    public function getOnDoneCallback()
+    public function setOnFailedCallback(\Closure $callback)
     {
-        return $this->onDoneCallback;
+        $this->onFailedCallback = new SerializableClosure($callback);
     }
 
-    public function setOnFailedCallback(Callable $callback)
+    public function wait()
     {
-        $this->onFailedCallback = $callback;
+        $this->onWait();
     }
 
-    public function getOnFailedCallback()
+    public function getRetries(Document $document)
     {
-        return $this->onFailedCallback;
+        return $this->retries[$document->getURL()];
     }
 
-    public function onFailed(Document $document, Exception $exception)
+    public function incRetries(Document $document)
+    {
+        $this->retries[$document->getURL()]++;
+    }
+
+    protected function onFailed(Document $document, Exception $exception)
     {
         if (!$this->onFailedCallback) {
-            echo $exception->getMessage();
-            echo $exception->getTraceAsString();
-
             return;
         }
 
@@ -49,7 +65,7 @@ abstract class Runner
         $callback($document, $exception);
     }
 
-    public function onDone(Document $document)
+    protected function onDone(Document $document)
     {
         if (!$this->onDoneCallback) {
             return;

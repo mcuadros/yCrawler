@@ -1,16 +1,15 @@
 <?php
 
-namespace yCrawler\Tests\Parser\Item\Types;
+namespace yCrawler\Tests\Parser\Rule;
 
-use yCrawler\Parser\Item\Types;
-use yCrawler\Tests\Testcase;
+use yCrawler\Tests\Parser\Rule\RuleTestCase;
 
-class CSSTypeTest extends Type
+class XPathTest extends RuleTestCase
 {
-    const TESTED_CLASS = 'yCrawler\Parser\Item\Types\CSSType';
+    const TESTED_CLASS = 'yCrawler\Parser\Rule\XPath';
 
-    const EXAMPLE_PATTERN_INPUT = 'div.item > h4 > a';
-    const EXAMPLE_PATTERN_OUTPUT = "descendant-or-self::div[@class and contains(concat(' ', normalize-space(@class), ' '), ' item ')]/h4/a";
+    const EXAMPLE_PATTERN_INPUT = '/foo/';
+    const EXAMPLE_PATTERN_OUTPUT = '/foo/';
     const EXAMPLE_RESULT = 'foo';
 
     protected function createDocumentMock()
@@ -28,11 +27,6 @@ class CSSTypeTest extends Type
             ->withNoArgs()
             ->once()
             ->andReturn($xpath);
-
-        $document->shouldReceive('getDOM')
-            ->withNoArgs()
-            ->once()
-            ->andReturn(new \DOMDocument());
 
         return $document;
     }

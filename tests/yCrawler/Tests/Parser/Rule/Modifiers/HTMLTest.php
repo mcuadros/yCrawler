@@ -1,8 +1,8 @@
 <?php
 
-namespace yCrawler\Tests\Parse\Item\Modifiers;
+namespace yCrawler\Tests\Parse\Rule\Modifiers;
 
-use yCrawler\Parser\Item\Modifiers\HTML;
+use yCrawler\Parser\Rule\Modifiers\HTML;
 use yCrawler\Tests\Testcase;
 use yCrawler\Document;
 
@@ -21,7 +21,7 @@ class HTMLTest extends TestCase
         return $document;
     }
 
-    public function testBoolean()
+    public function testMarkup()
     {
         $dom = new \DOMDocument();
         $dom->loadHTML('<html><a href="link">test</a></html>');
@@ -29,7 +29,7 @@ class HTMLTest extends TestCase
 
         $closure = HTML::markup();
         $result = array(
-            array('value' => 'test', 'dom' => $dom, 'node' => $node)
+            array('value' => 'test', 'node' => $node, 'raw' => '<a href="link">test</a>')
         );
 
         $closure($result);
@@ -43,9 +43,14 @@ class HTMLTest extends TestCase
         $node = $dom->getElementsByTagName('p')->item(0);
 
         $closure = HTML::br2nl();
-        $result = array(
-            array('value' => 'test', 'dom' => $dom, 'node' => $node)
-        );
+        $result = [
+            [
+                'value' => 'test',
+                'dom' => $dom,
+                'node' => $node,
+                'raw' => '<p>test<br>test<br/>test<br />test</p>'
+            ]
+        ];
 
         $closure($result);
         $this->assertSame(4, count(explode(PHP_EOL, $result[0]['value'])));

@@ -25,6 +25,26 @@ class SimpleQueue implements Queue
         $this->queue->insert($document, $priority);
     }
 
+    public function addMultiple(array $documents)
+    {
+        foreach ($documents as $document) {
+            if (!is_array($document)) {
+                $document = [$document];
+            }
+
+            if (! $document[0] instanceof Document) {
+                continue;
+            }
+
+            if (!isset($document[1])) {
+                $document[1] = self::PRIORITY_NORMAL;
+            }
+
+            $this->add($document[0], $document[1]);
+        }
+
+    }
+
     public function has(Document $document)
     {
         $clonedQueue = clone $this->queue;
@@ -44,7 +64,9 @@ class SimpleQueue implements Queue
 
     public function get()
     {
-        if (!$this->queue->valid()) return false;
+        if (!$this->queue->valid()) {
+            return false;
+        }
         return $this->queue->extract();
     }
 

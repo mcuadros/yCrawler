@@ -6,12 +6,11 @@ use Aza\Components\Thread\Thread;
 
 class Fork extends Thread
 {
-    private $document;
-
     public function process()
     {
         $work = $this->getParam(0);
-        if (!$work instanceOf Work) {
+
+        if (!$work instanceof Work) {
             throw new Exceptions\NonRecievedWork;
         }
 

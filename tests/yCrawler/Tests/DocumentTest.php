@@ -4,11 +4,14 @@ namespace yCrawler\Tests;
 
 use yCrawler\Document;
 use Mockery as m;
+use yCrawler\Parser;
+use yCrawler\Parser\Rule;
 
 class DocumentTest extends TestCase
 {
     const EXAMPLE_URL = 'http://httpbin.org/';
     const EXAMPLE_MARKUP = '<html><body><pre><a href="foo">bar</a></pre></body></html>';
+    const TWO_LINKS_MARKUP = '<html><body><pre><a href="foo">bar</a><a href="foo">cad</a></pre></body></html>';
 
     public function createDocument($url)
     {
@@ -28,7 +31,7 @@ class DocumentTest extends TestCase
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
 
-        $this->assertInstanceOf('yCrawler\Mocks\ParserMock', $doc->getParser());
+        $this->assertInstanceOf('yCrawler\Parser', $doc->getParser());
     }
 
     public function testGetMarkup()
@@ -67,6 +70,22 @@ class DocumentTest extends TestCase
         $this->assertTrue($doc->isVerified());
     }
 
+    public function testIsNotVerified()
+    {
+        $parser = new Parser('test');
+        $parser->addLinkFollowRule(new Rule\XPath('//a'), true);
+        $parser->addValueRule(new Rule\XPath('//no-exists-tag'), 'no-exists');
+        $parser->addValueRule(new Rule\XPath('//pre'), 'pre');
+        $parser->addVerifyRule(new Rule\XPath('//a'), true);
+        $parser->addVerifyRule(new Rule\XPath("//a[contains(./text(), 'cad')]"), false);
+
+        $doc = new Document(self::EXAMPLE_URL, $parser);
+        $doc->setMarkup(self::TWO_LINKS_MARKUP);
+        $doc->parse();
+
+        $this->assertFalse($doc->isVerified());
+    }
+
     public function testIsIndexable()
     {
         $doc = $this->createDocument(self::EXAMPLE_URL);
@@ -78,8 +97,12 @@ class DocumentTest extends TestCase
 
     public function testGetLinks()
     {
-        $doc = $this->createDocument(self::EXAMPLE_URL);
+        $parser = new Parser('test');
+
+        $doc = new Document(self::EXAMPLE_URL, $parser);
         $doc->setMarkup(self::EXAMPLE_MARKUP);
+        $parser = $doc->getParser();
+        $parser->addLinkFollowRule(new Rule\XPath('//a'), true);
         $doc->parse();
 
         $this->assertCount(1, $doc->getLinks()->all());

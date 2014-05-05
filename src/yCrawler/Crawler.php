@@ -2,38 +2,28 @@
 
 namespace yCrawler;
 
+use yCrawler\Crawler\Web;
 use yCrawler\Parser;
 use yCrawler\Crawler\Runner;
 use yCrawler\Crawler\Queue;
 use yCrawler\Crawler\Exceptions;
+use yCrawler\Document;
 
 class Crawler
 {
-    const LOOP_WAIT_TIME = 4;
+    const LOOP_WAIT_TIME = 2;
 
     protected $initialized;
     protected $runner;
     protected $queue;
     protected $parseCallback;
-    protected $parsers = Array();
+    protected $parsers = [];
+    protected $works;
+    protected $webs;
 
-    public function __construct(Queue $queue, Runner $runner)
+    public function __construct(array $webs)
     {
-        $this->runner = $runner;
-        $this->queue = $queue;
-    }
-
-    public function initialize()
-    {
-        if ($this->initialized) {
-            return true;
-        }
-
-        foreach ($this->parsers as $parser) {
-            $this->queueDocuments($parser->getStartupDocuments());
-        }
-
-        return $this->initialized = time();
+        $this->webs = $webs;
     }
 
     public function addDocument(Document $document)
@@ -41,101 +31,97 @@ class Crawler
         $this->queue->add($document);
     }
 
-    protected function queueDocuments(Array $documents)
-    {
-        foreach ($documents as $document) {
-            $this->addDocument($document);
-        }
-    }
-
-    public function addParser(Parser $parser)
-    {
-        $name = $parser->getName();
-        if ($this->hasParser($name)) {
-            throw new Exceptions\ParserAlreadyLoaded($parser);
-        }
-
-        if ($this->parseCallback) {
-            $parser->onParse($this->parseCallback);
-        }
-
-        $this->parsers[$name] = $parser;
-
-        return true;
-    }
-
-    public function hasParser($name)
-    {
-        return isset($this->parsers[$name]);
-    }
-
-    public function getParser($name)
-    {
-        if (!$this->hasParser($name)) return false;
-        return $this->parsers[$name];
-    }
-
-    public function onParse(Callable $callable)
+    public function overrideOnParse(callable $callable)
     {
         $this->parseCallback = $callable;
-        $this->setOnParserCallbackOnParsers();
     }
 
-    protected function setOnParserCallbackOnParsers()
+    public function run($loopWaitTime = self::LOOP_WAIT_TIME)
     {
-        foreach ($this->parsers as $parser) {
-            $parser->setOnParseCallback($this->parseCallback);
-        }
-    }
-
-    public function run()
-    {
-        $this->initialize();
-
-        while ($this->queue->count() > 0) {
-            $this->addDocumentsToRunnerWhileNotIsFull();
-            $this->runner->wait();
-            sleep(self::LOOP_WAIT_TIME);
-        }
-    }
-
-    protected function addDocumentsToRunnerWhileNotIsFull()
-    {
-        while (!$this->runner->isFull()) {
-            echo "!isFull" . PHP_EOL;
-            $document = $this->queue->get();
-            $this->runner->addDocument($document);
-        }
-    }
-
-    public function jobDone(Document $document)
-    {
-        var_dump($document);
-        $take = true;
-        switch ( $status = $document->getStatus() ) {
-            case Request::STATUS_DONE:
-            case Request::STATUS_CACHED:
-                $this->addLinks($document->getLinks());
-                Output::log('Document (done) ' .  $document . ' ' . $document->getUrl() , Output::INFO);
-                break;
-            case Request::STATUS_RETRY:
-                if ( $retry = $document->newRetry() ) {
-                    Output::log('Document (retry:'.$retry.') ' . $document->getUrl(), Output::DEBUG);
-                    $this->_process->sendJob($document);
-                    $take = false;
-                } else {
-                    Output::log('Document (max. retries) ' . $document->getUrl(), Output::WARNING);
+        $webs = $this->webs;
+        do {
+            foreach ($webs as $k => $web) {
+                if (!$web instanceof Web) {
+                    throw new \InvalidArgumentException('Not an instance of Web');
                 }
-                break;
-            case Request::STATUS_FAILED:
-                Output::log('Document (failed) ' . $document . ' ' . $document->getUrl(), Output::WARNING);
-                break;
-            default:
-                Output::log('Document (error) ' . $document . ' ' . $document->getUrl() . ' Unexpected request status: ' . $status, Output::ERROR);
+
+                if ($web->queue->count() <= 0) {
+                    unset($webs[$k]);
+                    continue;
+                }
+
+                $this->initializeRunner($web);
+                $this->addDocumentsToRunner($web);
+                if (!$this->runnerShouldWait($web)) {
+                    $web->runner->wait();
+                }
+            }
+            sleep($loopWaitTime);
+        } while (count($webs) > 0);
+    }
+
+    protected function addDocumentsToRunner($web)
+    {
+        $hash = spl_object_hash($web->runner);
+        while (!$web->runner->isFull() && !$this->runnerShouldWait($web) && $document = $web->queue->get()) {
+            if ($this->parseCallback) {
+                $document->getParser()->setOnParseCallback($this->parseCallback);
+            }
+            $web->runner->addDocument($document);
+            $this->works[$hash]['waitTime'] = time() + $web->waitTime;
+        }
+    }
+
+    protected function runnerShouldWait($web)
+    {
+        $hash = spl_object_hash($web->runner);
+
+        if ($this->works[$hash]['waitTime'] <= time() &&
+            $web->parallelRequests >= $this->works[$hash]['currentRequests']
+        ) {
+            return false;
         }
 
-        $this->getParser($document->getParser())->data('sum', $document->getData());
-        if ( $take ) $this->getParser($document->getParser())->data('take', 'childs');
         return true;
+    }
+
+    private function initializeRunner($web)
+    {
+        $hash = spl_object_hash($web->runner);
+
+        if (isset($this->works[$hash])) {
+            return null;
+        }
+
+        $this->works[$hash]['waitTime'] = 0;
+        $this->works[$hash]['currentRequests'] = 0;
+
+        $web->runner->setOnDoneCallback($this->getOnDoneCallback($web->queue, $web->runner, $this->works));
+        $web->runner->setOnFailedCallback($this->getOnFailedCallback($web->runner, $this->works));
+
+        return $this->initialized = time();
+    }
+
+    private function getOnFailedCallback($runner, $works)
+    {
+        return function ($document, $exception) use ($runner, $works) {
+            $works[spl_object_hash($runner)]['currentRequests']--;
+            if ($runner->getRetries($document) < 3) {
+                $runner->incRetries($document);
+            }
+        };
+    }
+
+    private function getOnDoneCallback($queue, $runner, $works)
+    {
+        return function ($document) use ($queue, $runner, $works) {
+            $works[spl_object_hash($runner)]['currentRequests']--;
+            if (!$document->isIndexable()) {
+                return;
+            }
+            foreach ($document->getLinks() as $url => $pass) {
+                $queue->add(new Document($url, $document->getParser()));
+            }
+        };
     }
 }

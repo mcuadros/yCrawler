@@ -4,19 +4,18 @@
     "type": "library",
     "minimum-stability": "dev",
     "require": {
-        "php": ">=5.3.0",
+        "php": ">=5.4.0",
         "ext-curl": "*",
         "ext-pcntl": "*",
+        "ext-apc": "*",
         "monolog/monolog": "1.4.0",
-        "pimple/pimple": "v1.0.1",
         "neitanod/forceutf8": "dev-master",
         "symfony/css-selector": "~2.0",
         "aza/thread": "~1.0",
-        "react/react": "0.3.*"
+        "guzzlehttp/guzzle": "4.*"
     },
     "require-dev": {
-        "mockery/mockery": "*",
-        "phpunit/phpunit": "3.7.*"
+        "mockery/mockery": "*"
     },
     "autoload": {
         "psr-0": {

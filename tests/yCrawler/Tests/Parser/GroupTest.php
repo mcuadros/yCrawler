@@ -5,20 +5,15 @@ namespace yCrawler\Tests;
 use yCrawler\Document;
 use yCrawler\Parser\Group;
 use yCrawler\Parser\Item;
+use yCrawler\Parser\Rule\Literal;
 
 class GroupTest extends TestCase
 {
-    public function testCreateItem()
+    public function testAddModifier()
     {
         $group = new Group;
-        $this->assertInstanceOf('yCrawler\Parser\Item', $group->createItem());
-    }
-
-    public function testSetModifier()
-    {
-        $group = new Group;
-        $group->setModifier(function() { return 1; });
-        $group->setModifier(function() { return 2; });
+        $group->addModifier(function() { return 1; });
+        $group->addModifier(function() { return 2; });
 
         $modifiers = $group->getModifiers();
 
@@ -31,8 +26,8 @@ class GroupTest extends TestCase
     {
         $doc = $this->createDocumentMock();
         $group = new Group;
-        $group->createItem('a')->setType(Item::TYPE_LITERAL);
-        $group->createItem('b')->setType(Item::TYPE_LITERAL);
+        $group->addRule(new Literal('a'));
+        $group->addRule(new Literal('b'));
 
         $result = $group->evaluate($doc);
         $this->assertSame('a', $result[0]['value']);
@@ -43,13 +38,17 @@ class GroupTest extends TestCase
     {
         $doc = $this->createDocumentMock();
         $group = new Group;
-        $group->createItem(1)->setType(Item::TYPE_LITERAL);
-        $group->createItem(4)->setType(Item::TYPE_LITERAL);
+        $group->addRule(new Literal(1));
+        $group->addRule(new Literal(4));
 
-        $group->setModifier(function(&$result) {
-            $result[0]['value'] += 3;
-            $result[1]['value'] += 2;
-        });
+        $group->addModifier(
+            function($result)
+            {
+                $result[0]['value'] += 3;
+                $result[1]['value'] += 2;
+                return $result;
+            }
+        );
 
         $result = $group->evaluate($doc);
 

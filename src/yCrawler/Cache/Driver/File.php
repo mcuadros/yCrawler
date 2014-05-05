@@ -3,7 +3,7 @@
 namespace yCrawler\Cache\Driver;
 
 use yCrawler\Cache\Driver;
-use yCrawler\Config;
+use yCrawler\Crawler\Request\Config;
 
 class File implements Driver
 {

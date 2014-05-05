@@ -4,7 +4,7 @@ namespace yCrawler\Crawler;
 
 use yCrawler\Crawler\Request\Exceptions;
 use yCrawler\Misc\URL;
-use yCrawler\Config;
+use yCrawler\Crawler\Request\Config;
 use ForceUTF8\Encoding;
 
 class Request
@@ -42,6 +42,7 @@ class Request
 
     public function __construct($url = null)
     {
+        throw new \RuntimeException('Deprecated');
         $this->maxRetries = Config::get('max_retries');
         $this->sslCertificate = Config::get('ssl_certificate');
         $this->userAgent = Config::get('user_agent');
@@ -154,7 +155,9 @@ class Request
 
     public function execute()
     {
-        if ( $cache = $this->getFromCache() ) return $cache;
+        if ($cache = $this->getFromCache()) {
+            return $cache;
+        }
 
         $start = microtime(true);
 

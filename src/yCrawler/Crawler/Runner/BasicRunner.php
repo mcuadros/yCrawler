@@ -14,6 +14,7 @@ class BasicRunner extends Runner
     public function addDocument(Document $document)
     {
         $this->document = $document;
+        $this->retries[$document->getURL()] = 0;
     }
 
     public function isFull()
@@ -25,33 +26,35 @@ class BasicRunner extends Runner
         return false;
     }
 
-    public function wait()
+    public function clean()
     {
-        try {
-            $this->parseDocument();
-            $this->onDone($this->document);
-        } catch (Exception $exception) {
-            $this->onFailed($this->document, $exception);
-        }
+    }
 
-        $this->freeDocument();
+    protected function onWait()
+    {
+        do {
+            try {
+                $this->parseDocument();
+                $this->onDone($this->document);
+            } catch (Exception $exception) {
+                $this->incRetries($this->document);
+                $this->onFailed($this->document, $exception);
+            }
+        } while ($this->getRetries($this->document) > 0 && $this->getRetries($this->document) <= $this->maxRetries);
+        $this->freeDocument($this->document);
     }
 
     protected function parseDocument()
     {
-        $url = $this->document->getUrl();
+        $url = $this->document->getURL();
 
-        $request = new Request($url);
-        $request->execute();
-
-        $this->document->setMarkup($request->getResponse());
+        $this->document->setMarkup($this->client->get($url)->getBody());
         $this->document->parse();
-
-        echo "--";
     }
 
-    protected function freeDocument()
+    protected function freeDocument(Document $document)
     {
+        unset($this->retries[$document->getURL()]);
         $this->document = null;
     }
 }

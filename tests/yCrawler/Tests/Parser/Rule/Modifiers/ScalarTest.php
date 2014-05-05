@@ -1,10 +1,10 @@
 <?php
 
-namespace yCrawler\Tests\Parse\Item\Modifiers;
+namespace yCrawler\Tests\Parse\Rule\Modifiers;
 
-use yCrawler\Parser\Item\Modifiers\Scalar;
+use yCrawler\Parser\Rule\Modifiers\Scalar;
 
-class ScalarTest extends  \PHPUnit_Framework_TestCase
+class ScalarTest extends \PHPUnit_Framework_TestCase
 {
     public function testBooleanPositive()
     {
@@ -21,12 +21,13 @@ class ScalarTest extends  \PHPUnit_Framework_TestCase
 
         $closure($result);
         $this->assertFalse($result[0]['value']);
-        $this->assertFalse($result[1]['value']);
+        $this->assertFalse($result[0]['value']);
         $this->assertFalse($result[2]['value']);
         $this->assertFalse($result[3]['value']);
         $this->assertTrue($result[4]['value']);
         $this->assertTrue($result[5]['value']);
         $this->assertTrue($result[6]['value']);
+        $this->assertFalse($result['value']);
     }
 
     public function testBooleanNegative()

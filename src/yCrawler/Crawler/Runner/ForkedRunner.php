@@ -2,42 +2,29 @@
 
 namespace yCrawler\Crawler\Runner;
 
+use GuzzleHttp\Client;
 use yCrawler\Crawler\Runner;
-use yCrawler\Crawler\Runner\ForkedRunner\Pool;
+use yCrawler\Crawler\Runner\ForkedRunner\Pool as FPool;
 use yCrawler\Crawler\Runner\ForkedRunner\Work;
 use yCrawler\Crawler\Runner\ForkedRunner\Exceptions;
 use yCrawler\Document;
-use Exception;
 
 class ForkedRunner extends Runner
 {
     private $pool;
-    private $works;
     private $running;
 
-    public function __construct()
+    public function __construct(Client $client, FPool $pool)
     {
-        $this->pool = new Pool();
+        $this->pool = $pool;
+        parent::__construct($client);
     }
 
     public function addDocument(Document $document)
     {
-        $work = $this->createWork($document);
+        $this->retries[$document->getURL()] = 0;
+        $work = new Work($document, $this->client);
         $this->runWorkInPool($work);
-    }
-
-    private function createWork(Document $document)
-    {
-        return new Work($document);
-    }
-
-    private function runWorkInPool(Work $work)
-    {
-        if (!$threadId = $this->pool->run($work)) {
-            throw new Exception('Pool slots error');
-        }
-
-        $this->running[$threadId] = $work;
     }
 
     public function isFull()
@@ -45,7 +32,12 @@ class ForkedRunner extends Runner
         return !$this->pool->hasWaiting();
     }
 
-    public function wait()
+    public function clean()
+    {
+        $this->pool->cleanup();
+    }
+
+    protected function onWait()
     {
         if ($results = $this->pool->wait($failed)) {
             foreach ($results as $threadId => $work) {
@@ -60,9 +52,14 @@ class ForkedRunner extends Runner
         }
     }
 
+    protected function freeDocument(Document $document)
+    {
+        unset($this->retries[$document->getURL()]);
+    }
+
     private function onWorkFailed($threadId, Array $error)
     {
-        $work = $this->popRunnigWorkByThreadId($threadId);
+        $work = $this->popRunningWorkByThreadId($threadId);
         $exception = new Exceptions\NonParsedDocument($error[0], $error[1]);
 
         $this->onFailed($work->getDocument(), $exception);
@@ -70,11 +67,11 @@ class ForkedRunner extends Runner
 
     private function onWorkFinished($threadId, Work $work)
     {
-        $this->popRunnigWorkByThreadId($threadId);
+        $this->popRunningWorkByThreadId($threadId);
 
         if ($work->isParsed() && !$work->isFailed()) {
             $this->onDone($work->getDocument());
-
+            $this->freeDocument($work->getDocument());
             return;
         }
 
@@ -84,7 +81,13 @@ class ForkedRunner extends Runner
             $exception = $work->getException();
         }
 
-        $this->onFailed($work->getDocument(), $exception);
+        if ($this->getRetries($work->getDocument()) >= 2) {
+            $this->onFailed($work->getDocument(), $exception);
+            return;
+        }
+        $this->incRetries($work->getDocument());
+        $this->runWorkInPool($work);
+
     }
 
     private function createNonParsedDocument()
@@ -92,68 +95,23 @@ class ForkedRunner extends Runner
         return new Exceptions\NonParsedDocument();
     }
 
-    private function popRunnigWorkByThreadId($threadId)
+    private function popRunningWorkByThreadId($threadId)
     {
         if (isset($this->running[$threadId])) {
             $work = $this->running[$threadId];
             unset($this->running[$threadId]);
-
             return $work;
         }
 
         return null;
     }
+
+    private function runWorkInPool(Work $work)
+    {
+        if (!$this->pool->hasWaiting()) {
+            throw new \RuntimeException('no free threads');
+        }
+        $threadId = $this->pool->run($work);
+        $this->running[$threadId] = $work;
+    }
 }
-
-/*
-
-do {
-    while ($left > 0 && $pool->hasWaiting()) {
-        if (!$threadId = $pool->run($left)) {
-            throw new Exception('Pool slots error');
-        }
-        $left--;
-    }
-    if ($results = $pool->wait($failed)) {
-        foreach ($results as $threadId => $result) {
-            $num--;
-            echo "result: $result (thread $threadId)", PHP_EOL;
-        }
-    }
-    if ($failed) {
-        // Error handling here
-        // processing is not successful if thread dies
-        // when worked or working timeout exceeded
-        foreach ($failed as $threadId => $err) {
-            list($errorCode, $errorMessage) = $err;
-            echo "error (thread $threadId): #$errorCode - $errorMessage", PHP_EOL;
-            $left++;
-        }
-    }
-} while ($num > 0);
-
-*/
-/*
-        $loops = 0;
-        while (1) {
-            try {
-                if ($loops++ > 5) break;
-
-                if ($results = $pool->wait($failed)) {
-                    foreach ($results as $threadId => $result) {
-                        $resultDocument = $result;
-                        //echo "result: $result (thread $threadId)", PHP_EOL;
-                    }
-                }
-
-                if ($failed) {
-                    var_dump($failed);
-                }
-
-                echo "Loop";
-            } catch (Exception $e) {
-                echo $e->getMessage();
-                break;
-            }
-        }
-        */

@@ -1,25 +1,26 @@
 <?php
 
-namespace yCrawler\Tests\Parser\Item\Types;
+namespace yCrawler\Tests\Parser\Rule\Types;
 
-use yCrawler\Parser\Item\Types;
-use yCrawler\Tests\Testcase;
+use yCrawler\Tests\Parser\Rule\RuleTestCase;
 
-class LiteralTypeTest extends Type
+class LiteralTest extends RuleTestCase
 {
     protected $emptyNode = true;
 
-    const TESTED_CLASS = 'yCrawler\Parser\Item\Types\LiteralType';
+    const TESTED_CLASS = 'yCrawler\Parser\Rule\Literal';
 
     const EXAMPLE_PATTERN_INPUT = 'foo';
     const EXAMPLE_PATTERN_OUTPUT = 'foo';
     const EXAMPLE_RESULT = 'foo';
 
+    protected function assertNode($result)
+    {
+        $this->assertNull($result[0]['node']);
+    }
 
     protected function createDocumentMock()
     {
-        $node = (object) ['nodeValue' => static::EXAMPLE_RESULT];
-
         $document = parent::createDocumentMock();
         $document->shouldReceive('getDOM')
             ->withNoArgs()

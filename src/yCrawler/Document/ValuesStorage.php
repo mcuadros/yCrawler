@@ -12,7 +12,7 @@ class ValuesStorage implements IteratorAggregate, Countable
 
     public function __construct()
     {
-        $this->values = array();
+        $this->values = [];
     }
 
     public function all()

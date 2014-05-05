@@ -3,106 +3,45 @@
 namespace yCrawler;
 
 use yCrawler\Document;
-use yCrawler\Misc\URL;
-use yCrawler\Parser\Item;
 use yCrawler\Parser\Group;
-
 use yCrawler\Parser\Exceptions;
+use yCrawler\Parser\Rule;
+use yCrawler\Parser\Rule\Modifiers;
 
-/**
- * Parser_Base es una clase abstracta que ha de ser extendida por una clase final a modo de
- * configuración, donde se definirán todos los permenores para cada parser.
- *
- * <code>
- * namespace Config;
- * use yCrawler;
- *
- * class Localhost extends yCrawler\Parser_Base {
- *      public function initialize() {
- *          $this->setURLPattern('/localhost/');
- *
- *          //config...
- *      }
- * }
- * </code>
- *
- */
-abstract class Parser
+class Parser
 {
     const URL_PATTERN_BASED_ON_DOMAIN = '~^https?://%s~';
 
     protected $initialized = false;
-    private $startup = Array();
-    private $urlPatterns = Array();
-    private $parseCallback;
-    private $name;
-    protected $items = Array(
-        'follow' => array(), 'links' => array(),
-        'verify' => array(), 'values' => array()
-    );
+    protected $items = [
+        'follow' => [], 'links' => [],
+        'verify' => [], 'values' => []
+    ];
+    protected $startup = [];
+    protected $urlPatterns = [];
+    protected $parseCallback;
+    protected $name;
 
-    abstract public function initialize();
+    public function __construct($name)
+    {
+        $this->name;
+    }
 
     public function configure()
     {
         if (!$this->isInitialized()) {
-            $this->initialize();
             $this->initialized = true;
         }
     }
 
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
     public function getName()
     {
-        if ($this->name) {
-            return $this->name;
-        }
-
-        return get_class($this);
+        return $this->name;
     }
 
     public function isInitialized()
     {
         return $this->initialized;
-    }
-
-    public function getStartupURLs()
-    {
-        return $this->startup;
-    }
-
-    public function clearStartupURLs()
-    {
-        $this->startup = array();
-    }
-
-    public function setStartupURL($url, $clean = false)
-    {
-        if ($clean) {
-            $this->clearStartupURLs();
-        }
-
-        if (!URL::validate($url)) {
-            throw new Exceptions\InvalidStartupURL();
-        }
-
-        return $this->startup[] = $url;
-    }
-
-    public function getStartupDocuments()
-    {
-        $this->configure();
-
-        $documents = array();
-        foreach ($this->startup as $url) {
-            $documents[] = new Document($url, $this);
-        }
-
-        return $documents;
     }
 
     public function getURLPatterns()
@@ -112,7 +51,7 @@ abstract class Parser
 
     public function clearURLPatterns()
     {
-        $this->urlPatterns = array();
+        $this->urlPatterns = [];
     }
 
     public function setURLPattern($regexp, $clean = false)
@@ -128,15 +67,6 @@ abstract class Parser
         return $this->urlPatterns[] = $regexp;
     }
 
-    private function validateRegExp($regexp)
-    {
-        if (@preg_match($regexp, '') === false) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function matchURL($url)
     {
         if (count($this->urlPatterns) == 0) {
@@ -144,128 +74,76 @@ abstract class Parser
         }
 
         foreach ($this->urlPatterns as $regexp) {
-            if (preg_match($regexp, $url) === 1) return true;
+            if (preg_match($regexp, $url) === 1) {
+                return true;
+            }
         }
 
         return false;
     }
 
-    private function createDefaultURLPatterns()
-    {
-        $tmp = Array();
-        foreach ($this->startup as $url) {
-            $tmp[] = $this->createURLPatternBasedOnURL($url);
-        }
-
-        $this->urlPatterns = array_unique($tmp);
-    }
-
-    private function createURLPatternBasedOnURL($url)
-    {
-        $domain = parse_url($url, PHP_URL_HOST);
-        $domainWithEscapedDots = str_replace('.', '\.', $domain);
-
-        return sprintf(self::URL_PATTERN_BASED_ON_DOMAIN, $domainWithEscapedDots);
-    }
-
-    public function getFollowItems()
+    public function getFollowRules()
     {
         return $this->items['follow'];
     }
 
-    public function addLinkFollowItem(Item $item, $sign)
+    public function addLinkFollowRule(Rule $rule, $sign)
     {
-        $this->items['follow'][] = Array($item, $sign);
+        $followRule = clone $rule;
+        $followRule->addModifier(Modifiers\Scalar::boolean($sign));
+        $this->items['follow'][] = [$followRule, $sign];
     }
 
-    public function clearFollowItems()
+    public function clearFollowRules()
     {
-        $this->items['follow'] = Array();
+        $this->items['follow'] = [];
     }
 
-    public function createLinkFollowItem($expression = false, $sign = true)
-    {
-        $item = new Item();
-        if ($expression) $item->setPattern($expression);
-
-        $this->addLinkFollowItem($item, $sign);
-
-        return $item;
-    }
-
-    public function getVerifyItems()
+    public function getVerifyRules()
     {
         return $this->items['verify'];
     }
 
-    public function addVerifyItem(Item $item, $sign)
+    public function addVerifyRule(Rule $rule, $sign)
     {
-        $this->items['verify'][] = Array($item, $sign);
+        $verifyRule = clone $rule;
+        $verifyRule->addModifier(Modifiers\Scalar::boolean($sign));
+        $this->items['verify'][] = [$verifyRule, $sign];
     }
 
-    public function clearVerifyItems()
+    public function clearVerifyRules()
     {
-        $this->items['verify'] = Array();
+        $this->items['verify'] = [];
     }
 
-    public function createVerifyItem($expression = false, $sign = true)
-    {
-        $item = new Item();
-        if ($expression) $item->setPattern($expression);
-
-        $this->addVerifyItem($item, $sign);
-
-        return $item;
-    }
-
-    public function getLinksItems()
+    public function getLinkRules()
     {
         return $this->items['links'];
     }
 
-    public function addLinksItem(Item $item)
+    public function addLinkRule(Rule $rule)
     {
-        $this->items['links'][] = $item;
+        $this->items['links'][] = $rule;
     }
 
-    public function clearLinksItems()
+    public function clearLinkRules()
     {
-        $this->items['links'] = Array();
+        $this->items['links'] = [];
     }
 
-    public function createLinksItem($expression = false)
-    {
-        $item = new Item();
-        if ($expression) $item->setPattern($expression);
-
-        $this->addLinksItem($item);
-
-        return $item;
-    }
-
-    public function getValueItems()
+    public function getValueRules()
     {
         return $this->items['values'];
     }
 
-    public function addValueItem($name, Item $item)
+    public function addValueRule(Rule $rule, $name)
     {
-        $this->items['values'][$name] = $item;
+        $this->items['values'][$name] = $rule;
     }
 
-    public function clearValueItems()
+    public function clearValueRules()
     {
-        $this->items['values'] = Array();
-    }
-
-    public function createValueItem($name, $expression = false)
-    {
-        $item = new Item();
-        if ($expression) $item->setPattern($expression);
-
-        $this->addValueItem($name, $item);
-
-        return $item;
+        $this->items['values'] = [];
     }
 
     public function addValueGroup($name, Group $group)
@@ -284,11 +162,38 @@ abstract class Parser
 
     public function setOnParseCallback(\Closure $closure)
     {
-        $this->parseCallback = $closure;
+        $this->parseCallback = new SerializableClosure($closure);
     }
 
     public function getOnParseCallback()
     {
         return $this->parseCallback;
+    }
+
+    private function validateRegExp($regexp)
+    {
+        if (@preg_match($regexp, '') === false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function createDefaultURLPatterns()
+    {
+        $tmp = [];
+        foreach ($this->startup as $url) {
+            $tmp[] = $this->createURLPatternBasedOnURL($url);
+        }
+
+        $this->urlPatterns = array_unique($tmp);
+    }
+
+    private function createURLPatternBasedOnURL($url)
+    {
+        $domain = parse_url($url, PHP_URL_HOST);
+        $domainWithEscapedDots = str_replace('.', '\.', $domain);
+
+        return sprintf(self::URL_PATTERN_BASED_ON_DOMAIN, $domainWithEscapedDots);
     }
 }

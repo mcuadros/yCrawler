@@ -2,28 +2,24 @@
 
 namespace yCrawler;
 
-use yCrawler\Crawler\Request;
-use yCrawler\Parser\Item\Modifiers;
-use yCrawler\Misc\URL;
+use yCrawler\Parser\Rule\Modifiers;
 use yCrawler\Document\ValuesStorage;
 use yCrawler\Document\LinksStorage;
 use yCrawler\Document\Exceptions;
-
 use DOMDocument;
 use DOMXPath;
-use Closure;
+use yCrawler\Parser\Rule\XPath;
+use yCrawler\Crawler\Request\Config as RConfig;
 
 class Document
 {
     protected $url;
     protected $values;
     protected $links;
-
     protected $markup;
     protected $parser;
     protected $dom;
     protected $xpath;
-
     protected $isVerified;
     protected $isIndexable;
     protected $isParsed;
@@ -66,14 +62,18 @@ class Document
 
     public function isIndexable()
     {
-        if ($this->isIndexable !== null) return $this->isIndexable;
+        if ($this->isIndexable !== null) {
+            return $this->isIndexable;
+        }
 
-        $this->isIndexable = true;
+        $this->isIndexable = false;
 
-        $followItems = $this->parser->getFollowItems();
-        foreach ($followItems as &$item) {
-           $this->isIndexable = $this->evaluteItemAsScalar($item);
-            if (!$this->isIndexable) break;
+        $followRules = $this->parser->getFollowRules();
+        foreach ($followRules as $rule) {
+            $this->isIndexable = $rule[0]->evaluate($this)['value'];
+            if (!$this->isIndexable) {
+                break;
+            }
         }
 
         return $this->isIndexable;
@@ -81,13 +81,15 @@ class Document
 
     public function isVerified()
     {
-        if ($this->isVerified !== null) return $this->isVerified;
+        if ($this->isVerified !== null) {
+            return $this->isVerified;
+        }
 
         $this->isVerified = true;
 
-        $verifyItems = $this->parser->getVerifyItems();
-        foreach ($verifyItems as &$item) {
-            $this->isVerified = $this->evaluteItemAsScalar($item);
+        $verifyRules = $this->parser->getVerifyRules();
+        foreach ($verifyRules as $rule) {
+            $this->isVerified = $rule[0]->evaluate($this)['value'];
             if (!$this->isVerified) {
                 break;
             }
@@ -96,26 +98,38 @@ class Document
         return $this->isVerified;
     }
 
-    protected function evaluteItemAsScalar(array &$item)
-    {
-        $item[0]->setModifier(Modifiers\Scalar::boolean($item[1]));
-        if (!$item[0]->evaluate($this)) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function getLinks()
     {
         return $this->links;
     }
 
+    public function getValues()
+    {
+        return $this->values;
+    }
+
+    public function parse()
+    {
+        $this->initialize();
+
+        $this->collectValues();
+        $this->collectLinks();
+
+        if ($this->isVerified) {
+            $this->executeOnParseCallback();
+            $this->isParsed = true;
+        }
+    }
+
+    public function isParsed()
+    {
+        return $this->isParsed;
+    }
+
     protected function collectLinks()
     {
-        if (!$this->isIndexable()) {
-            $this->links = false;
-        } else {
+        $this->links = null;
+        if ($this->isIndexable()) {
             $this->links = new LinksStorage($this->url, $this->parser);
             $this->evaluateLinkRulesFromParser();
         }
@@ -123,12 +137,12 @@ class Document
 
     protected function evaluateLinkRulesFromParser()
     {
-        if (!$this->parser->getLinksItems() ) {
-            $this->parser->createLinksItem('//a/@href');
+        if (!$this->parser->getLinkRules()) {
+            $this->parser->addLinkRule(new XPath('//a/@href'));
         }
 
-        foreach ($this->parser->getLinksItems() as $item) {
-            $result = $item->evaluate($this);
+        foreach ($this->parser->getLinkRules() as $rule) {
+            $result = $rule->evaluate($this);
             $this->saveLinksResult($result);
         }
     }
@@ -140,16 +154,11 @@ class Document
         }
     }
 
-    public function getValues()
-    {
-        return $this->values;
-    }
-
     protected function collectValues()
     {
-        if (!$this->isVerified()) {
-            $this->values = false;
-        } else {
+        $this->values = false;
+
+        if ($this->isVerified()) {
             $this->values = new ValuesStorage();
             $this->evaluateValueRulesFromParser();
         }
@@ -157,31 +166,12 @@ class Document
 
     protected function evaluateValueRulesFromParser()
     {
-        foreach ($this->parser->getValueItems() as $key => $item) {
-            $result = $item->evaluate($this);
-            $this->saveEvaluationResult($key, $result);
+        foreach ($this->parser->getValueRules() as $key => $rule) {
+            $result = $rule->evaluate($this);
+            if ($result) {
+                $this->values->set($key, $result);
+            }
         }
-    }
-
-    protected function saveEvaluationResult($key, $result)
-    {
-        $this->values->set($key, $result);
-    }
-
-    public function parse()
-    {
-        $this->initialize();
-
-        $this->collectValues();
-        $this->collectLinks();
-        $this->executeOnParseCallback();
-
-        $this->isParsed = true;
-    }
-
-    public function isParsed()
-    {
-        return $this->isParsed;
     }
 
     protected function initialize()
@@ -198,22 +188,22 @@ class Document
 
     protected function initializeDOM()
     {
-        $this->ifEmptyMarkupThrowException();
+        $this->isValidMarkup();
 
         libxml_use_internal_errors(true);
         libxml_clear_errors();
 
         $dom = new DOMDocument();
-        $markup = $this->applyUTF8HackIfNeeded($this->markup);
+//        $markup = $this->applyUTF8HackIfNeeded($this->markup);
 
-        if (!$dom->loadHtml($markup)) {
+        if (!$dom->loadHtml($this->markup)) {
             throw new Exceptions\UnableToLoadMarkup();
         }
 
         $this->dom = $dom;
     }
 
-    protected function ifEmptyMarkupThrowException()
+    protected function isValidMarkup()
     {
         if (!$this->markup) {
             throw new Exceptions\InvalidMarkup();
@@ -222,7 +212,7 @@ class Document
 
     protected function applyUTF8HackIfNeeded($markup)
     {
-        if (!Config::get('utf8_dom_hack')) {
+        if (!RConfig::get('utf8_dom_hack')) {
             return $markup;
         }
 
@@ -243,7 +233,7 @@ class Document
     protected function executeOnParseCallback()
     {
         $cb = $this->parser->getOnParseCallback();
-        if ($cb instanceOf Closure) {
+        if ($cb) {
             $cb($this);
         }
     }

@@ -2,41 +2,72 @@
 
 namespace yCrawler\Tests\Crawler\Runner;
 
+use GuzzleHttp\Client;
 use yCrawler\Tests\TestCase as BaseTestCase;
 use Exception;
+use Mockery as m;
 
-class TestCase extends BaseTestCase
+abstract class TestCase extends BaseTestCase
 {
     const EXAMPLE_URL = 'http://httpbin.org/';
 
-    public function testSetAndGetOnDoneCallback()
-    {
-        $callback = function() {};
+    abstract protected function createRunner(Client $client);
 
-        $runner = $this->createRunner();
+    public function testOnDoneCallback()
+    {
+        $uses = 0;
+        $callback = function () use (&$uses) {
+            $uses++;
+        };
+
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->once()->andReturn(m::self());
+        $client->shouldReceive('getBody')->once();
+
+        $runner = $this->createRunner($client);
         $runner->setOnDoneCallback($callback);
 
-        $this->assertSame($callback, $runner->getOnDoneCallback());
+        $doc = $this->createDocumentMock();
+        $doc->shouldReceive('getURL')->andReturn('http://url');
+        $doc->shouldReceive('setMarkup')->once();
+        $doc->shouldReceive('parse')->once();
+
+        $runner->addDocument($doc);
+        $runner->wait();
+
+        $this->assertEquals(1, $uses);
     }
 
-    public function testSetAndGetOnFailedCallback()
+    public function testOnFailedCallback()
     {
-        $callback = function() {};
+        $uses = 0;
+        $callback = function () use (&$uses) {
+            $uses++;
+        };
 
-        $runner = $this->createRunner();
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->times(3)->andThrow(new Exception());
+
+        $runner = $this->createRunner($client);
         $runner->setOnFailedCallback($callback);
 
-        $this->assertSame($callback, $runner->getOnFailedCallback());
+        $doc = $this->createDocumentMock();
+        $doc->shouldReceive('getURL')->andReturn('http://url');
+        $runner->addDocument($doc);
+        $runner->wait();
+
+        $this->assertEquals(3, $uses);
     }
 
     public function testIsFull()
     {
         $document = $this->createDocumentMock();
-        $runner = $this->createRunner();
+        $document->shouldReceive('getURL')->andReturn('http://url');
+        $runner = $this->createRunner(new Client());
 
         $this->assertFalse($runner->isFull());
 
-        for($i=0;$i<$this->getPoolSize();$i++) {
+        for ($i=0; $i<$this->getPoolSize(); $i++) {
             $runner->addDocument($document);
         }
 
@@ -47,9 +78,10 @@ class TestCase extends BaseTestCase
     {
         $expectedDocument = null;
 
-        $runner = $this->createRunner();
+        $runner = $this->createRunner(new Client());
         $runner->setOnDoneCallback(
-            function($document) use (&$expectedDocument) {
+            function ($document) use (&$expectedDocument) {
+
                 $expectedDocument = $document;
             }
         );
@@ -62,7 +94,7 @@ class TestCase extends BaseTestCase
             ->shouldReceive('setMarkup')->once()
             ->andReturn(null);
         $document
-            ->shouldReceive('getURL')->withNoArgs()->once()
+            ->shouldReceive('getURL')->withNoArgs()
             ->andReturn(self::EXAMPLE_URL);
 
         $runner->addDocument($document);
@@ -76,25 +108,25 @@ class TestCase extends BaseTestCase
         $expectedDocument = null;
         $expectedException = null;
 
-        $runner = $this->createRunner();
+        $runner = $this->createRunner(new Client());
         $runner->setOnFailedCallback(
-            function($document, $exception) 
-            use (&$expectedDocument, &$expectedException) {
+            function ($document, $exception) use (&$expectedDocument, &$expectedException) {
                 $expectedDocument = $document;
                 $expectedException = $exception;
-        });
+            }
+        );
 
         $exception = new Exception();
 
         $document = $this->createDocumentMock();
         $document
-            ->shouldReceive('parse')->withNoArgs()->once()
+            ->shouldReceive('parse')->withNoArgs()
             ->andThrow($exception);
         $document
-            ->shouldReceive('setMarkup')->once()
+            ->shouldReceive('setMarkup')
             ->andReturn(null);
         $document
-            ->shouldReceive('getURL')->withNoArgs()->once()
+            ->shouldReceive('getURL')->withNoArgs()
             ->andReturn(self::EXAMPLE_URL);
 
         $runner->addDocument($document);
@@ -103,5 +135,17 @@ class TestCase extends BaseTestCase
         $this->assertSame($expectedDocument, $document);
         $this->assertSame($expectedException, $exception);
     }
-}
 
+    public function testRetries()
+    {
+
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->times(3)->andThrow(new Exception());
+
+        $runner = $this->createRunner($client);
+        $doc = $this->createDocumentMock();
+        $doc->shouldReceive('getURL')->andReturn('http://url');
+        $runner->addDocument($doc);
+        $runner->wait();
+    }
+}

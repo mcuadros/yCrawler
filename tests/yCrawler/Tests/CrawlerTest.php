@@ -3,105 +3,78 @@
 namespace yCrawler\Tests;
 
 use yCrawler\Crawler;
-use yCrawler\Parser;
-use yCrawler\Queue;
+use yCrawler\Crawler\Web;
+use yCrawler\Mocks\ParserMock;
+use yCrawler\Crawler\Runner\BasicRunner;
+use yCrawler\Crawler\Queue\SimpleQueue;
 use yCrawler\Document;
-use yCrawler\Crawler\Thread;
-use yCrawler\Crawler\ThreadPool;
+use \Mockery as m;
+use yCrawler\Parser\Rule\XPath;
+use yCrawler\Parser;
 
-class CrawlerTest extends  \PHPUnit_Framework_TestCase
+class CrawlerTest extends \PHPUnit_Framework_TestCase
 {
-    public function createCrawler()
-    {
-        $this->markTestSkipped('WIP.');
-
-        $this->queue = new Queue();
-        $this->pool = new ThreadPool('yCrawler\Crawler\Thread', 5);
-
-        return new Crawler($this->queue, $this->pool);
-    }
-
-    public function testAdd()
-    {
-        $crawler = $this->createCrawler();
-        $this->assertTrue($crawler->addParser(new CrawlerTest_ParserMock));
-    }
-
-    /**
-     * @expectedException RuntimeException
-     */
-    public function testAddTwice()
-    {
-        $crawler = $this->createCrawler();
-        $crawler->addParser(new CrawlerTest_ParserMock);
-        $crawler->addParser(new CrawlerTest_ParserMock);
-
-    }
-
-    public function testHas()
-    {
-        $crawler = $this->createCrawler();
-        $crawler->addParser(new CrawlerTest_ParserMock);
-
-        $this->assertTrue($crawler->hasParser('CrawlerTest_ParserMock'));
-    }
-
-    public function testGet()
-    {
-        $crawler = $this->createCrawler();
-        $crawler->addParser(new CrawlerTest_ParserMock);
-
-        $this->assertInstanceOf(
-            'yCrawler\Parser',
-            $crawler->getParser('CrawlerTest_ParserMock')
-        );
-    }
-
-    public function testOnParse()
-    {
-        $parser = new CrawlerTest_ParserMock;
-
-        $crawler = $this->createCrawler();
-        $crawler->onParse(function($document) {
-            return get_class($document);
-        });
-
-        $crawler->addParser($parser);
-
-        $result = $parser->parsed(new Document('http://test.com'));
-        $this->assertSame('yCrawler\Document', $result);
-    }
-
-    public function testInitialize()
-    {
-        $crawler = $this->createCrawler();
-        $crawler->addParser(new CrawlerTest_ParserMock);
-
-        $crawler->initialize();
-
-        $doc = $this->queue->get();
-        $this->assertSame('http://httpbin.org/', $doc->getUrl());
-    }
+    const EXAMPLE_MARKUP = '<html><body><pre><a href="foo">bar</a></pre></body></html>';
 
     public function testRun()
     {
-        $crawler = $this->createCrawler();
-        $crawler->addParser(new CrawlerTest_ParserMock);
-
-        $crawler->run();
+        $parser = new ParserMock('mock');
+        $doc = new Document('http://aurl', $parser);
+        $crawler = $this->getCrawler($doc);
+        $crawler->run(0);
+        $this->assertTrue($doc->isParsed());
     }
-}
 
-class CrawlerTest_ParserMock extends Parser
-{
-    public function initialize()
+    public function testOverrideOnParse()
     {
-        $this->setStartupURL('http://httpbin.org/');
+        $parser = new ParserMock('mock');
+        $doc = new Document('http://aurl', $parser);
+        $override = false;
+        $crawler = $this->getCrawler($doc);
+        $crawler->overrideOnParse(
+            function ($document) use (&$override) {
+                $override = true;
+            }
+        );
+        $crawler->run(0);
+        $this->assertTrue($override);
+    }
 
-        $this->createLinkFollowItem('//a');
-        $this->createVerifyItem('//a');
+    public function testRequeueLinkableDocs()
+    {
+        $passes = 0;
+        $parser = new Parser('mock');
+        $parser->addLinkFollowRule(new XPath('//a'), true);
+        $parser->addValueRule(new XPath('//no-exists-tag'), 'no-exists');
+        $parser->addValueRule(new XPath('//pre'), 'pre');
 
-        $this->createValueItem('no-exists', '//no-exists-tag');
-        $this->createValueItem('pre', '//pre');
+        $doc = new Document('http://aurl', $parser);
+        $doc->setMarkup(self::EXAMPLE_MARKUP);
+        $crawler = $this->getCrawler($doc);
+        $crawler->overrideOnParse(
+            function ($document) use (&$passes) {
+                $passes++;
+            }
+        );
+        $crawler->run(0);
+        $this->assertEquals(2, $passes);
+    }
+
+    protected function getCrawler($doc)
+    {
+        $client = m::mock('GuzzleHttp\Client');
+        $client->shouldReceive('get')->andReturn(m::self());
+        $client->shouldReceive('getBody')->andReturnValues([self::EXAMPLE_MARKUP, '<html></html>']);
+
+        $runner = new BasicRunner($client);
+        $queue = new SimpleQueue();
+        $queue->add($doc);
+
+        $web = new Web();
+        $web->queue = $queue;
+        $web->runner = $runner;
+
+        $crawler = new Crawler([$web]);
+        return $crawler;
     }
 }
